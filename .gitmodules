@@ -1,0 +1,3 @@
+[submodule "backend/src/zero_shot_learned_db"]
+	path = backend/src/zero_shot_learned_db
+	url = git@github.com:SashkaHavr/zero-shot-learned-db.git

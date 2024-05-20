@@ -1,0 +1,9 @@
+[tool.ruff]
+line-length = 320
+src = ["src"]
+lint.select = ["E", "F", "N", "W292"]
+lint.ignore = ["N813"]
+extend-exclude = ["src/zero_shot_learned_db"]
+
+[tool.ruff.format]
+line-ending = "lf"
