@@ -33,6 +33,8 @@ class MLHelpers:
 
         self.feature_statistics = load_statistics(statistics_file)
         self.workload_run = read_run(dataset_file)
+        if settings.ml.limit_plans is not None:
+            self.workload_run.parsed_plans = self.workload_run.parsed_plans[: settings.ml.limit_plans]
         label_norm = get_label_norm(self.workload_run.parsed_plans, self.hyperparameters.final_mlp_kwargs.loss_class_name)
         self.model = prepare_model(
             self.hyperparameters,

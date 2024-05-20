@@ -61,3 +61,7 @@ class PlanFullResponse(PlanResponse):
 class PredictionResponse(CustomModel):
     label: float
     prediction: float
+
+
+class ExplanationResponse(CustomModel):
+    feature_importance: dict[int, dict[str, float]]

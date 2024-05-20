@@ -3,7 +3,32 @@ line-length = 320
 src = ["src"]
 lint.select = ["E", "F", "N", "W292"]
 lint.ignore = ["N813"]
-extend-exclude = ["src/zero_shot_learned_db"]
+extend-exclude = [
+    "src/zero_shot_learned_db/baselines",
+    "src/zero_shot_learned_db/cross_db_benchmark",
+    "src/zero_shot_learned_db/baselines",
+    "src/zero_shot_learned_db/data_driven_cardinalities",
+    "src/zero_shot_learned_db/experiments",
+    "src/zero_shot_learned_db/models",
+    "src/zero_shot_learned_db/tests",
+    "src/zero_shot_learned_db/baseline.py",
+    "src/zero_shot_learned_db/dataset_tools.py",
+    "src/zero_shot_learned_db/dbgensetup.py",
+    "src/zero_shot_learned_db/deepdb.py",
+    "src/zero_shot_learned_db/exp_zero_shot_deepdb.py",
+    "src/zero_shot_learned_db/exp_zero_shot_redshift_run.py",
+    "src/zero_shot_learned_db/exp_zero_shot_run.py",
+    "src/zero_shot_learned_db/exp_zero_shot_train_dgx.py",
+    "src/zero_shot_learned_db/exp_zero_shot_train.py",
+    "src/zero_shot_learned_db/explain.py",
+    "src/zero_shot_learned_db/neurocard.py",
+    "src/zero_shot_learned_db/parse_all.py",
+    "src/zero_shot_learned_db/run_benchmark_public.py",
+    "src/zero_shot_learned_db/run_benchmark.py",
+    "src/zero_shot_learned_db/setup.py",
+    "src/zero_shot_learned_db/train.py",
+    "src/zero_shot_learned_db/tune.py"
+]
 
 [tool.ruff.format]
 line-ending = "lf"

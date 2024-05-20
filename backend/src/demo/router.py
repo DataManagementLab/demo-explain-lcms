@@ -1,8 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 
-from demo.schemas import GraphNodeResponse, PlanFullResponse, PlanResponse, PredictionResponse
+from demo.schemas import ExplanationResponse, GraphNodeResponse, PlanFullResponse, PlanResponse, PredictionResponse
+from demo.utils import dict_keys_to_camel
 from ml.dependencies import MLHelpers
+from zero_shot_learned_db.explainers.explainers.gradient_explainer import GradientExplainer
 
 
 router = APIRouter(tags=["demo"])
@@ -31,3 +33,14 @@ def get_plan_prediction(plan_id: int, ml: Annotated[MLHelpers, Depends()]):
     plan = ml.parsed_plans[plan_id]
     plan.prepare_plan_for_inference()
     return plan.get_prediction(ml.model)
+
+
+@router.get("/plan/{plan_id}/explanation", response_model=ExplanationResponse)
+def get_plan_explanation(plan_id: int, ml: Annotated[MLHelpers, Depends()]):
+    plan = ml.parsed_plans[plan_id]
+    plan.prepare_plan_for_inference()
+    explainer = GradientExplainer(ml.model)
+    explanation = explainer.explain(plan)
+    for grad in explanation.feature_importance.values():
+        dict_keys_to_camel(grad)
+    return explanation
