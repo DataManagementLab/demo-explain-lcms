@@ -42,9 +42,7 @@ export class MainPageComponent implements OnInit {
       }
       const values = Object.keys(nodeInfo).map(k => ({ name: k, value: nodeInfo[k] }));
       if (importantFeatures) {
-        // console.log(values[0].name);
-        // console.log(values[0].name in importantFeatures.features[nodeInfo.nodeType]);
-        return sort(values, v => v.name in importantFeatures.features[nodeInfo.nodeType]);
+        return sort(values, v => importantFeatures.features[nodeInfo.nodeType].includes(v.name)).reverse();
       } else {
         return values;
       }
@@ -58,7 +56,6 @@ export class MainPageComponent implements OnInit {
     if (!node || !explanation) {
       return undefined;
     }
-    console.log('Computed');
     return explanation.featureImportance[String(node.nodeId)];
   });
 
