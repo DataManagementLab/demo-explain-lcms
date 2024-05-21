@@ -1,0 +1,18 @@
+.graphDiv {
+  height: 100%;
+}
+
+.node {
+  elipse {
+    &.hover {
+      fill: rgb(222, 222, 222);
+    }
+
+    &.selected {
+      fill: rgb(200, 200, 200);
+      &.hover {
+        fill: rgb(184, 184, 184);
+      }
+    }
+  }
+}

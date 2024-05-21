@@ -1,0 +1,36 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import Plan from './data/plan';
+import FullPlan from './data/full-plan';
+import Prediction from './data/prediction';
+import Explanation from './data/explanation';
+import ImportantFeatures from './data/important-features';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ApiService {
+  private baseURL = 'http://127.0.0.1:8000/';
+
+  constructor(private httpClient: HttpClient) {}
+
+  getPlans() {
+    return this.httpClient.get<Plan[]>(this.baseURL + 'plans');
+  }
+
+  getPlan(planId: number) {
+    return this.httpClient.get<FullPlan>(this.baseURL + 'plans/' + planId);
+  }
+
+  getPrediction(planId: number) {
+    return this.httpClient.get<Prediction>(this.baseURL + 'plans/' + planId + '/prediction');
+  }
+
+  getExplanation(planId: number) {
+    return this.httpClient.get<Explanation>(this.baseURL + 'plans/' + planId + '/explanation');
+  }
+
+  getImportantFeatures() {
+    return this.httpClient.get<ImportantFeatures>(this.baseURL + 'important-features');
+  }
+}

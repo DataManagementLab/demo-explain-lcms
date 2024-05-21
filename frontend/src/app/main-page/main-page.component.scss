@@ -1,0 +1,95 @@
+:host {
+  height: 100%;
+}
+
+p {
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: minmax(100px, 100%);
+  gap: 32px;
+  box-sizing: border-box;
+  max-height: 100%;
+  padding: 16px 32px;
+}
+
+.planList {
+  border: 1px solid black;
+  max-height: 100%;
+  overflow: auto;
+}
+
+.planListItem {
+  &:hover {
+    background-color: #f1f1f1;
+  }
+  &.selected {
+    background-color: rgb(202, 202, 202);
+    &:hover {
+      background-color: rgb(194, 194, 194);
+    }
+  }
+}
+
+.rightGrid {
+  display: grid;
+  grid-template-rows: 60% 40%;
+  gap: 16px;
+}
+
+.graphBlock {
+  position: relative;
+}
+
+// .graphButtons {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 8px;
+//   align-items: flex-end;
+
+//   // position: absolute;
+//   // align-self: flex-end;
+
+//   button {
+//     width: 120px;
+//   }
+// }
+
+.nodeInfoList {
+  overflow: auto;
+}
+
+.leftGrid {
+  display: grid;
+  grid-template-rows: 60% 40%;
+  gap: 16px;
+}
+
+.leftBottomGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: minmax(100px, 100%);
+
+  gap: 16px;
+
+  button {
+    margin-bottom: 16px;
+  }
+}
+
+.boldSpan {
+  font-weight: bold;
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  p {
+    text-align: start;
+  }
+}
