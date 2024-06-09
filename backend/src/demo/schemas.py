@@ -24,6 +24,7 @@ class LogicalPredicate(CustomModel, base_models.LogicalPredicate):
 
 
 class FilterColumn(CustomModel, base_models.FilterColumn):
+    column_stats: ColumnStats
     children: SkipJsonSchema[list[base_models.FilterColumn]] = Field(default=[], exclude=True)
 
 

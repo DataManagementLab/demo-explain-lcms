@@ -44,28 +44,15 @@ p {
   position: relative;
 }
 
-// .graphButtons {
-//   display: flex;
-//   flex-direction: column;
-//   gap: 8px;
-//   align-items: flex-end;
-
-//   // position: absolute;
-//   // align-self: flex-end;
-
-//   button {
-//     width: 120px;
-//   }
-// }
-
 .nodeInfoList {
   overflow: auto;
 }
 
 .leftGrid {
   display: grid;
-  grid-template-rows: 60% 40%;
+  grid-template-rows: minmax(100px, 60%) minmax(100px, 40%);
   gap: 16px;
+  max-height: 100%;
 }
 
 .leftBottomGrid {

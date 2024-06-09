@@ -1,4 +1,4 @@
-import { Component, OnInit, Signal, computed, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, Signal, computed, effect, signal } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { ApiService } from '../services/api.service';
 import Plan from '../services/data/plan';
@@ -10,16 +10,19 @@ import Prediction from '../services/data/prediction';
 import Explanation from '../services/data/explanation';
 import { sort } from 'd3';
 import ImportantFeatures from '../services/data/important-features';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
   selector: 'app-main-page',
   standalone: true,
-  imports: [MatListModule, PlanGraphComponent, MatButtonModule],
+  imports: [MatListModule, PlanGraphComponent, MatButtonModule, MatTableModule],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainPageComponent implements OnInit {
   public plans = signal<Plan[]>([]);
+  public displayedPlanColumns = signal<String[]>(['id', 'plans', 'tables', 'columns', 'filters', 'preds']);
   public selectedPlan = signal<Plan | undefined>(undefined);
   public selectedFullPlan = signal<FullPlan | undefined>(undefined);
   public selectedNode = signal<GraphNode | undefined>(undefined);
@@ -27,6 +30,15 @@ export class MainPageComponent implements OnInit {
   public selectedNodeExplanation = signal<Explanation | undefined>(undefined);
   public importantFeatures = signal<ImportantFeatures | undefined>(undefined);
 
+  public displayedNodeColumns = computed(() => {
+    const explanation = this.selectedNodeExplanation();
+    const cols = ['attr', 'value'];
+    if (explanation) {
+      cols.push('importance');
+    }
+
+    return cols;
+  });
   public selectedNodeInfoFields = computed(() => {
     let nodeInfo = this.selectedNode()?.nodeInfo as any;
     const importantFeatures = this.importantFeatures();
@@ -35,17 +47,31 @@ export class MainPageComponent implements OnInit {
         nodeInfo = Object.assign(nodeInfo, nodeInfo.planParameters);
         delete nodeInfo.planParameters;
       }
+      if ('columnStats' in nodeInfo) {
+        nodeInfo = Object.assign(nodeInfo, nodeInfo.columnStats);
+        delete nodeInfo.columnStats;
+      }
       for (const prop in nodeInfo) {
-        if (String(nodeInfo[prop]) == '') {
+        if (nodeInfo[prop] == null || nodeInfo[prop] == '') {
           delete nodeInfo[prop];
         }
       }
-      const values = Object.keys(nodeInfo).map(k => ({ name: k, value: nodeInfo[k] }));
+      let values = Object.keys(nodeInfo).map(k => ({
+        name: k,
+        value: nodeInfo[k],
+        isFeature: false,
+      }));
+
       if (importantFeatures) {
-        return sort(values, v => importantFeatures.features[nodeInfo.nodeType].includes(v.name)).reverse();
-      } else {
-        return values;
+        values = values.map(v => ({
+          name: v.name,
+          value: v.value,
+          isFeature: importantFeatures.features[nodeInfo.nodeType].includes(v.name),
+        }));
+        values = sort(values, v => v.isFeature).reverse();
       }
+
+      return values;
     }
     return [];
   });

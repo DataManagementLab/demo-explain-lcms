@@ -1,14 +1,97 @@
 <div class="grid">
   <div class="leftGrid">
-    <mat-list class="planList">
-      @for (plan of this.plans(); track plan.id) {
-      <mat-list-item
-        [class]="['planListItem', this.selectedPlan() && this.selectedPlan()!.id == plan.id ? 'selected' : '']"
-        (click)="onPlanSelected(plan)"
-        >{{ plan.id }}</mat-list-item
-      >
-      }
-    </mat-list>
+    <div class="planList">
+      <table
+        mat-table
+        [dataSource]="this.plans()">
+        <ng-container matColumnDef="id">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            ID
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let plan">
+            <span class="boldSpan">{{ plan.id }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="plans">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            # Plans
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let plan">
+            {{ plan.graphNodesStats.plan }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="columns">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            # Columns
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let plan">
+            {{ plan.graphNodesStats.column + plan.graphNodesStats.filter_column }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="filters">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            # Filters
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let plan">
+            {{ plan.graphNodesStats.filter_column }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="preds">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            # Logical Predicates
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let plan">
+            {{ plan.graphNodesStats.logical_pred_ }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="tables">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            # Tables
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let plan">
+            {{ plan.graphNodesStats.table }}
+          </td>
+        </ng-container>
+
+        <tr
+          mat-header-row
+          *matHeaderRowDef="displayedPlanColumns(); sticky: true"></tr>
+        <tr
+          mat-row
+          *matRowDef="let plan; columns: displayedPlanColumns()"
+          [class]="['planListItem', this.selectedPlan() && this.selectedPlan()!.id == plan.id ? 'selected' : '']"
+          (click)="onPlanSelected(plan)"></tr>
+      </table>
+    </div>
     <div class="leftBottomGrid">
       <div class="flexColumn">
         @if (this.selectedPlan()) {
@@ -42,9 +125,6 @@
   <div class="rightGrid">
     <div class="graphBlock">
       @if(this.selectedFullPlan()) {
-      <!-- <div class="graphButtons">
-
-      </div> -->
       <app-plan-graph
         [graph]="this.selectedFullPlan()"
         [explanation]="this.selectedNodeExplanation()"
@@ -52,19 +132,70 @@
       }
     </div>
     @if (this.selectedNode()) {
-    <mat-list class="nodeInfoList">
-      @for (nodeInfo of this.selectedNodeInfoFields(); track nodeInfo.name) {
-      <mat-list-item>
-        <span class="boldSpan">{{ nodeInfo.name }}: </span>
-        <span>{{ nodeInfo.value }}</span>
-        @if (this.selectedNodeFeatureImportance() && this.selectedNodeFeatureImportance()[nodeInfo.name]) {
-        <span>{{ '\t\t\t\t\t\t\t\t\t\t\t\t' }}</span>
-        <span class="boldSpan">Importance: </span>
-        <span>{{ this.selectedNodeFeatureImportance()[nodeInfo.name] }}</span>
-        }
-      </mat-list-item>
-      }
-    </mat-list>
+    <div class="nodeInfoList">
+      <table
+        mat-table
+        [dataSource]="this.selectedNodeInfoFields()">
+        <ng-container matColumnDef="attr">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            Attribute
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let nodeInfo">
+            <span class="boldSpan">{{ nodeInfo.name }}</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="value">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            Value
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let nodeInfo">
+            {{ nodeInfo.value }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="isFeature">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            Is Feature
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let nodeInfo">
+            {{ nodeInfo.isFeature }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="importance">
+          <th
+            mat-header-cell
+            *matHeaderCellDef>
+            Importance
+          </th>
+          <td
+            mat-cell
+            *matCellDef="let nodeInfo">
+            {{
+              this.selectedNodeFeatureImportance() && this.selectedNodeFeatureImportance()[nodeInfo.name]
+                ? this.selectedNodeFeatureImportance()[nodeInfo.name]
+                : ''
+            }}
+          </td>
+        </ng-container>
+        <tr
+          mat-header-row
+          *matHeaderRowDef="displayedNodeColumns(); sticky: true"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedNodeColumns()"></tr>
+      </table>
+    </div>
     }
   </div>
 </div>

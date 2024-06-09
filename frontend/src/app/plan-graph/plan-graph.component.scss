@@ -3,16 +3,13 @@
 }
 
 .node {
-  elipse {
+  ellipse {
+    transition: stroke-width 0.2s;
     &.hover {
-      fill: rgb(222, 222, 222);
+      stroke-width: 2px;
     }
-
     &.selected {
-      fill: rgb(200, 200, 200);
-      &.hover {
-        fill: rgb(184, 184, 184);
-      }
+      stroke: green;
     }
   }
 }

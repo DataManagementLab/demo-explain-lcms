@@ -51,7 +51,7 @@ def get_plan_explanation(plan_id: int, ml: Annotated[MLHelpers, Depends()]):
 @router.get("/important-features", response_model=ImportantFeaturesResponse)
 def get_important_features(ml: Annotated[MLHelpers, Depends()]):
     features = ml.hyperparameters.node_type_featurization.copy()
-    dict_keys_to_camel(features)
+    # dict_keys_to_camel(features)
     for k in features:
         features[k] = list_values_to_camel(features[k])
     return ImportantFeaturesResponse(features=features)

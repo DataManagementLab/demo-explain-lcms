@@ -1,7 +1,9 @@
+import NodeType from './node-type';
+
 interface GraphNode {
   nodeId: number;
   nodeInfo: {
-    nodeType: string;
+    nodeType: NodeType;
   };
 }
 
