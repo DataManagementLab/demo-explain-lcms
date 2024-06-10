@@ -3,13 +3,14 @@ import numpy as np
 import torch
 
 from config import Settings
+from ml.service import ExplainerType, explainers
 from zero_shot_learned_db.cross_db_benchmark.benchmark_tools.database import DatabaseSystem
 from zero_shot_learned_db.explainers.explain import prepare_model
 from zero_shot_learned_db.explainers.load import FeatureStatistics, HyperParameters, ParsedPlan, WorkloadRun, get_label_norm, load_hyperparameters, load_statistics, read_run
 from zero_shot_learned_db.models.zero_shot_models.zero_shot_model import ZeroShotModel
 
 
-class MLHelpers:
+class MLHelper:
     hyperparameters: HyperParameters
     feature_statistics: FeatureStatistics
     workload_run: WorkloadRun
@@ -54,3 +55,11 @@ class MLHelpers:
             for plan in self.workload_run.parsed_plans
         ]
         print(f"Loaded {len(self.parsed_plans)} plans from {dataset_file}")
+
+    def _assert_loaded(self):
+        assert self.model is not None
+
+    def get_explainer(self, explainer_type: ExplainerType):
+        self._assert_loaded()
+
+        return explainers[explainer_type](self.model)

@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_settings
-from ml.dependencies import MLHelpers
+from ml.dependencies import MLHelper
 from demo.router import router as demo_router
 
 
@@ -16,9 +16,9 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    ml_helpers = MLHelpers()
+    ml_helpers = MLHelper()
     ml_helpers.load(settings)
-    app.dependency_overrides[MLHelpers] = lambda: ml_helpers
+    app.dependency_overrides[MLHelper] = lambda: ml_helpers
     yield
 
 
