@@ -95,12 +95,19 @@
     <div class="leftBottomGrid">
       <div class="flexColumn">
         @if (this.selectedPlan()) {
-        <button
+        <!-- <button
           mat-raised-button
           color="primary"
           (click)="onPredictClick()">
           Predict
-        </button>
+        </button> -->
+        <mat-form-field>
+          <mat-label>Explainer</mat-label>
+          <mat-select [(value)]="selectedExplainer">
+            <mat-option [value]="explainerType.gradient">Gradient</mat-option>
+            <mat-option [value]="explainerType.guidedBackpropagation">Guided Backpropagation</mat-option>
+          </mat-select>
+        </mat-form-field>
         } @if (this.selectedNodePrediction()) {
         <p>
           <span class="boldSpan">Label: </span><span>{{ this.selectedNodePrediction()?.label }}</span>

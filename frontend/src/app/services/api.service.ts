@@ -5,6 +5,7 @@ import FullPlan from './data/full-plan';
 import Prediction from './data/prediction';
 import Explanation from './data/explanation';
 import ImportantFeatures from './data/important-features';
+import ExplainerType from './data/explainer_type';
 
 @Injectable({
   providedIn: 'root',
@@ -26,8 +27,8 @@ export class ApiService {
     return this.httpClient.get<Prediction>(this.baseURL + 'plans/' + planId + '/prediction');
   }
 
-  getExplanation(planId: number) {
-    return this.httpClient.get<Explanation>(this.baseURL + 'plans/' + planId + '/explanation');
+  getExplanation(planId: number, explainerType: ExplainerType) {
+    return this.httpClient.get<Explanation>(this.baseURL + 'plans/' + planId + '/explanation' + '/' + explainerType);
   }
 
   getImportantFeatures() {

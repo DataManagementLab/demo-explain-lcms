@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, Signal, computed, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, Signal, computed, effect, model, signal } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { ApiService } from '../services/api.service';
 import Plan from '../services/data/plan';
@@ -11,11 +11,14 @@ import Explanation from '../services/data/explanation';
 import { sort } from 'd3';
 import ImportantFeatures from '../services/data/important-features';
 import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import ExplainerType from '../services/data/explainer_type';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-main-page',
   standalone: true,
-  imports: [MatListModule, PlanGraphComponent, MatButtonModule, MatTableModule],
+  imports: [MatListModule, PlanGraphComponent, MatButtonModule, MatTableModule, MatSelectModule, MatFormFieldModule],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +32,8 @@ export class MainPageComponent implements OnInit {
   public selectedNodePrediction = signal<Prediction | undefined>(undefined);
   public selectedNodeExplanation = signal<Explanation | undefined>(undefined);
   public importantFeatures = signal<ImportantFeatures | undefined>(undefined);
+  public explainerType = ExplainerType;
+  public selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
 
   public displayedNodeColumns = computed(() => {
     const explanation = this.selectedNodeExplanation();
@@ -116,7 +121,8 @@ export class MainPageComponent implements OnInit {
   onExplainClick() {
     const plan = this.selectedPlan();
     if (plan) {
-      this.apiService.getExplanation(plan.id).subscribe(value => this.selectedNodeExplanation.set(value));
+      this.apiService.getPrediction(plan.id).subscribe(value => this.selectedNodePrediction.set(value));
+      this.apiService.getExplanation(plan.id, this.selectedExplainer()).subscribe(value => this.selectedNodeExplanation.set(value));
     }
   }
 }
