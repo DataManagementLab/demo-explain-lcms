@@ -60,8 +60,8 @@ class PlanFullResponse(PlanResponse):
 
 
 class PredictionResponse(CustomModel):
-    label: float
     prediction: float
+    label: float
 
 
 class ExplanationResponse(CustomModel):
