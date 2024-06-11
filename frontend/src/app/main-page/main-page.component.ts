@@ -17,11 +17,26 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { DecimalPipe, PercentPipe } from '@angular/common';
 import NodeType from '../services/data/node-type';
 import NodeInfoType from '../services/data/node-info-type';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-main-page',
   standalone: true,
-  imports: [MatListModule, PlanGraphComponent, MatButtonModule, MatTableModule, MatSelectModule, MatFormFieldModule, DecimalPipe, PercentPipe],
+  imports: [
+    MatListModule,
+    PlanGraphComponent,
+    MatButtonModule,
+    MatTableModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    DecimalPipe,
+    PercentPipe,
+    MatRadioModule,
+    MatDividerModule,
+    MatProgressSpinnerModule,
+  ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -147,6 +162,10 @@ export class MainPageComponent implements OnInit {
     return nodeImportances.find(n => n.node.nodeId == selectedNode.nodeId);
   });
 
+  public isLoading = computed(() => {
+    return this.selectedPlan() && !(this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation());
+  });
+
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
@@ -155,17 +174,34 @@ export class MainPageComponent implements OnInit {
   }
 
   onPlanSelected(plan: Plan) {
+    if (this.selectedPlan()?.id === plan.id) {
+      return;
+    }
+
     this.selectedPlan.set(plan);
+    this.selectedFullPlan.set(undefined);
     this.selectedNode.set(undefined);
     this.selectedPlanPrediction.set(undefined);
     this.selectedPlanExplanation.set(undefined);
     if (plan) {
-      this.apiService.getPlan(plan.id).subscribe(value => this.selectedFullPlan.set(value));
+      this.apiService.getPlan(plan.id).subscribe(value => {
+        this.selectedFullPlan.set(value);
+        this.apiService.getPrediction(plan.id).subscribe(value => this.selectedPlanPrediction.set(value));
+        this.apiService.getExplanation(plan.id, this.selectedExplainer()).subscribe(value => this.selectedPlanExplanation.set(value));
+      });
     }
   }
 
   onNodeSelected(node: GraphNode) {
     this.selectedNode.set(node);
+  }
+
+  onExplainerSelected(explainerType: ExplainerType) {
+    this.selectedExplainer.set(explainerType);
+    const plan = this.selectedPlan();
+    if (plan) {
+      this.apiService.getExplanation(plan.id, explainerType).subscribe(value => this.selectedPlanExplanation.set(value));
+    }
   }
 
   onPredictClick() {

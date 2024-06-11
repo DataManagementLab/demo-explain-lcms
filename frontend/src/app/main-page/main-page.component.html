@@ -100,52 +100,62 @@
           (click)="onPredictClick()">
           Predict
         </button> -->
-        <mat-form-field subscriptSizing="dynamic">
+        <!-- <mat-form-field subscriptSizing="dynamic">
           <mat-label>Explainer</mat-label>
           <mat-select [(value)]="selectedExplainer">
             <mat-option [value]="explainerType.gradient">Gradient</mat-option>
             <mat-option [value]="explainerType.guidedBackpropagation">Guided Backpropagation</mat-option>
           </mat-select>
-        </mat-form-field>
-        <button
+        </mat-form-field> -->
+        <mat-radio-group
+          class="flexColumn"
+          [value]="selectedExplainer()"
+          (change)="onExplainerSelected($event.value)">
+          <mat-radio-button [value]="explainerType.gradient">Gradient</mat-radio-button>
+          <mat-radio-button [value]="explainerType.guidedBackpropagation">Guided Backpropagation</mat-radio-button>
+        </mat-radio-group>
+        <!-- <button
           mat-raised-button
           color="primary"
           (click)="onExplainClick()">
           Explain
-        </button>
+        </button> -->
       }
-      @if (this.selectedPlanPrediction(); as prediction) {
-        <div class="flexColumn">
-          <p>
-            <span class="boldSpan">Label: </span>
-            <span>{{ prediction.label | number: '1.0-2' }}</span>
-          </p>
-          <p>
-            <span class="boldSpan">Prediction: </span>
-            <span>{{ prediction.prediction | number: '1.0-2' }}</span>
-          </p>
-          <p>
-            <span class="boldSpan">QError: </span>
-            <span>{{ prediction.qerror | number: '1.0-2' }}</span>
-          </p>
-        </div>
-      }
-      @if (this.nodeImportancesSorted()) {
-        <div class="flexColumn">
-          @for (node of this.nodeImportancesSorted(); track node.node.nodeId) {
-            @if (node.importance) {
-              <p
-                [class]="['nodeImportanceItem', this.selectedNode() && this.selectedNode()!.nodeId == node.node.nodeId ? 'selected' : '']"
-                (click)="selectedNode.set(node.node)">
-                <span class="boldSpan">{{ node.node.label }}: </span>
-                <span>{{ node.importance | percent }}</span>
-                <span class="boldSpan"> = </span>
-                <span>{{ node.value | number: '1.0-2' }}</span>
-              </p>
+      <div class="flexColumn">
+        @if (this.selectedPlanPrediction(); as prediction) {
+          <div class="flexColumnMaxSize">
+            <p>
+              <span class="boldSpan">Label: </span>
+              <span>{{ prediction.label | number: '1.0-2' }}</span>
+            </p>
+            <p>
+              <span class="boldSpan">Prediction: </span>
+              <span>{{ prediction.prediction | number: '1.0-2' }}</span>
+            </p>
+            <p>
+              <span class="boldSpan">QError: </span>
+              <span>{{ prediction.qerror | number: '1.0-2' }}</span>
+            </p>
+          </div>
+        }
+        <mat-divider></mat-divider>
+        @if (this.nodeImportancesSorted()) {
+          <div class="flexColumn">
+            @for (node of this.nodeImportancesSorted(); track node.node.nodeId) {
+              @if (node.importance) {
+                <p
+                  [class]="['nodeImportanceItem', this.selectedNode() && this.selectedNode()!.nodeId == node.node.nodeId ? 'selected' : '']"
+                  (click)="selectedNode.set(node.node)">
+                  <span class="boldSpan">{{ node.node.label }}: </span>
+                  <span>{{ node.importance | percent }}</span>
+                  <span class="boldSpan"> = </span>
+                  <span>{{ node.value | number: '1.0-2' }}</span>
+                </p>
+              }
             }
-          }
-        </div>
-      }
+          </div>
+        }
+      </div>
     </div>
   </div>
   <div class="rightGrid">
@@ -231,4 +241,7 @@
       </div>
     }
   </div>
+  @if (isLoading()) {
+    <mat-spinner></mat-spinner>
+  }
 </div>
