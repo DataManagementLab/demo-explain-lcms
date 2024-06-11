@@ -114,15 +114,19 @@
           Explain
         </button>
       }
-      @if (this.selectedPlanPrediction()) {
+      @if (this.selectedPlanPrediction(); as prediction) {
         <div class="flexColumn">
           <p>
             <span class="boldSpan">Label: </span>
-            <span>{{ this.selectedPlanPrediction()?.label | number: '1.0-2' }}</span>
+            <span>{{ prediction.label | number: '1.0-2' }}</span>
           </p>
           <p>
             <span class="boldSpan">Prediction: </span>
-            <span>{{ this.selectedPlanPrediction()?.prediction | number: '1.0-2' }}</span>
+            <span>{{ prediction.prediction | number: '1.0-2' }}</span>
+          </p>
+          <p>
+            <span class="boldSpan">QError: </span>
+            <span>{{ prediction.qerror | number: '1.0-2' }}</span>
           </p>
         </div>
       }

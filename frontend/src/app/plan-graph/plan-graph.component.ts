@@ -155,7 +155,7 @@ export class PlanGraphComponent implements AfterViewInit {
       .selectAll('ellipse')
       .attr('fill', '#DE524E')
       .attr('fill-opacity', (d: any) => {
-        return parseFloat(value[d.parent.key]);
+        return parseFloat(value[d.parent.key]) * 2;
       });
   }
 }
