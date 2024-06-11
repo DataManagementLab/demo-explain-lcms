@@ -12,13 +12,16 @@ import { sort } from 'd3';
 import ImportantFeatures from '../services/data/important-features';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
-import ExplainerType from '../services/data/explainer_type';
+import ExplainerType from '../services/data/explainer-type';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { DecimalPipe, PercentPipe } from '@angular/common';
+import NodeType from '../services/data/node-type';
+import NodeInfoType from '../services/data/node-info-type';
 
 @Component({
   selector: 'app-main-page',
   standalone: true,
-  imports: [MatListModule, PlanGraphComponent, MatButtonModule, MatTableModule, MatSelectModule, MatFormFieldModule],
+  imports: [MatListModule, PlanGraphComponent, MatButtonModule, MatTableModule, MatSelectModule, MatFormFieldModule, DecimalPipe, PercentPipe],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,14 +32,14 @@ export class MainPageComponent implements OnInit {
   public selectedPlan = signal<Plan | undefined>(undefined);
   public selectedFullPlan = signal<FullPlan | undefined>(undefined);
   public selectedNode = signal<GraphNode | undefined>(undefined);
-  public selectedNodePrediction = signal<Prediction | undefined>(undefined);
-  public selectedNodeExplanation = signal<Explanation | undefined>(undefined);
+  public selectedPlanPrediction = signal<Prediction | undefined>(undefined);
+  public selectedPlanExplanation = signal<Explanation | undefined>(undefined);
   public importantFeatures = signal<ImportantFeatures | undefined>(undefined);
   public explainerType = ExplainerType;
   public selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
 
   public displayedNodeColumns = computed(() => {
-    const explanation = this.selectedNodeExplanation();
+    const explanation = this.selectedPlanExplanation();
     const cols = ['attr', 'value'];
     if (explanation) {
       cols.push('importance');
@@ -45,49 +48,103 @@ export class MainPageComponent implements OnInit {
     return cols;
   });
   public selectedNodeInfoFields = computed(() => {
-    let nodeInfo = this.selectedNode()?.nodeInfo as any;
+    let nodeInfo = structuredClone(this.selectedNode()?.nodeInfo);
     const importantFeatures = this.importantFeatures();
-    if (nodeInfo) {
-      if ('planParameters' in nodeInfo) {
-        nodeInfo = Object.assign(nodeInfo, nodeInfo.planParameters);
-        delete nodeInfo.planParameters;
-      }
-      if ('columnStats' in nodeInfo) {
-        nodeInfo = Object.assign(nodeInfo, nodeInfo.columnStats);
-        delete nodeInfo.columnStats;
-      }
-      for (const prop in nodeInfo) {
-        if (nodeInfo[prop] == null || nodeInfo[prop] == '') {
-          delete nodeInfo[prop];
-        }
-      }
-      let values = Object.keys(nodeInfo).map(k => ({
-        name: k,
-        value: nodeInfo[k],
-        isFeature: false,
-      }));
-
-      if (importantFeatures) {
-        values = values.map(v => ({
-          name: v.name,
-          value: v.value,
-          isFeature: importantFeatures.features[nodeInfo.nodeType].includes(v.name),
-        }));
-        values = sort(values, v => v.isFeature).reverse();
-      }
-
-      return values;
+    if (!nodeInfo || !importantFeatures) {
+      return [];
     }
-    return [];
+    if ('planParameters' in nodeInfo) {
+      nodeInfo = Object.assign(nodeInfo, nodeInfo['planParameters']) as NodeInfoType;
+      delete nodeInfo['planParameters'];
+    }
+    if ('columnStats' in nodeInfo) {
+      const colStats = structuredClone(nodeInfo['columnStats']);
+      delete colStats['nodeType'];
+      nodeInfo = Object.assign(nodeInfo, colStats) as NodeInfoType;
+      delete nodeInfo['columnStats'];
+    }
+    for (const prop in nodeInfo) {
+      if (nodeInfo[prop] == null || nodeInfo[prop] === '' || (nodeInfo[prop] instanceof Array && nodeInfo[prop].length == 0)) {
+        delete nodeInfo[prop];
+      }
+    }
+
+    const features = importantFeatures.features[nodeInfo.nodeType as NodeType];
+    const values = Object.keys(nodeInfo).map(k => ({
+      name: k,
+      value: nodeInfo[k],
+      isFeature: features.includes(k),
+    }));
+
+    const importance = this.selectedNodeFeatureImportance();
+    if (!importance) {
+      return sort(values, v => v.isFeature).reverse();
+    }
+
+    const valuesWithImportance = values.map(v => ({
+      name: v.name,
+      value: v.value,
+      isFeature: v.isFeature,
+      importance: v.name in importance ? importance[v.name] : undefined,
+    }));
+
+    return sort(valuesWithImportance, (v1, v2) => {
+      const value1 = v1.importance;
+      const value2 = v2.importance;
+      if (value1 === value2) {
+        return 0;
+      }
+
+      if (value1 === undefined) {
+        return 1;
+      }
+      if (value2 === undefined) {
+        return -1;
+      }
+
+      if (value2 > value1) {
+        return 1;
+      }
+      if (value1 > value2) {
+        return -1;
+      }
+      return 0;
+    });
   });
 
   public selectedNodeFeatureImportance = computed(() => {
     const node = this.selectedNode();
-    const explanation = this.selectedNodeExplanation();
+    const explanation = this.selectedPlanExplanation();
     if (!node || !explanation) {
       return undefined;
     }
-    return explanation.featureImportance[String(node.nodeId)];
+    return explanation.featureImportance[node.nodeId];
+  });
+
+  public nodeImportancesSorted = computed(() => {
+    const explanation = this.selectedPlanExplanation();
+    const plan = this.selectedFullPlan();
+    const prediction = this.selectedPlanPrediction();
+    if (!plan || !explanation || !prediction) {
+      return;
+    }
+    const res = plan.graphNodes
+      .filter(node => node.nodeId in explanation.nodeImportance)
+      .map(node => ({
+        node: node,
+        importance: explanation.nodeImportance[node.nodeId],
+        value: prediction.prediction * explanation.nodeImportance[node.nodeId],
+      }));
+    return sort(res, value => value.importance).reverse();
+  });
+
+  public selectedNodeImportance = computed(() => {
+    const nodeImportances = this.nodeImportancesSorted();
+    const selectedNode = this.selectedNode();
+    if (!nodeImportances || !selectedNode) {
+      return;
+    }
+    return nodeImportances.find(n => n.node.nodeId == selectedNode.nodeId);
   });
 
   constructor(private apiService: ApiService) {}
@@ -100,8 +157,8 @@ export class MainPageComponent implements OnInit {
   onPlanSelected(plan: Plan) {
     this.selectedPlan.set(plan);
     this.selectedNode.set(undefined);
-    this.selectedNodePrediction.set(undefined);
-    this.selectedNodeExplanation.set(undefined);
+    this.selectedPlanPrediction.set(undefined);
+    this.selectedPlanExplanation.set(undefined);
     if (plan) {
       this.apiService.getPlan(plan.id).subscribe(value => this.selectedFullPlan.set(value));
     }
@@ -114,15 +171,15 @@ export class MainPageComponent implements OnInit {
   onPredictClick() {
     const plan = this.selectedPlan();
     if (plan) {
-      this.apiService.getPrediction(plan.id).subscribe(value => this.selectedNodePrediction.set(value));
+      this.apiService.getPrediction(plan.id).subscribe(value => this.selectedPlanPrediction.set(value));
     }
   }
 
   onExplainClick() {
     const plan = this.selectedPlan();
     if (plan) {
-      this.apiService.getPrediction(plan.id).subscribe(value => this.selectedNodePrediction.set(value));
-      this.apiService.getExplanation(plan.id, this.selectedExplainer()).subscribe(value => this.selectedNodeExplanation.set(value));
+      this.apiService.getPrediction(plan.id).subscribe(value => this.selectedPlanPrediction.set(value));
+      this.apiService.getExplanation(plan.id, this.selectedExplainer()).subscribe(value => this.selectedPlanExplanation.set(value));
     }
   }
 }

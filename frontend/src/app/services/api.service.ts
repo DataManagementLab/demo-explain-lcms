@@ -5,7 +5,7 @@ import FullPlan from './data/full-plan';
 import Prediction from './data/prediction';
 import Explanation from './data/explanation';
 import ImportantFeatures from './data/important-features';
-import ExplainerType from './data/explainer_type';
+import ExplainerType from './data/explainer-type';
 
 @Injectable({
   providedIn: 'root',

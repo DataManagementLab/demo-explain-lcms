@@ -24,7 +24,14 @@ def get_plan(plan_id: int, ml: Annotated[MLHelper, Depends()]):
         id=plan_id,
         graph_nodes_stats=plan.graph_nodes_stats,
         dot_graph=plan.get_dot(),
-        graph_nodes=[GraphNodeResponse(node_id=n.id_in_nx_graph, node_info=n.node) for n in plan.graph_nodes],
+        graph_nodes=[
+            GraphNodeResponse(
+                node_id=n.id_in_nx_graph,
+                label=n.node.get_label(),
+                node_info=n.node,
+            )
+            for n in plan.graph_nodes
+        ],
         label=plan.plan.plan_runtime,
     )
 

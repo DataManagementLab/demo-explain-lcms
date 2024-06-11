@@ -50,6 +50,7 @@ class PlanResponse(CustomModel):
 
 class GraphNodeResponse(CustomModel):
     node_id: int
+    label: str
     node_info: Plan | FilterColumn | LogicalPredicate | TableStats | ColumnStats | OutputColumn
 
 
@@ -70,4 +71,4 @@ class ExplanationResponse(CustomModel):
 
 
 class ImportantFeaturesResponse(CustomModel):
-    features: dict[str, list[str]]
+    features: dict[base_models.NodeType, list[str]]

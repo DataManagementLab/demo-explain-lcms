@@ -48,6 +48,12 @@ p {
   overflow: auto;
 }
 
+.nodeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .leftGrid {
   display: grid;
   grid-template-rows: minmax(100px, 60%) minmax(100px, 40%);
@@ -58,12 +64,11 @@ p {
 .leftBottomGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: minmax(100px, 100%);
-
+  grid-template-rows: min-content 1fr;
   gap: 16px;
 
   button {
-    margin-bottom: 16px;
+    align-self: center;
   }
 }
 
@@ -75,6 +80,9 @@ p {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-left: 8px;
+  max-height: 100%;
+  overflow-y: auto;
 
   p {
     text-align: start;

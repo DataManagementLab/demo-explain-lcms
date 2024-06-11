@@ -7,5 +7,13 @@
   "trailingComma": "es5",
   "bracketSameLine": true,
   "arrowParens": "avoid",
-  "singleAttributePerLine": true
+  "singleAttributePerLine": true,
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": {
+        "parser": "angular"
+      }
+    }
+  ]
 }

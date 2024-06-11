@@ -93,116 +93,135 @@
       </table>
     </div>
     <div class="leftBottomGrid">
-      <div class="flexColumn">
-        @if (this.selectedPlan()) {
+      @if (this.selectedPlan()) {
         <!-- <button
           mat-raised-button
           color="primary"
           (click)="onPredictClick()">
           Predict
         </button> -->
-        <mat-form-field>
+        <mat-form-field subscriptSizing="dynamic">
           <mat-label>Explainer</mat-label>
           <mat-select [(value)]="selectedExplainer">
             <mat-option [value]="explainerType.gradient">Gradient</mat-option>
             <mat-option [value]="explainerType.guidedBackpropagation">Guided Backpropagation</mat-option>
           </mat-select>
         </mat-form-field>
-        } @if (this.selectedNodePrediction()) {
-        <p>
-          <span class="boldSpan">Label: </span><span>{{ this.selectedNodePrediction()?.label }}</span>
-        </p>
-        <p>
-          <span class="boldSpan">Prediction: </span><span>{{ this.selectedNodePrediction()?.prediction }}</span>
-        </p>
-        }
-      </div>
-      <div class="flexColumn">
-        @if (this.selectedPlan()) {
         <button
           mat-raised-button
           color="primary"
           (click)="onExplainClick()">
           Explain
         </button>
-        }
-      </div>
+      }
+      @if (this.selectedPlanPrediction()) {
+        <div class="flexColumn">
+          <p>
+            <span class="boldSpan">Label: </span>
+            <span>{{ this.selectedPlanPrediction()?.label | number: '1.0-2' }}</span>
+          </p>
+          <p>
+            <span class="boldSpan">Prediction: </span>
+            <span>{{ this.selectedPlanPrediction()?.prediction | number: '1.0-2' }}</span>
+          </p>
+        </div>
+      }
+      @if (this.nodeImportancesSorted()) {
+        <div class="flexColumn">
+          @for (node of this.nodeImportancesSorted(); track node.node.nodeId) {
+            @if (node.importance) {
+              <p>
+                <span class="boldSpan">{{ node.node.label }}: </span>
+                <span>{{ node.importance | percent }}</span>
+                <span class="boldSpan"> = </span>
+                <span>{{ node.value | number: '1.0-2' }}</span>
+              </p>
+            }
+          }
+        </div>
+      }
     </div>
   </div>
   <div class="rightGrid">
     <div class="graphBlock">
-      @if(this.selectedFullPlan()) {
-      <app-plan-graph
-        [graph]="this.selectedFullPlan()"
-        [explanation]="this.selectedNodeExplanation()"
-        (onNodeSelected)="onNodeSelected($event)"></app-plan-graph>
+      @if (this.selectedFullPlan()) {
+        <app-plan-graph
+          [graph]="this.selectedFullPlan()"
+          [explanation]="this.selectedPlanExplanation()"
+          (onNodeSelected)="onNodeSelected($event)"></app-plan-graph>
       }
     </div>
     @if (this.selectedNode()) {
-    <div class="nodeInfoList">
-      <table
-        mat-table
-        [dataSource]="this.selectedNodeInfoFields()">
-        <ng-container matColumnDef="attr">
-          <th
-            mat-header-cell
-            *matHeaderCellDef>
-            Attribute
-          </th>
-          <td
-            mat-cell
-            *matCellDef="let nodeInfo">
-            <span class="boldSpan">{{ nodeInfo.name }}</span>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="value">
-          <th
-            mat-header-cell
-            *matHeaderCellDef>
-            Value
-          </th>
-          <td
-            mat-cell
-            *matCellDef="let nodeInfo">
-            {{ nodeInfo.value }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="isFeature">
-          <th
-            mat-header-cell
-            *matHeaderCellDef>
-            Is Feature
-          </th>
-          <td
-            mat-cell
-            *matCellDef="let nodeInfo">
-            {{ nodeInfo.isFeature }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="importance">
-          <th
-            mat-header-cell
-            *matHeaderCellDef>
-            Importance
-          </th>
-          <td
-            mat-cell
-            *matCellDef="let nodeInfo">
-            {{
-              this.selectedNodeFeatureImportance() && this.selectedNodeFeatureImportance()[nodeInfo.name]
-                ? this.selectedNodeFeatureImportance()[nodeInfo.name]
-                : ''
-            }}
-          </td>
-        </ng-container>
-        <tr
-          mat-header-row
-          *matHeaderRowDef="displayedNodeColumns(); sticky: true"></tr>
-        <tr
-          mat-row
-          *matRowDef="let row; columns: displayedNodeColumns()"></tr>
-      </table>
-    </div>
+      <div class="nodeInfo">
+        @if (this.selectedNodeImportance(); as nodeImportance) {
+          <p>
+            <span class="boldSpan">{{ nodeImportance.node.label }}: </span>
+            <span>{{ nodeImportance.importance | percent }}</span>
+            <span class="boldSpan"> = </span>
+            <span>{{ nodeImportance.value | number: '1.0-2' }}</span>
+          </p>
+        }
+        <div class="nodeInfoList">
+          <table
+            mat-table
+            [dataSource]="this.selectedNodeInfoFields()">
+            <ng-container matColumnDef="attr">
+              <th
+                mat-header-cell
+                *matHeaderCellDef>
+                Attribute
+              </th>
+              <td
+                mat-cell
+                *matCellDef="let nodeInfo">
+                <span class="boldSpan">{{ nodeInfo.name }}</span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="value">
+              <th
+                mat-header-cell
+                *matHeaderCellDef>
+                Value
+              </th>
+              <td
+                mat-cell
+                *matCellDef="let nodeInfo">
+                {{ nodeInfo.value }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="isFeature">
+              <th
+                mat-header-cell
+                *matHeaderCellDef>
+                Is Feature
+              </th>
+              <td
+                mat-cell
+                *matCellDef="let nodeInfo">
+                {{ nodeInfo.isFeature }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="importance">
+              <th
+                mat-header-cell
+                *matHeaderCellDef>
+                Importance
+              </th>
+              <td
+                mat-cell
+                *matCellDef="let nodeInfo">
+                {{ nodeInfo.importance ? (nodeInfo.importance | percent) : '' }}
+              </td>
+            </ng-container>
+            <tr
+              mat-header-row
+              *matHeaderRowDef="displayedNodeColumns(); sticky: true"></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: displayedNodeColumns()"></tr>
+          </table>
+        </div>
+      </div>
     }
   </div>
 </div>
