@@ -88,3 +88,11 @@ p {
     text-align: start;
   }
 }
+
+p.nodeImportanceItem {
+  padding: 4px;
+  border: 1px solid transparent;
+  &.selected {
+    border: 1px solid green;
+  }
+}

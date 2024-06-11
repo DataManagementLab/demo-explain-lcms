@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, ViewEncapsulation, effect, model } from '@angular/core';
 import FullPlan from '../services/data/full-plan';
 
 import * as d3 from 'd3';
@@ -38,7 +38,27 @@ export class PlanGraphComponent implements AfterViewInit {
     this.drawImportance(value?.nodeImportance);
   }
 
-  @Output() onNodeSelected = new EventEmitter<GraphNode>();
+  selectedNode = model<GraphNode | undefined>();
+
+  constructor() {
+    effect(() => {
+      const selectedNode = this.selectedNode();
+      if (!selectedNode) {
+        return;
+      }
+      const graphElement = d3.selectAll('#graph0');
+      const nodes = graphElement.selectAll('.node');
+      const nodeToSelect = nodes.filter(e => (e as any).key == selectedNode.nodeId).selectAll('ellipse');
+      if (nodeToSelect.classed('selected')) {
+        return;
+      }
+      nodes //
+        .selectAll('ellipse')
+        .classed('selected', false);
+      nodeToSelect //
+        .classed('selected', true);
+    });
+  }
 
   ngAfterViewInit(): void {
     this.viewInit = true;
@@ -101,7 +121,7 @@ export class PlanGraphComponent implements AfterViewInit {
 
       if (this.plan) {
         const graphNode = this.plan.graphNodes.find(n => n.nodeId == parseInt(nodeKey));
-        this.onNodeSelected.emit(graphNode);
+        this.selectedNode.set(graphNode);
       }
     };
 

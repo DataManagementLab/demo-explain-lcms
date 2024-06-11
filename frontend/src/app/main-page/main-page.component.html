@@ -130,7 +130,9 @@
         <div class="flexColumn">
           @for (node of this.nodeImportancesSorted(); track node.node.nodeId) {
             @if (node.importance) {
-              <p>
+              <p
+                [class]="['nodeImportanceItem', this.selectedNode() && this.selectedNode()!.nodeId == node.node.nodeId ? 'selected' : '']"
+                (click)="selectedNode.set(node.node)">
                 <span class="boldSpan">{{ node.node.label }}: </span>
                 <span>{{ node.importance | percent }}</span>
                 <span class="boldSpan"> = </span>
@@ -148,19 +150,20 @@
         <app-plan-graph
           [graph]="this.selectedFullPlan()"
           [explanation]="this.selectedPlanExplanation()"
-          (onNodeSelected)="onNodeSelected($event)"></app-plan-graph>
+          [(selectedNode)]="selectedNode"></app-plan-graph>
       }
     </div>
-    @if (this.selectedNode()) {
+    @if (this.selectedNode(); as selectedNode) {
       <div class="nodeInfo">
-        @if (this.selectedNodeImportance(); as nodeImportance) {
-          <p>
-            <span class="boldSpan">{{ nodeImportance.node.label }}: </span>
+        <p>
+          <span class="boldSpan">{{ selectedNode.label }}</span>
+          @if (this.selectedNodeImportance(); as nodeImportance) {
+            <span>: </span>
             <span>{{ nodeImportance.importance | percent }}</span>
             <span class="boldSpan"> = </span>
             <span>{{ nodeImportance.value | number: '1.0-2' }}</span>
-          </p>
-        }
+          }
+        </p>
         <div class="nodeInfoList">
           <table
             mat-table

@@ -6,9 +6,10 @@
   ellipse {
     transition: stroke-width 0.2s;
     &.hover {
-      stroke-width: 2px;
+      stroke-width: 6px;
     }
     &.selected {
+      stroke-width: 5px;
       stroke: green;
     }
   }
