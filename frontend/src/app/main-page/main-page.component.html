@@ -137,8 +137,8 @@
               <span>{{ prediction.qerror | number: '1.0-2' }}</span>
             </p>
           </div>
+          <mat-divider></mat-divider>
         }
-        <mat-divider></mat-divider>
         @if (this.nodeImportancesSorted()) {
           <div class="flexColumn">
             @for (node of this.nodeImportancesSorted(); track node.node.nodeId) {

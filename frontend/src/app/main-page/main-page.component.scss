@@ -98,6 +98,7 @@ p {
 p.nodeImportanceItem {
   padding: 4px;
   border: 1px solid transparent;
+  transition: border-color 0.2s;
   &.selected {
     border: 1px solid green;
   }

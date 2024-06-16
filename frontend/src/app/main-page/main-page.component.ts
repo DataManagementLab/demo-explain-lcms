@@ -184,11 +184,9 @@ export class MainPageComponent implements OnInit {
     this.selectedPlanPrediction.set(undefined);
     this.selectedPlanExplanation.set(undefined);
     if (plan) {
-      this.apiService.getPlan(plan.id).subscribe(value => {
-        this.selectedFullPlan.set(value);
-        this.apiService.getPrediction(plan.id).subscribe(value => this.selectedPlanPrediction.set(value));
-        this.apiService.getExplanation(plan.id, this.selectedExplainer()).subscribe(value => this.selectedPlanExplanation.set(value));
-      });
+      this.apiService.getPlan(plan.id).subscribe(value => this.selectedFullPlan.set(value));
+      this.apiService.getPrediction(plan.id).subscribe(value => this.selectedPlanPrediction.set(value));
+      this.apiService.getExplanation(plan.id, this.selectedExplainer()).subscribe(value => this.selectedPlanExplanation.set(value));
     }
   }
 

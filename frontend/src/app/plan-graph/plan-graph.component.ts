@@ -17,6 +17,7 @@ import Explanation from '../services/data/explanation';
 export class PlanGraphComponent implements AfterViewInit {
   private viewInit = false;
   private plan: FullPlan | undefined;
+  private _explanation: Explanation | undefined;
 
   private div: HTMLDivElement | undefined;
   @ViewChild('graphDiv') divRef: ElementRef | undefined;
@@ -35,7 +36,10 @@ export class PlanGraphComponent implements AfterViewInit {
   }
 
   @Input() set explanation(value: Explanation | undefined) {
-    this.drawImportance(value?.nodeImportance);
+    this._explanation = value;
+    if (value && this.viewInit) {
+      this.drawImportance();
+    }
   }
 
   selectedNode = model<GraphNode | undefined>();
@@ -67,6 +71,7 @@ export class PlanGraphComponent implements AfterViewInit {
     }
     if (this.plan) {
       this.drawGraph();
+      this.drawImportance();
     }
   }
 
@@ -91,7 +96,10 @@ export class PlanGraphComponent implements AfterViewInit {
         if (d.tag == 'polygon' && d.parent.attributes.class == 'graph') d.attributes.fill = 'transparent';
       })
       .renderDot(this.plan.dotGraph)
-      .on('end', () => this.setInteractions());
+      .on('end', () => {
+        this.setInteractions();
+        this.drawImportance();
+      });
   }
 
   setInteractions() {
@@ -138,13 +146,13 @@ export class PlanGraphComponent implements AfterViewInit {
     });
   }
 
-  drawImportance(value: any) {
+  drawImportance() {
     if (!this.graphviz) {
       return;
     }
     const graphElement = d3.selectAll('#graph0');
     const nodes = graphElement.selectAll('.node');
-
+    const value = this._explanation?.nodeImportance;
     if (!value) {
       nodes.selectAll('ellipse').attr('fill', '#FFFFFF');
       return;
@@ -155,7 +163,7 @@ export class PlanGraphComponent implements AfterViewInit {
       .selectAll('ellipse')
       .attr('fill', '#DE524E')
       .attr('fill-opacity', (d: any) => {
-        return parseFloat(value[d.parent.key]) * 2;
+        return value[d.parent.key] * 2;
       });
   }
 }
