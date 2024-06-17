@@ -2,7 +2,7 @@ from pydantic import Field
 from pydantic.json_schema import SkipJsonSchema
 from custom_model import CustomModel
 
-from zero_shot_learned_db.explainers.evaluation import MostImportantNodeEvaluation
+from zero_shot_learned_db.explainers.evaluation import CostAccuracyEvaluation, CostEvaluation, MostImportantNodeEvaluation
 import zero_shot_learned_db.explainers.load as base_models
 
 # -----------------
@@ -84,3 +84,12 @@ class FidelityEvaluationResponse(CustomModel):
 
 class MostImportantNodeEvaluationRespose(CustomModel, MostImportantNodeEvaluation):
     pass
+
+
+class CostEvaluationResponse(CostEvaluation):
+    pass
+
+
+class CostAccuracyEvaluationResponse(CostAccuracyEvaluation):
+    actual_costs: list[CostEvaluationResponse]
+    explanation_costs: list[CostEvaluationResponse]

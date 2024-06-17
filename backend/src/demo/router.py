@@ -2,12 +2,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status as status_code
 
 from demo.dependencies import get_plan
-from demo.schemas import ExplanationResponse, FidelityEvaluationResponse, GraphNodeResponse, ImportantFeaturesResponse, MostImportantNodeEvaluationRespose, PlanFullResponse, PlanResponse, PredictionResponse
+from demo.schemas import CostAccuracyEvaluationResponse, ExplanationResponse, FidelityEvaluationResponse, GraphNodeResponse, ImportantFeaturesResponse, MostImportantNodeEvaluationRespose, PlanFullResponse, PlanResponse, PredictionResponse
 from demo.service import round_explanation_values
 from demo.utils import dict_keys_to_camel, list_values_to_camel
 from ml.dependencies import MLHelper
 from ml.service import ExplainerType
-from zero_shot_learned_db.explainers.evaluation import evaluation_fidelity_plus, most_important_node_evaluation
+from zero_shot_learned_db.explainers.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
 from zero_shot_learned_db.explainers.load import ParsedPlan
 
 
@@ -83,10 +83,10 @@ def get_most_important_node_evaluation(plan: Annotated[ParsedPlan, Depends(get_p
     return most_important_node_evaluation(explainer, plan)
 
 
-@router.get("/plans/{plan_id}/explanation/{explainer_type}/evaluation/cost", response_model=FidelityEvaluationResponse)
-def get_score_evaluation(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
+@router.get("/plans/{plan_id}/explanation/{explainer_type}/evaluation/cost", response_model=CostAccuracyEvaluationResponse)
+def get_cost_evaluation(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
     if explainer_type == ExplainerType.BASE:
         raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Base explainer is not supported")
 
     explainer = ml.get_explainer(explainer_type)
-    return evaluation_fidelity_plus(explainer, plan)
+    return cost_accuracy_evaluation(explainer, plan)
