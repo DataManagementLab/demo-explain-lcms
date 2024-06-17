@@ -2,6 +2,7 @@ from pydantic import Field
 from pydantic.json_schema import SkipJsonSchema
 from custom_model import CustomModel
 
+from zero_shot_learned_db.explainers.evaluation import MostImportantNodeEvaluation
 import zero_shot_learned_db.explainers.load as base_models
 
 # -----------------
@@ -79,3 +80,7 @@ class FidelityEvaluationResponse(CustomModel):
     normal_output: PredictionResponse
     masked_output: PredictionResponse
     score: float
+
+
+class MostImportantNodeEvaluationRespose(CustomModel, MostImportantNodeEvaluation):
+    pass
