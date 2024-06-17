@@ -1,11 +1,14 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status as status_code
 
-from demo.schemas import ExplanationResponse, GraphNodeResponse, ImportantFeaturesResponse, PlanFullResponse, PlanResponse, PredictionResponse
+from demo.dependencies import get_plan
+from demo.schemas import ExplanationResponse, FidelityEvaluationResponse, GraphNodeResponse, ImportantFeaturesResponse, PlanFullResponse, PlanResponse, PredictionResponse
 from demo.service import round_explanation_values
 from demo.utils import dict_keys_to_camel, list_values_to_camel
 from ml.dependencies import MLHelper
 from ml.service import ExplainerType
+from zero_shot_learned_db.explainers.evaluation import evaluation_fidelity_plus
+from zero_shot_learned_db.explainers.load import ParsedPlan
 
 
 router = APIRouter(tags=["demo"])
@@ -17,11 +20,9 @@ def get_plans(ml: Annotated[MLHelper, Depends()]):
 
 
 @router.get("/plans/{plan_id}", response_model=PlanFullResponse)
-def get_plan(plan_id: int, ml: Annotated[MLHelper, Depends()]):
-    plan = ml.parsed_plans[plan_id]
-    plan.prepare_plan_for_inference()
+def get_plan_request(plan: Annotated[ParsedPlan, Depends(get_plan)]):
     return PlanFullResponse(
-        id=plan_id,
+        id=plan.id,
         graph_nodes_stats=plan.graph_nodes_stats,
         dot_graph=plan.get_dot(),
         graph_nodes=[
@@ -37,20 +38,16 @@ def get_plan(plan_id: int, ml: Annotated[MLHelper, Depends()]):
 
 
 @router.get("/plans/{plan_id}/prediction", response_model=PredictionResponse)
-def get_plan_prediction(plan_id: int, ml: Annotated[MLHelper, Depends()]):
-    plan = ml.parsed_plans[plan_id]
-    plan.prepare_plan_for_inference()
+def get_plan_prediction(plan: Annotated[ParsedPlan, Depends(get_plan)], ml: Annotated[MLHelper, Depends()]):
     explainer = ml.get_explainer(ExplainerType.BASE)
     return explainer.predict(plan)
 
 
 @router.get("/plans/{plan_id}/explanation/{explainer_type}", response_model=ExplanationResponse)
-def get_plan_explanation(plan_id: int, explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
+def get_plan_explanation(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
     if explainer_type == ExplainerType.BASE:
-        raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Base explainer is not allowed")
+        raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Base explainer is not supported")
 
-    plan = ml.parsed_plans[plan_id]
-    plan.prepare_plan_for_inference()
     explainer = ml.get_explainer(explainer_type)
     explanation = explainer.explain(plan)
     for grad in explanation.feature_importance.values():
@@ -66,3 +63,30 @@ def get_important_features(ml: Annotated[MLHelper, Depends()]):
     for k in features:
         features[k] = list_values_to_camel(features[k])
     return ImportantFeaturesResponse(features=features)
+
+
+@router.get("/plans/{plan_id}/explanation/{explainer_type}/evaluation/fidelity", response_model=FidelityEvaluationResponse)
+def get_fidelity(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
+    if explainer_type == ExplainerType.BASE:
+        raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Base explainer is not supported")
+
+    explainer = ml.get_explainer(explainer_type)
+    return evaluation_fidelity_plus(explainer, plan)
+
+
+@router.get("/plans/{plan_id}/explanation/{explainer_type}/evaluation/most-valuable-node", response_model=FidelityEvaluationResponse)
+def get_most_valuable_node(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
+    if explainer_type == ExplainerType.BASE:
+        raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Base explainer is not supported")
+
+    explainer = ml.get_explainer(explainer_type)
+    return evaluation_fidelity_plus(explainer, plan)
+
+
+@router.get("/plans/{plan_id}/explanation/{explainer_type}/evaluation/cost", response_model=FidelityEvaluationResponse)
+def get_score_evaluation(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
+    if explainer_type == ExplainerType.BASE:
+        raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Base explainer is not supported")
+
+    explainer = ml.get_explainer(explainer_type)
+    return evaluation_fidelity_plus(explainer, plan)

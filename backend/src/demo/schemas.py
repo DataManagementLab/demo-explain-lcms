@@ -73,3 +73,9 @@ class ExplanationResponse(CustomModel):
 
 class ImportantFeaturesResponse(CustomModel):
     features: dict[base_models.NodeType, list[str]]
+
+
+class FidelityEvaluationResponse(CustomModel):
+    normal_output: PredictionResponse
+    masked_output: PredictionResponse
+    score: float
