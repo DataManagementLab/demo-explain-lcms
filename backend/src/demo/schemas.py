@@ -95,9 +95,13 @@ class CostAccuracyEvaluationResponse(CostAccuracyEvaluation):
     explanation_costs: list[CostEvaluationResponse]
 
 
+class FidelityTableToScore(CustomModel):
+    table_count: int
+    avg_scrre: float
+
+
 class FidelityEvaluationAllResponse(CustomModel):
-    table_counts: list[int]
-    avg_scores: list[float]
+    scores: list[FidelityTableToScore]
 
 
 class NodeStat(CustomModel):
