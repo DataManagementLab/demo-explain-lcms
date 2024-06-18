@@ -93,3 +93,8 @@ class CostEvaluationResponse(CostEvaluation):
 class CostAccuracyEvaluationResponse(CostAccuracyEvaluation):
     actual_costs: list[CostEvaluationResponse]
     explanation_costs: list[CostEvaluationResponse]
+
+
+class FidelityEvaluationAllResponse(CustomModel):
+    table_counts: list[int]
+    avg_scores: list[float]
