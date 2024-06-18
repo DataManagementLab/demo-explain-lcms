@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from tqdm import tqdm
 
-from demo.dependencies import get_explainer, get_plan
+from demo.dependencies import get_evaluation_results_dir, get_explainer, get_plan
 from demo.schemas import CostAccuracyEvaluationResponse, ExplanationResponse, FidelityEvaluationAllResponse, FidelityEvaluationResponse, GraphNodeResponse, ImportantFeaturesResponse, MostImportantNodeEvaluationRespose, PlanFullResponse, PlanResponse, PredictionResponse
 from demo.service import round_explanation_values
-from demo.utils import dict_keys_to_camel, list_values_to_camel
+from demo.utils import dict_keys_to_camel, list_values_to_camel, load_model_from_file, save_model_to_file
 from ml.dependencies import MLHelper
 from ml.service import ExplainerType
 from zero_shot_learned_db.explainers.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
@@ -80,14 +80,22 @@ def get_cost_evaluation(plan: Annotated[ParsedPlan, Depends(get_plan)], explaine
 
 
 @router.get("/evaluation/{explainer_type}/fidelity")
-def get_fidelity_evaluation_all(explainer: Annotated[BaseExplainer, Depends(get_explainer)], ml: Annotated[MLHelper, Depends()]):
+def get_fidelity_evaluation_all(explainer_type: ExplainerType, explainer: Annotated[BaseExplainer, Depends(get_explainer)], ml: Annotated[MLHelper, Depends()], dir: Annotated[str, Depends(get_evaluation_results_dir)]):
+    file_name = dir + f"/fidelity_{explainer_type}.json"
+    response = load_model_from_file(FidelityEvaluationAllResponse, file_name)
+    if response is not None:
+        return response
+
     evaluations = [evaluation_fidelity_plus(explainer, get_plan(i, ml)) for i in tqdm(range(len(ml.parsed_plans)))]
     table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
     table_counts.sort()
     avg_scores: list[float] = []
     for table_count in table_counts:
         avg_scores.append(mean([e.score for e in evaluations if e._parsed_plan.graph_nodes_stats[NodeType.TABLE] == table_count]))
-    return FidelityEvaluationAllResponse(
+
+    response = FidelityEvaluationAllResponse(
         table_counts=table_counts,
         avg_scores=avg_scores,
     )
+    save_model_to_file(response, file_name)
+    return response

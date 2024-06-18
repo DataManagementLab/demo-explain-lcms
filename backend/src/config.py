@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from demo.config import DemoSettings
 from ml.config import MLSettings
 
 
@@ -8,6 +9,7 @@ class Settings(BaseSettings):
     cors_origins: list[str] = []
 
     ml: MLSettings = MLSettings()
+    demo: DemoSettings = DemoSettings()
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_nested_delimiter="__")
 
