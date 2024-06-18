@@ -98,3 +98,13 @@ class CostAccuracyEvaluationResponse(CostAccuracyEvaluation):
 class FidelityEvaluationAllResponse(CustomModel):
     table_counts: list[int]
     avg_scores: list[float]
+
+
+class NodeStat(CustomModel):
+    node_name: str
+    fraction: float
+
+
+class MostImportantNodeEvaluationAllRespose(CustomModel):
+    actual_nodes: list[NodeStat]
+    explained_nodes: list[NodeStat]

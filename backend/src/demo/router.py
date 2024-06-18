@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from tqdm import tqdm
 
 from demo.dependencies import get_evaluation_results_dir, get_explainer, get_plan
-from demo.schemas import CostAccuracyEvaluationResponse, ExplanationResponse, FidelityEvaluationAllResponse, FidelityEvaluationResponse, GraphNodeResponse, ImportantFeaturesResponse, MostImportantNodeEvaluationRespose, PlanFullResponse, PlanResponse, PredictionResponse
+from demo.schemas import CostAccuracyEvaluationResponse, ExplanationResponse, FidelityEvaluationAllResponse, FidelityEvaluationResponse, GraphNodeResponse, ImportantFeaturesResponse, MostImportantNodeEvaluationAllRespose, MostImportantNodeEvaluationRespose, NodeStat, PlanFullResponse, PlanResponse, PredictionResponse
 from demo.service import round_explanation_values
 from demo.utils import dict_keys_to_camel, list_values_to_camel, load_model_from_file, save_model_to_file
 from ml.dependencies import MLHelper
@@ -97,5 +97,37 @@ def get_fidelity_evaluation_all(explainer_type: ExplainerType, explainer: Annota
         table_counts=table_counts,
         avg_scores=avg_scores,
     )
+    save_model_to_file(response, file_name)
+    return response
+
+
+@router.get("/evaluation/{explainer_type}/most-important-node")
+def get_most_important_node_evaluation_all(explainer_type: ExplainerType, explainer: Annotated[BaseExplainer, Depends(get_explainer)], ml: Annotated[MLHelper, Depends()], dir: Annotated[str, Depends(get_evaluation_results_dir)]):
+    file_name = dir + f"/most_important_node_{explainer_type}.json"
+    response = load_model_from_file(FidelityEvaluationAllResponse, file_name)
+    if response is not None:
+        return response
+
+    count = len(ml.parsed_plans)
+    evaluations = [most_important_node_evaluation(explainer, get_plan(i, ml)) for i in tqdm(range(count))]
+    actual_nodes = [e.actual_node for e in evaluations]
+    actual_nodes_stat = [
+        NodeStat(
+            node_name=node_name,
+            fraction=len([n for n in actual_nodes if n == node_name]) / count,
+        )
+        for node_name in set(actual_nodes)
+    ]
+    actual_nodes_stat.sort(key=lambda n: n.fraction, reverse=True)
+    explained_nodes = [e.explained_node for e in evaluations]
+    explained_nodes_stat = [
+        NodeStat(
+            node_name=node_name,
+            fraction=len([n for n in explained_nodes if n == node_name]) / count,
+        )
+        for node_name in set(explained_nodes)
+    ]
+    explained_nodes_stat.sort(key=lambda n: n.fraction, reverse=True)
+    response = MostImportantNodeEvaluationAllRespose(actual_nodes=actual_nodes_stat, explained_nodes=explained_nodes_stat)
     save_model_to_file(response, file_name)
     return response
