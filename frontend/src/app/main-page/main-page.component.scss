@@ -1,12 +1,8 @@
-:host {
-  height: 100%;
-}
-
 p {
   text-align: center;
 }
 
-.grid {
+:host {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: minmax(100px, 100%);
