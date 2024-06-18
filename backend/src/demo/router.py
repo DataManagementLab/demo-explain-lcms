@@ -7,9 +7,7 @@ from demo.dependencies import get_evaluation_results_dir, get_explainer, get_pla
 from demo.schemas import (
     CostAccuracyEvaluationResponse,
     ExplanationResponse,
-    FidelityEvaluationAllResponse,
     FidelityEvaluationResponse,
-    FidelityTableToScore,
     GraphNodeResponse,
     ImportantFeaturesResponse,
     MostImportantNodeEvaluationAllRespose,
@@ -18,6 +16,8 @@ from demo.schemas import (
     PlanFullResponse,
     PlanResponse,
     PredictionResponse,
+    TablesToScore,
+    TablesToScoreEvaluationResponse,
 )
 from demo.service import round_explanation_values
 from demo.utils import dict_keys_to_camel, list_values_to_camel, load_model_from_file, save_model_to_file
@@ -93,30 +93,30 @@ def get_cost_evaluation(plan: Annotated[ParsedPlan, Depends(get_plan)], explaine
     return cost_accuracy_evaluation(explainer, plan)
 
 
-@router.get("/evaluation/{explainer_type}/fidelity")
+@router.get("/evaluation/{explainer_type}/fidelity", response_model=TablesToScoreEvaluationResponse)
 def get_fidelity_evaluation_all(explainer_type: ExplainerType, explainer: Annotated[BaseExplainer, Depends(get_explainer)], ml: Annotated[MLHelper, Depends()], dir: Annotated[str, Depends(get_evaluation_results_dir)]):
     file_name = dir + f"/fidelity_{explainer_type}.json"
-    response = load_model_from_file(FidelityEvaluationAllResponse, file_name)
+    response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
     if response is not None:
         return response
 
     evaluations = [evaluation_fidelity_plus(explainer, get_plan(i, ml)) for i in tqdm(range(len(ml.parsed_plans)))]
     table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
     table_counts.sort()
-    scores: list[FidelityTableToScore] = []
+    scores: list[TablesToScore] = []
     for table_count in table_counts:
         score = mean([e.score for e in evaluations if e._parsed_plan.graph_nodes_stats[NodeType.TABLE] == table_count])
-        scores.append(FidelityTableToScore(table_count=table_count, avg_scrre=score))
+        scores.append(TablesToScore(table_count=table_count, score=score))
 
-    response = FidelityEvaluationAllResponse(scores=scores)
+    response = TablesToScoreEvaluationResponse(scores=scores)
     save_model_to_file(response, file_name)
     return response
 
 
-@router.get("/evaluation/{explainer_type}/most-important-node")
+@router.get("/evaluation/{explainer_type}/most-important-node", response_model=MostImportantNodeEvaluationAllRespose)
 def get_most_important_node_evaluation_all(explainer_type: ExplainerType, explainer: Annotated[BaseExplainer, Depends(get_explainer)], ml: Annotated[MLHelper, Depends()], dir: Annotated[str, Depends(get_evaluation_results_dir)]):
     file_name = dir + f"/most_important_node_{explainer_type}.json"
-    response = load_model_from_file(FidelityEvaluationAllResponse, file_name)
+    response = load_model_from_file(MostImportantNodeEvaluationAllRespose, file_name)
     if response is not None:
         return response
 
@@ -145,9 +145,23 @@ def get_most_important_node_evaluation_all(explainer_type: ExplainerType, explai
     return response
 
 
-@router.get("/evaluation/{explainer_type}/most-important-node")
+@router.get("/evaluation/{explainer_type}/cost", response_model=TablesToScoreEvaluationResponse)
 def get_cost_evaluation_all(explainer_type: ExplainerType, explainer: Annotated[BaseExplainer, Depends(get_explainer)], ml: Annotated[MLHelper, Depends()], dir: Annotated[str, Depends(get_evaluation_results_dir)]):
-    file_name = dir + f"/most_important_node_{explainer_type}.json"
-    response = load_model_from_file(FidelityEvaluationAllResponse, file_name)
+    file_name = dir + f"/cost_{explainer_type}.json"
+    response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
     if response is not None:
         return response
+
+    evaluations = [cost_accuracy_evaluation(explainer, get_plan(i, ml)) for i in tqdm(range(len(ml.parsed_plans)))]
+    table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
+    table_counts.sort()
+    scores: list[TablesToScore] = []
+    for table_count in table_counts:
+        table_count_evaluations = [e for e in evaluations if e._parsed_plan.graph_nodes_stats[NodeType.TABLE] == table_count]
+        hits = sum([e.hits for e in table_count_evaluations])
+        total = sum([e.compare_count for e in table_count_evaluations])
+        scores.append(TablesToScore(table_count=table_count, score=hits / total))
+
+    response = TablesToScoreEvaluationResponse(scores=scores)
+    save_model_to_file(response, file_name)
+    return response
