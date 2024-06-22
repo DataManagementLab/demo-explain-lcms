@@ -1,0 +1,39 @@
+<p>{{ title() }}</p>
+@if (tableData(); as data) {
+  <table
+    mat-table
+    [dataSource]="data">
+    <ng-container matColumnDef="nodeName">
+      <th
+        mat-header-cell
+        *matHeaderCellDef>
+        Node
+      </th>
+      <td
+        mat-cell
+        *matCellDef="let element">
+        {{ element.nodeName }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="value">
+      <th
+        mat-header-cell
+        *matHeaderCellDef>
+        Fraction
+      </th>
+      <td
+        mat-cell
+        *matCellDef="let element">
+        {{ element.fraction }}
+      </td>
+    </ng-container>
+    <tr
+      mat-header-row
+      *matHeaderRowDef="columns"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: columns"></tr>
+  </table>
+} @else {
+  <mat-progress-spinner></mat-progress-spinner>
+}

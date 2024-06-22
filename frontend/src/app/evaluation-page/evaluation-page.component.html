@@ -1,1 +1,45 @@
-<p>evaluation-page works!</p>
+<div class="flexRow">
+  <app-most-important-node-table
+    title="Actual"
+    [tableData]="mostImportantNodeEvaluation()[explainerTypeEnum.gradient]?.actualNodes"></app-most-important-node-table>
+  <app-most-important-node-table
+    title="Gradient"
+    [tableData]="mostImportantNodeEvaluation()[explainerTypeEnum.gradient]?.explainedNodes"></app-most-important-node-table>
+  <app-most-important-node-table
+    title="Guided Backpropagation"
+    [tableData]="mostImportantNodeEvaluation()[explainerTypeEnum.guidedBackpropagation]?.explainedNodes"></app-most-important-node-table>
+</div>
+<div class="flexRow">
+  <div class="titleCol">
+    <p>Fidelity Gradient</p>
+    <app-line-chart
+      xTitle="# Tables"
+      yTitle="Fidelity"
+      [maxScore]="3"
+      [chartData]="fidelityEvaluation()[explainerTypeEnum.gradient]"></app-line-chart>
+  </div>
+  <div class="titleCol">
+    <p>Fidelity Guided Backpropagation</p>
+    <app-line-chart
+      xTitle="# Tables"
+      yTitle="Fidelity"
+      [maxScore]="3"
+      [chartData]="fidelityEvaluation()[explainerTypeEnum.guidedBackpropagation]"></app-line-chart>
+  </div>
+</div>
+<div class="flexRow">
+  <div class="titleCol">
+    <p>Cost Gradient</p>
+    <app-line-chart
+      xTitle="# Tables"
+      yTitle="Cost Hit Rate"
+      [chartData]="costEvaluations()[explainerTypeEnum.gradient]"></app-line-chart>
+  </div>
+  <div class="titleCol">
+    <p>Cost Guided Backpropagation</p>
+    <app-line-chart
+      xTitle="# Tables"
+      yTitle="Cost Hit Rate"
+      [chartData]="costEvaluations()[explainerTypeEnum.guidedBackpropagation]"></app-line-chart>
+  </div>
+</div>

@@ -6,3 +6,27 @@
   position: relative;
   scroll-behavior: auto;
 }
+
+.flexRow {
+  display: flex;
+  width: 100%;
+  gap: 32px;
+  justify-content: center;
+}
+
+app-line-chart {
+  height: 600px;
+  width: 600px;
+}
+
+.titleCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+
+  p {
+    font-weight: bold;
+    font-size: 20px;
+  }
+}

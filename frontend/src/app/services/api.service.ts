@@ -6,6 +6,8 @@ import Prediction from './data/prediction';
 import Explanation from './data/explanation';
 import ImportantFeatures from './data/important-features';
 import ExplainerType from './data/explainer-type';
+import MostImportantNodeEvaluation from './data/most-important-node-evaluation';
+import TableToScoreEvaluation from './data/table-to-score-evaluation';
 
 @Injectable({
   providedIn: 'root',
@@ -33,5 +35,17 @@ export class ApiService {
 
   getImportantFeatures() {
     return this.httpClient.get<ImportantFeatures>(this.baseURL + 'important-features');
+  }
+
+  getMostImportantNodeEvaluationAll(explainerType: ExplainerType) {
+    return this.httpClient.get<MostImportantNodeEvaluation>(this.baseURL + 'evaluation/' + explainerType + '/most-important-node');
+  }
+
+  getFidelityEvaluationAll(explainerType: ExplainerType) {
+    return this.httpClient.get<TableToScoreEvaluation>(this.baseURL + 'evaluation/' + explainerType + '/fidelity');
+  }
+
+  getCostEvaluationAll(explainerType: ExplainerType) {
+    return this.httpClient.get<TableToScoreEvaluation>(this.baseURL + 'evaluation/' + explainerType + '/cost');
   }
 }
