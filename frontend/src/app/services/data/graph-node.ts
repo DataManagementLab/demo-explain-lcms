@@ -1,9 +1,9 @@
-import NodeInfoType from './node-info-type';
+import NodeInfo from './node-info';
 
 interface GraphNode {
   nodeId: number;
   label: string;
-  nodeInfo: NodeInfoType;
+  nodeInfo: NodeInfo;
 }
 
 export default GraphNode;

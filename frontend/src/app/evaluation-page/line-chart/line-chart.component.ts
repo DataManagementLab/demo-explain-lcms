@@ -2,7 +2,6 @@ import { AfterViewInit, Component, ElementRef, Input, ViewChild, ViewEncapsulati
 import TableToScoreEvaluation, { TableToScore } from '../../services/data/table-to-score-evaluation';
 
 import * as d3 from 'd3';
-import * as d3Graphviz from 'd3-graphviz';
 
 @Component({
   selector: 'expl-zs-line-chart',

@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild, ViewEncapsulation, effect, model } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { AfterViewInit, Component, ElementRef, Input, ViewChild, ViewEncapsulation, effect, model } from '@angular/core';
 import FullPlan from '../services/data/full-plan';
 
 import * as d3 from 'd3';
@@ -93,7 +94,9 @@ export class PlanGraphComponent implements AfterViewInit {
       .width(width + margin.left + margin.right)
       .fit(true)
       .attributer(function (d) {
-        if (d.tag == 'polygon' && d.parent.attributes.class == 'graph') d.attributes.fill = 'transparent';
+        if (d.tag == 'polygon' && d.parent.attributes.class == 'graph') {
+          d.attributes.fill = 'transparent';
+        }
       })
       .renderDot(this.plan.dotGraph)
       .on('end', () => {

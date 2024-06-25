@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, Signal, computed, effect, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { ApiService } from '../services/api.service';
 import Plan from '../services/data/plan';
@@ -16,7 +16,7 @@ import ExplainerType from '../services/data/explainer-type';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { DecimalPipe, PercentPipe } from '@angular/common';
 import NodeType from '../services/data/node-type';
-import NodeInfoType from '../services/data/node-info-type';
+import NodeInfo from '../services/data/node-info';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -43,7 +43,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 })
 export class MainPageComponent implements OnInit {
   public plans = signal<Plan[]>([]);
-  public displayedPlanColumns = signal<String[]>(['id', 'plans', 'tables', 'columns', 'filters', 'preds']);
+  public displayedPlanColumns = signal<string[]>(['id', 'plans', 'tables', 'columns', 'filters', 'preds']);
   public selectedPlan = signal<Plan | undefined>(undefined);
   public selectedFullPlan = signal<FullPlan | undefined>(undefined);
   public selectedNode = signal<GraphNode | undefined>(undefined);
@@ -69,13 +69,13 @@ export class MainPageComponent implements OnInit {
       return [];
     }
     if ('planParameters' in nodeInfo) {
-      nodeInfo = Object.assign(nodeInfo, nodeInfo['planParameters']) as NodeInfoType;
+      nodeInfo = Object.assign(nodeInfo, nodeInfo['planParameters']) as NodeInfo;
       delete nodeInfo['planParameters'];
     }
     if ('columnStats' in nodeInfo) {
       const colStats = structuredClone(nodeInfo['columnStats']);
       delete colStats['nodeType'];
-      nodeInfo = Object.assign(nodeInfo, colStats) as NodeInfoType;
+      nodeInfo = Object.assign(nodeInfo, colStats) as NodeInfo;
       delete nodeInfo['columnStats'];
     }
     for (const prop in nodeInfo) {
