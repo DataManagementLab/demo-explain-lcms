@@ -8,7 +8,7 @@ import { MostImportantNodeTableComponent } from './most-important-node-table/mos
 import { LineChartComponent } from './line-chart/line-chart.component';
 
 @Component({
-  selector: 'app-evaluation-page',
+  selector: 'expl-zs-evaluation-page',
   standalone: true,
   imports: [MostImportantNodeTableComponent, LineChartComponent],
   templateUrl: './evaluation-page.component.html',

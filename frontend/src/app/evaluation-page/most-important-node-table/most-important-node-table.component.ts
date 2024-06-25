@@ -4,7 +4,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-most-important-node-table',
+  selector: 'expl-zs-most-important-node-table',
   standalone: true,
   imports: [MatTableModule, MatProgressSpinnerModule],
   templateUrl: './most-important-node-table.component.html',

@@ -160,10 +160,10 @@
 <div class="rightGrid">
   <div class="graphBlock">
     @if (this.selectedFullPlan()) {
-      <app-plan-graph
+      <expl-zs-plan-graph
         [graph]="this.selectedFullPlan()"
         [explanation]="this.selectedPlanExplanation()"
-        [(selectedNode)]="selectedNode"></app-plan-graph>
+        [(selectedNode)]="selectedNode"></expl-zs-plan-graph>
     }
   </div>
   @if (this.selectedNode(); as selectedNode) {

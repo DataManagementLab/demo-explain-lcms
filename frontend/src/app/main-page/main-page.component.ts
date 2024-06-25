@@ -22,7 +22,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-main-page',
+  selector: 'expl-zs-main-page',
   standalone: true,
   imports: [
     MatListModule,

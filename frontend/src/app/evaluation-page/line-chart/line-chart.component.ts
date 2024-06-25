@@ -5,7 +5,7 @@ import * as d3 from 'd3';
 import * as d3Graphviz from 'd3-graphviz';
 
 @Component({
-  selector: 'app-line-chart',
+  selector: 'expl-zs-line-chart',
   standalone: true,
   imports: [],
   encapsulation: ViewEncapsulation.None,

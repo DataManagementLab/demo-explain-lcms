@@ -7,7 +7,7 @@ import GraphNode from '../services/data/graph-node';
 import Explanation from '../services/data/explanation';
 
 @Component({
-  selector: 'app-plan-graph',
+  selector: 'expl-zs-plan-graph',
   standalone: true,
   imports: [],
   encapsulation: ViewEncapsulation.None,
