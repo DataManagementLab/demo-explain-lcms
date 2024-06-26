@@ -17,12 +17,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { DecimalPipe, PercentPipe } from '@angular/common';
 import NodeType from '../services/data/node-type';
 import NodeInfo from '../services/data/node-info';
-import { MatRadioModule } from '@angular/material/radio';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PlanListComponent } from './plan-list/plan-list.component';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { of, switchMap } from 'rxjs';
+import { combineLatest, of, switchMap } from 'rxjs';
+import { ExplainerSelectComponent } from './explainer-select/explainer-select.component';
 
 @Component({
   selector: 'expl-zs-main-page',
@@ -36,10 +36,10 @@ import { of, switchMap } from 'rxjs';
     MatFormFieldModule,
     DecimalPipe,
     PercentPipe,
-    MatRadioModule,
     MatDividerModule,
     MatProgressSpinnerModule,
     PlanListComponent,
+    ExplainerSelectComponent,
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
@@ -54,8 +54,8 @@ export class MainPageComponent implements OnInit {
   public selectedPlanPrediction = signal<Prediction | undefined>(undefined);
   public selectedPlanExplanation = signal<Explanation | undefined>(undefined);
   public importantFeatures = signal<ImportantFeatures | undefined>(undefined);
-  public explainerType = ExplainerType;
   public selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
+  private selectedExplainer$ = toObservable(this.selectedExplainer);
 
   public displayedNodeColumns = computed(() => {
     const explanation = this.selectedPlanExplanation();
@@ -186,8 +186,8 @@ export class MainPageComponent implements OnInit {
     this.selectedPlan$
       .pipe(switchMap(plan => (plan ? this.apiService.getPrediction(plan.id) : of(undefined))))
       .subscribe(value => this.selectedPlanPrediction.set(value));
-    this.selectedPlan$
-      .pipe(switchMap(plan => (plan ? this.apiService.getExplanation(plan.id, this.selectedExplainer()) : of(undefined))))
+    combineLatest([this.selectedPlan$, this.selectedExplainer$])
+      .pipe(switchMap(([plan, explainerType]) => (plan ? this.apiService.getExplanation(plan.id, explainerType) : of(undefined))))
       .subscribe(value => this.selectedPlanExplanation.set(value));
   }
 

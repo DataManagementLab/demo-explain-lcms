@@ -6,32 +6,7 @@
   </div>
   <div class="leftBottomGrid">
     @if (this.selectedPlan()) {
-      <!-- <button
-          mat-raised-button
-          color="primary"
-          (click)="onPredictClick()">
-          Predict
-        </button> -->
-      <!-- <mat-form-field subscriptSizing="dynamic">
-          <mat-label>Explainer</mat-label>
-          <mat-select [(value)]="selectedExplainer">
-            <mat-option [value]="explainerType.gradient">Gradient</mat-option>
-            <mat-option [value]="explainerType.guidedBackpropagation">Guided Backpropagation</mat-option>
-          </mat-select>
-        </mat-form-field> -->
-      <mat-radio-group
-        class="flexColumn"
-        [value]="selectedExplainer()"
-        (change)="onExplainerSelected($event.value)">
-        <mat-radio-button [value]="explainerType.gradient">Gradient</mat-radio-button>
-        <mat-radio-button [value]="explainerType.guidedBackpropagation">Guided Backpropagation</mat-radio-button>
-      </mat-radio-group>
-      <!-- <button
-          mat-raised-button
-          color="primary"
-          (click)="onExplainClick()">
-          Explain
-        </button> -->
+      <expl-zs-explainer-select [(selectedExplainer)]="selectedExplainer" />
     }
     <div class="flexColumn">
       @if (this.selectedPlanPrediction(); as prediction) {
