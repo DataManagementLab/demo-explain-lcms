@@ -23,6 +23,7 @@ import { PlanListComponent } from './plan-list/plan-list.component';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, of, switchMap } from 'rxjs';
 import { ExplainerSelectComponent } from './explainer-select/explainer-select.component';
+import { PredictionBlockComponent } from './prediction-block/prediction-block.component';
 
 @Component({
   selector: 'expl-zs-main-page',
@@ -40,6 +41,7 @@ import { ExplainerSelectComponent } from './explainer-select/explainer-select.co
     MatProgressSpinnerModule,
     PlanListComponent,
     ExplainerSelectComponent,
+    PredictionBlockComponent,
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',

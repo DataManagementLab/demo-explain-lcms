@@ -10,20 +10,7 @@
     }
     <div class="flexColumn">
       @if (this.selectedPlanPrediction(); as prediction) {
-        <div class="flexColumnMaxSize">
-          <p>
-            <span class="boldSpan">Label: </span>
-            <span>{{ prediction.label | number: '1.0-2' }}</span>
-          </p>
-          <p>
-            <span class="boldSpan">Prediction: </span>
-            <span>{{ prediction.prediction | number: '1.0-2' }}</span>
-          </p>
-          <p>
-            <span class="boldSpan">QError: </span>
-            <span>{{ prediction.qerror | number: '1.0-2' }}</span>
-          </p>
-        </div>
+        <expl-zs-prediction-block [prediction]="prediction" />
         <mat-divider></mat-divider>
       }
       @if (this.nodeImportancesSorted()) {
