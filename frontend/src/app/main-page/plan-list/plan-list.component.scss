@@ -1,0 +1,15 @@
+.planListItem {
+  &:hover {
+    background-color: #f1f1f1;
+  }
+  &.selected {
+    background-color: rgb(202, 202, 202);
+    &:hover {
+      background-color: rgb(194, 194, 194);
+    }
+  }
+}
+
+.boldSpan {
+  font-weight: bold;
+}

@@ -20,6 +20,9 @@ import NodeInfo from '../services/data/node-info';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { PlanListComponent } from './plan-list/plan-list.component';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'expl-zs-main-page',
@@ -36,6 +39,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatRadioModule,
     MatDividerModule,
     MatProgressSpinnerModule,
+    PlanListComponent,
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
@@ -43,8 +47,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 })
 export class MainPageComponent implements OnInit {
   public plans = signal<Plan[]>([]);
-  public displayedPlanColumns = signal<string[]>(['id', 'plans', 'tables', 'columns', 'filters', 'preds']);
   public selectedPlan = signal<Plan | undefined>(undefined);
+  private selectedPlan$ = toObservable(this.selectedPlan);
   public selectedFullPlan = signal<FullPlan | undefined>(undefined);
   public selectedNode = signal<GraphNode | undefined>(undefined);
   public selectedPlanPrediction = signal<Prediction | undefined>(undefined);
@@ -171,23 +175,20 @@ export class MainPageComponent implements OnInit {
   ngOnInit(): void {
     this.apiService.getPlans().subscribe(value => this.plans.set(value));
     this.apiService.getImportantFeatures().subscribe(value => this.importantFeatures.set(value));
-  }
 
-  onPlanSelected(plan: Plan) {
-    if (this.selectedPlan()?.id === plan.id) {
-      return;
-    }
-
-    this.selectedPlan.set(plan);
-    this.selectedFullPlan.set(undefined);
-    this.selectedNode.set(undefined);
-    this.selectedPlanPrediction.set(undefined);
-    this.selectedPlanExplanation.set(undefined);
-    if (plan) {
-      this.apiService.getPlan(plan.id).subscribe(value => this.selectedFullPlan.set(value));
-      this.apiService.getPrediction(plan.id).subscribe(value => this.selectedPlanPrediction.set(value));
-      this.apiService.getExplanation(plan.id, this.selectedExplainer()).subscribe(value => this.selectedPlanExplanation.set(value));
-    }
+    this.selectedPlan$.subscribe(() => {
+      this.selectedFullPlan.set(undefined);
+      this.selectedNode.set(undefined);
+      this.selectedPlanPrediction.set(undefined);
+      this.selectedPlanExplanation.set(undefined);
+    });
+    this.selectedPlan$.pipe(switchMap(plan => (plan ? this.apiService.getPlan(plan.id) : of(undefined)))).subscribe(value => this.selectedFullPlan.set(value));
+    this.selectedPlan$
+      .pipe(switchMap(plan => (plan ? this.apiService.getPrediction(plan.id) : of(undefined))))
+      .subscribe(value => this.selectedPlanPrediction.set(value));
+    this.selectedPlan$
+      .pipe(switchMap(plan => (plan ? this.apiService.getExplanation(plan.id, this.selectedExplainer()) : of(undefined))))
+      .subscribe(value => this.selectedPlanExplanation.set(value));
   }
 
   onNodeSelected(node: GraphNode) {
