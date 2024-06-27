@@ -13,23 +13,12 @@
         <expl-zs-prediction-block [prediction]="prediction" />
         <mat-divider></mat-divider>
       }
-      @if (this.nodeImportancesSorted()) {
-        <div class="flexColumn">
-          @for (node of this.nodeImportancesSorted(); track node.node.nodeId) {
-            @if (node.importance) {
-              <p
-                aria-hidden="true"
-                [class]="['nodeImportanceItem', this.selectedNode() && this.selectedNode()!.nodeId === node.node.nodeId ? 'selected' : '']"
-                (click)="selectedNode.set(node.node)"
-                (keypress)="selectedNode.set(node.node)">
-                <span class="boldSpan">{{ node.node.label }}: </span>
-                <span>{{ node.importance | percent }}</span>
-                <span class="boldSpan"> = </span>
-                <span>{{ node.value | number: '1.0-2' }}</span>
-              </p>
-            }
-          }
-        </div>
+      @if (this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation()) {
+        <expl-zs-node-importance-list
+          [fullPlan]="this.selectedFullPlan()!"
+          [prediction]="this.selectedPlanPrediction()!"
+          [explanation]="this.selectedPlanExplanation()!"
+          [(selectedNode)]="this.selectedNode" />
       }
     </div>
   </div>

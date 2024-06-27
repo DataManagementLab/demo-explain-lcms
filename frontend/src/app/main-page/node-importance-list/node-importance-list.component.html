@@ -1,0 +1,15 @@
+@for (node of this.nodeImportancesSorted(); track node.node.nodeId) {
+  @if (node.importance) {
+    <p
+      class="nodeImportanceItem"
+      [class.selected]="this.selectedNode() && this.selectedNode()!.nodeId === node.node.nodeId"
+      (click)="selectedNode.set(node.node)"
+      (keypress)="selectedNode.set(node.node)"
+      aria-hidden="true">
+      <span class="boldSpan">{{ node.node.label }}: </span>
+      <span>{{ node.importance | percent }}</span>
+      <span class="boldSpan"> = </span>
+      <span>{{ node.value | number: '1.0-2' }}</span>
+    </p>
+  }
+}

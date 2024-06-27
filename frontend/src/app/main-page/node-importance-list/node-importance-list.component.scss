@@ -1,0 +1,24 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+p {
+  text-align: start;
+}
+
+p.nodeImportanceItem {
+  padding: 4px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
+  &.selected {
+    border: 1px solid green;
+  }
+}
+
+.boldSpan {
+  font-weight: bold;
+}

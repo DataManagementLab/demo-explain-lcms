@@ -79,15 +79,6 @@ p {
   gap: 8px;
 }
 
-p.nodeImportanceItem {
-  padding: 4px;
-  border: 1px solid transparent;
-  transition: border-color 0.2s;
-  &.selected {
-    border: 1px solid green;
-  }
-}
-
 mat-spinner {
   position: absolute;
   top: 50%;

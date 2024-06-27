@@ -8,7 +8,6 @@ import GraphNode from '../services/data/graph-node';
 import { MatButtonModule } from '@angular/material/button';
 import Prediction from '../services/data/prediction';
 import Explanation from '../services/data/explanation';
-import { sort } from 'd3';
 import ImportantFeatures from '../services/data/important-features';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
@@ -24,6 +23,8 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, of, switchMap } from 'rxjs';
 import { ExplainerSelectComponent } from './explainer-select/explainer-select.component';
 import { PredictionBlockComponent } from './prediction-block/prediction-block.component';
+import { NodeImportanceListComponent } from './node-importance-list/node-importance-list.component';
+import { getNodeImportance } from '../utils/main-page-utils';
 
 @Component({
   selector: 'expl-zs-main-page',
@@ -42,6 +43,7 @@ import { PredictionBlockComponent } from './prediction-block/prediction-block.co
     PlanListComponent,
     ExplainerSelectComponent,
     PredictionBlockComponent,
+    NodeImportanceListComponent,
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
@@ -99,7 +101,8 @@ export class MainPageComponent implements OnInit {
 
     const importance = this.selectedNodeFeatureImportance();
     if (!importance) {
-      return sort(values, v => v.isFeature).reverse();
+      values.sort((x, y) => (x.isFeature == y.isFeature ? 0 : x.isFeature ? 1 : -1));
+      return values;
     }
 
     const valuesWithImportance = values.map(v => ({
@@ -109,7 +112,7 @@ export class MainPageComponent implements OnInit {
       importance: v.name in importance ? importance[v.name] : undefined,
     }));
 
-    return sort(valuesWithImportance, (v1, v2) => {
+    valuesWithImportance.sort((v1, v2) => {
       const value1 = v1.importance;
       const value2 = v2.importance;
       if (value1 === value2) {
@@ -122,15 +125,9 @@ export class MainPageComponent implements OnInit {
       if (value2 === undefined) {
         return -1;
       }
-
-      if (value2 > value1) {
-        return 1;
-      }
-      if (value1 > value2) {
-        return -1;
-      }
-      return 0;
+      return value2 - value1;
     });
+    return valuesWithImportance;
   });
 
   public selectedNodeFeatureImportance = computed(() => {
@@ -142,30 +139,14 @@ export class MainPageComponent implements OnInit {
     return explanation.featureImportance[node.nodeId];
   });
 
-  public nodeImportancesSorted = computed(() => {
-    const explanation = this.selectedPlanExplanation();
-    const plan = this.selectedFullPlan();
-    const prediction = this.selectedPlanPrediction();
-    if (!plan || !explanation || !prediction) {
-      return;
-    }
-    const res = plan.graphNodes
-      .filter(node => node.nodeId in explanation.nodeImportance)
-      .map(node => ({
-        node: node,
-        importance: explanation.nodeImportance[node.nodeId],
-        value: prediction.prediction * explanation.nodeImportance[node.nodeId],
-      }));
-    return sort(res, value => value.importance).reverse();
-  });
-
   public selectedNodeImportance = computed(() => {
-    const nodeImportances = this.nodeImportancesSorted();
     const selectedNode = this.selectedNode();
-    if (!nodeImportances || !selectedNode) {
+    const prediction = this.selectedPlanPrediction();
+    const explanation = this.selectedPlanExplanation();
+    if (!selectedNode || !prediction || !explanation) {
       return;
     }
-    return nodeImportances.find(n => n.node.nodeId == selectedNode.nodeId);
+    return getNodeImportance(selectedNode, prediction, explanation);
   });
 
   public isLoading = computed(() => {
