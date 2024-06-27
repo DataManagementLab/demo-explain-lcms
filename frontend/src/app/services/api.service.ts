@@ -8,6 +8,7 @@ import ImportantFeatures from './data/important-features';
 import ExplainerType from './data/explainer-type';
 import MostImportantNodeEvaluation from './data/most-important-node-evaluation';
 import TableToScoreEvaluation from './data/table-to-score-evaluation';
+import { of, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -33,8 +34,12 @@ export class ApiService {
     return this.httpClient.get<Explanation>(this.baseURL + 'plans/' + planId + '/explanation' + '/' + explainerType);
   }
 
+  private importantFeaturesCache: ImportantFeatures | undefined;
   getImportantFeatures() {
-    return this.httpClient.get<ImportantFeatures>(this.baseURL + 'important-features');
+    if (this.importantFeaturesCache) {
+      return of(this.importantFeaturesCache);
+    }
+    return this.httpClient.get<ImportantFeatures>(this.baseURL + 'important-features').pipe(tap(value => (this.importantFeaturesCache = value)));
   }
 
   getMostImportantNodeEvaluationAll(explainerType: ExplainerType) {

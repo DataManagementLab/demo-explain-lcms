@@ -17,7 +17,7 @@ export class NodeImportanceListComponent {
   fullPlan = input.required<FullPlan>();
   prediction = input.required<Prediction>();
   explanation = input.required<Explanation>();
-  selectedNode = model.required<GraphNode | undefined>();
+  selectedNode = model<GraphNode>();
 
   public nodeImportancesSorted = computed(() => {
     const res = this.fullPlan()

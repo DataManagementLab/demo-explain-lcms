@@ -29,16 +29,6 @@ p {
   position: relative;
 }
 
-.nodeInfoList {
-  overflow: auto;
-}
-
-.nodeInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .leftGrid {
   display: grid;
   grid-template-rows: minmax(100px, 60%) minmax(100px, 40%);

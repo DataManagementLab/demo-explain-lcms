@@ -8,14 +8,11 @@ import GraphNode from '../services/data/graph-node';
 import { MatButtonModule } from '@angular/material/button';
 import Prediction from '../services/data/prediction';
 import Explanation from '../services/data/explanation';
-import ImportantFeatures from '../services/data/important-features';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import ExplainerType from '../services/data/explainer-type';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { DecimalPipe, PercentPipe } from '@angular/common';
-import NodeType from '../services/data/node-type';
-import NodeInfo from '../services/data/node-info';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PlanListComponent } from './plan-list/plan-list.component';
@@ -24,7 +21,7 @@ import { combineLatest, of, switchMap } from 'rxjs';
 import { ExplainerSelectComponent } from './explainer-select/explainer-select.component';
 import { PredictionBlockComponent } from './prediction-block/prediction-block.component';
 import { NodeImportanceListComponent } from './node-importance-list/node-importance-list.component';
-import { getNodeImportance } from '../utils/main-page-utils';
+import { NodeInfoListComponent } from './node-info-list/node-info-list.component';
 
 @Component({
   selector: 'expl-zs-main-page',
@@ -44,6 +41,7 @@ import { getNodeImportance } from '../utils/main-page-utils';
     ExplainerSelectComponent,
     PredictionBlockComponent,
     NodeImportanceListComponent,
+    NodeInfoListComponent,
   ],
   templateUrl: './main-page.component.html',
   styleUrl: './main-page.component.scss',
@@ -57,97 +55,8 @@ export class MainPageComponent implements OnInit {
   public selectedNode = signal<GraphNode | undefined>(undefined);
   public selectedPlanPrediction = signal<Prediction | undefined>(undefined);
   public selectedPlanExplanation = signal<Explanation | undefined>(undefined);
-  public importantFeatures = signal<ImportantFeatures | undefined>(undefined);
   public selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
   private selectedExplainer$ = toObservable(this.selectedExplainer);
-
-  public displayedNodeColumns = computed(() => {
-    const explanation = this.selectedPlanExplanation();
-    const cols = ['attr', 'value'];
-    if (explanation) {
-      cols.push('importance');
-    }
-
-    return cols;
-  });
-  public selectedNodeInfoFields = computed(() => {
-    let nodeInfo = structuredClone(this.selectedNode()?.nodeInfo);
-    const importantFeatures = this.importantFeatures();
-    if (!nodeInfo || !importantFeatures) {
-      return [];
-    }
-    if ('planParameters' in nodeInfo) {
-      nodeInfo = Object.assign(nodeInfo, nodeInfo['planParameters']) as NodeInfo;
-      delete nodeInfo['planParameters'];
-    }
-    if ('columnStats' in nodeInfo) {
-      const colStats = structuredClone(nodeInfo['columnStats']);
-      delete colStats['nodeType'];
-      nodeInfo = Object.assign(nodeInfo, colStats) as NodeInfo;
-      delete nodeInfo['columnStats'];
-    }
-    for (const prop in nodeInfo) {
-      if (nodeInfo[prop] == null || nodeInfo[prop] === '' || (nodeInfo[prop] instanceof Array && nodeInfo[prop].length == 0)) {
-        delete nodeInfo[prop];
-      }
-    }
-
-    const features = importantFeatures.features[nodeInfo.nodeType as NodeType];
-    const values = Object.keys(nodeInfo).map(k => ({
-      name: k,
-      value: nodeInfo[k],
-      isFeature: features.includes(k),
-    }));
-
-    const importance = this.selectedNodeFeatureImportance();
-    if (!importance) {
-      values.sort((x, y) => (x.isFeature == y.isFeature ? 0 : x.isFeature ? 1 : -1));
-      return values;
-    }
-
-    const valuesWithImportance = values.map(v => ({
-      name: v.name,
-      value: v.value,
-      isFeature: v.isFeature,
-      importance: v.name in importance ? importance[v.name] : undefined,
-    }));
-
-    valuesWithImportance.sort((v1, v2) => {
-      const value1 = v1.importance;
-      const value2 = v2.importance;
-      if (value1 === value2) {
-        return 0;
-      }
-
-      if (value1 === undefined) {
-        return 1;
-      }
-      if (value2 === undefined) {
-        return -1;
-      }
-      return value2 - value1;
-    });
-    return valuesWithImportance;
-  });
-
-  public selectedNodeFeatureImportance = computed(() => {
-    const node = this.selectedNode();
-    const explanation = this.selectedPlanExplanation();
-    if (!node || !explanation) {
-      return undefined;
-    }
-    return explanation.featureImportance[node.nodeId];
-  });
-
-  public selectedNodeImportance = computed(() => {
-    const selectedNode = this.selectedNode();
-    const prediction = this.selectedPlanPrediction();
-    const explanation = this.selectedPlanExplanation();
-    if (!selectedNode || !prediction || !explanation) {
-      return;
-    }
-    return getNodeImportance(selectedNode, prediction, explanation);
-  });
 
   public isLoading = computed(() => {
     return this.selectedPlan() && !(this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation());
@@ -157,7 +66,6 @@ export class MainPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.apiService.getPlans().subscribe(value => this.plans.set(value));
-    this.apiService.getImportantFeatures().subscribe(value => this.importantFeatures.set(value));
 
     this.selectedPlan$.subscribe(() => {
       this.selectedFullPlan.set(undefined);
