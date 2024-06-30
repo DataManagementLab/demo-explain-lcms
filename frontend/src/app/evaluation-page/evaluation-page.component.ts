@@ -12,7 +12,7 @@ import { LineChartComponent } from './line-chart/line-chart.component';
   standalone: true,
   imports: [MostImportantNodeTableComponent, LineChartComponent],
   templateUrl: './evaluation-page.component.html',
-  styleUrl: './evaluation-page.component.scss',
+  host: { class: 'flex flex-col gap-8 px-4 py-8 relative scroll-auto' },
 })
 export class EvaluationPageComponent implements OnInit {
   constructor(private apiService: ApiService) {}
