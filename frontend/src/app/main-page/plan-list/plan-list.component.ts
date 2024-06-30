@@ -1,7 +1,7 @@
 import { Component, input, model, signal } from '@angular/core';
 import Plan from '../../services/data/plan';
 import { MatTableModule } from '@angular/material/table';
-import { CnPipe } from '../../utils/cn.pipe';
+import { CnPipe } from '../../pipes/cn.pipe';
 
 @Component({
   selector: 'expl-zs-plan-list',

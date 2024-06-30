@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { ClassValue } from 'clsx';
-import cn from './cn';
+import cn from '../utils/cn';
 
 @Pipe({
   name: 'cn',

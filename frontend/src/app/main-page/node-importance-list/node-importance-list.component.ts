@@ -5,7 +5,7 @@ import FullPlan from '../../services/data/full-plan';
 import Prediction from '../../services/data/prediction';
 import GraphNode from '../../services/data/graph-node';
 import { getNodeImportance } from '../../utils/main-page-utils';
-import { CnPipe } from '../../utils/cn.pipe';
+import { CnPipe } from '../../pipes/cn.pipe';
 
 @Component({
   selector: 'expl-zs-node-importance-list',
