@@ -8,7 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   standalone: true,
   imports: [MatTableModule, MatProgressSpinnerModule],
   templateUrl: './most-important-node-table.component.html',
-  styleUrl: './most-important-node-table.component.scss',
+  host: { class: 'flex flex-col gap-4 items-center' },
 })
 export class MostImportantNodeTableComponent {
   columns = ['nodeName', 'value'];

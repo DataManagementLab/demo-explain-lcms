@@ -36,8 +36,8 @@ export class LineChartComponent implements AfterViewInit {
       return;
     }
     const margin = { top: 16, right: 16, bottom: 52, left: 52 };
-    const height = graphDiv.clientHeight - margin.left - margin.right;
-    const width = graphDiv.clientWidth - margin.top - margin.bottom;
+    const width = graphDiv.clientWidth - margin.left - margin.right;
+    const height = graphDiv.clientHeight - margin.top - margin.bottom;
 
     const svg = d3
       .select(graphDiv)
