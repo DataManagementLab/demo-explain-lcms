@@ -16,11 +16,10 @@ import Explanation from '../services/data/explanation';
   styleUrl: './plan-graph.component.scss',
 })
 export class PlanGraphComponent implements AfterViewInit {
-  private graphviz = signal<d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined>(undefined);
   @ViewChild('graphDiv') graphDivRef: ElementRef | undefined;
   private graphDiv = signal<HTMLDivElement | undefined>(undefined);
+  private graphviz = signal<d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined>(undefined);
 
-  private wasViewInit = signal<boolean>(false);
   fullPlan = input.required<FullPlan>();
   explanation = input<Explanation>();
   selectedNode = model<GraphNode | undefined>();
@@ -35,7 +34,6 @@ export class PlanGraphComponent implements AfterViewInit {
     if (this.graphDivRef) {
       this.graphDiv.set(this.graphDivRef.nativeElement);
       this.graphviz.set(d3Graphviz.graphviz(this.graphDivRef.nativeElement, { useWorker: false }));
-      this.wasViewInit.set(true);
     }
   }
 
@@ -43,7 +41,7 @@ export class PlanGraphComponent implements AfterViewInit {
     const graphDiv = this.graphDiv();
     const fullPlan = this.fullPlan();
     const graphviz = this.graphviz();
-    if (!this.wasViewInit() || !graphDiv || !fullPlan || !graphviz) {
+    if (!graphDiv || !fullPlan || !graphviz) {
       return;
     }
 

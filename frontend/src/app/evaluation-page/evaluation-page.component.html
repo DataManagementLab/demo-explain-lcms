@@ -12,38 +12,46 @@
 <div class="flex w-full justify-center gap-8">
   <div class="flex flex-col items-center gap-4">
     <p class="text-xl font-bold">Fidelity Gradient</p>
-    <expl-zs-line-chart
-      class="m size-line-chart"
-      xTitle="# Tables"
-      yTitle="Fidelity"
-      [maxScore]="3"
-      [chartData]="fidelityEvaluation()[explainerTypeEnum.gradient]"></expl-zs-line-chart>
+    @if (fidelityEvaluation()[explainerTypeEnum.gradient]; as chartData) {
+      <expl-zs-line-chart
+        class="m size-line-chart"
+        xTitle="# Tables"
+        yTitle="Fidelity"
+        [maxScore]="3"
+        [chartData]="chartData"></expl-zs-line-chart>
+    }
   </div>
   <div class="flex flex-col items-center gap-4">
     <p class="text-xl font-bold">Fidelity Guided Backpropagation</p>
-    <expl-zs-line-chart
-      class="m size-line-chart"
-      xTitle="# Tables"
-      yTitle="Fidelity"
-      [maxScore]="3"
-      [chartData]="fidelityEvaluation()[explainerTypeEnum.guidedBackpropagation]"></expl-zs-line-chart>
+    @if (fidelityEvaluation()[explainerTypeEnum.guidedBackpropagation]; as chartData) {
+      <expl-zs-line-chart
+        class="m size-line-chart"
+        xTitle="# Tables"
+        yTitle="Fidelity"
+        [maxScore]="3"
+        [chartData]="chartData"></expl-zs-line-chart>
+    }
   </div>
 </div>
 <div class="flex w-full justify-center gap-8">
   <div class="flex flex-col items-center gap-4">
     <p class="text-xl font-bold">Cost Gradient</p>
-    <expl-zs-line-chart
-      class="m size-line-chart"
-      xTitle="# Tables"
-      yTitle="Cost Hit Rate"
-      [chartData]="costEvaluations()[explainerTypeEnum.gradient]"></expl-zs-line-chart>
+    @if (costEvaluations()[explainerTypeEnum.gradient]; as chartData) {
+      <expl-zs-line-chart
+        class="m size-line-chart"
+        xTitle="# Tables"
+        yTitle="Cost Hit Rate"
+        [chartData]="chartData"></expl-zs-line-chart>
+    }
   </div>
   <div class="flex flex-col items-center gap-4">
     <p class="text-xl font-bold">Cost Guided Backpropagation</p>
-    <expl-zs-line-chart
-      class="m size-line-chart"
-      xTitle="# Tables"
-      yTitle="Cost Hit Rate"
-      [chartData]="costEvaluations()[explainerTypeEnum.guidedBackpropagation]"></expl-zs-line-chart>
+    @if (costEvaluations()[explainerTypeEnum.guidedBackpropagation]; as chartData) {
+      <expl-zs-line-chart
+        class="m size-line-chart"
+        xTitle="# Tables"
+        yTitle="Cost Hit Rate"
+        [chartData]="chartData"></expl-zs-line-chart>
+    }
   </div>
 </div>
