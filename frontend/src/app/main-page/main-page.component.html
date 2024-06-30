@@ -25,9 +25,9 @@
 </div>
 <div class="grid grid-rows-60-40 gap-4">
   <div>
-    @if (this.selectedFullPlan()) {
+    @if (this.selectedFullPlan(); as fullPlan) {
       <expl-zs-plan-graph
-        [graph]="this.selectedFullPlan()"
+        [fullPlan]="fullPlan"
         [explanation]="this.selectedPlanExplanation()"
         [(selectedNode)]="selectedNode"></expl-zs-plan-graph>
     }

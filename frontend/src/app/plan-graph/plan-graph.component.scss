@@ -1,10 +1,8 @@
-.graphDiv {
-  height: 100%;
-}
-
 .node {
   ellipse {
-    transition: stroke-width 0.2s;
+    transition: stroke-width;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
     &.hover {
       stroke-width: 6px;
     }

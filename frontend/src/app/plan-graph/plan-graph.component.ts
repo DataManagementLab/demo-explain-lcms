@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AfterViewInit, Component, ElementRef, Input, ViewChild, ViewEncapsulation, effect, model } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild, ViewEncapsulation, effect, input, model, signal } from '@angular/core';
 import FullPlan from '../services/data/full-plan';
 
 import * as d3 from 'd3';
@@ -12,84 +12,46 @@ import Explanation from '../services/data/explanation';
   standalone: true,
   imports: [],
   encapsulation: ViewEncapsulation.None,
-  templateUrl: './plan-graph.component.html',
+  template: "<div class='h-full' #graphDiv></div>",
   styleUrl: './plan-graph.component.scss',
 })
 export class PlanGraphComponent implements AfterViewInit {
-  private viewInit = false;
-  private plan: FullPlan | undefined;
-  private _explanation: Explanation | undefined;
+  private graphviz = signal<d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined>(undefined);
+  @ViewChild('graphDiv') graphDivRef: ElementRef | undefined;
+  private graphDiv = signal<HTMLDivElement | undefined>(undefined);
 
-  private div: HTMLDivElement | undefined;
-  @ViewChild('graphDiv') divRef: ElementRef | undefined;
-
-  private graphviz: d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined;
-
-  @Input() set graph(value: FullPlan | undefined) {
-    this.plan = value;
-
-    if (value && this.viewInit) {
-      if (this.graphviz) {
-        this.graphviz.resetZoom();
-      }
-      this.drawGraph();
-    }
-  }
-
-  @Input() set explanation(value: Explanation | undefined) {
-    this._explanation = value;
-    if (value && this.viewInit) {
-      this.drawImportance();
-    }
-  }
-
+  private wasViewInit = signal<boolean>(false);
+  fullPlan = input.required<FullPlan>();
+  explanation = input<Explanation>();
   selectedNode = model<GraphNode | undefined>();
 
   constructor() {
-    effect(() => {
-      const selectedNode = this.selectedNode();
-      if (!selectedNode) {
-        return;
-      }
-      const graphElement = d3.selectAll('#graph0');
-      const nodes = graphElement.selectAll('.node');
-      const nodeToSelect = nodes.filter(e => (e as any).key == selectedNode.nodeId).selectAll('ellipse');
-      if (nodeToSelect.classed('selected')) {
-        return;
-      }
-      nodes //
-        .selectAll('ellipse')
-        .classed('selected', false);
-      nodeToSelect //
-        .classed('selected', true);
-    });
+    effect(() => this.drawGraph());
+    effect(() => this.drawImportance());
+    effect(() => this.setSelectedNode());
   }
 
   ngAfterViewInit(): void {
-    this.viewInit = true;
-    if (this.divRef) {
-      this.div = this.divRef.nativeElement;
-    }
-    if (this.plan) {
-      this.drawGraph();
-      this.drawImportance();
+    if (this.graphDivRef) {
+      this.graphDiv.set(this.graphDivRef.nativeElement);
+      this.graphviz.set(d3Graphviz.graphviz(this.graphDivRef.nativeElement, { useWorker: false }));
+      this.wasViewInit.set(true);
     }
   }
 
   drawGraph(): void {
-    if (!this.div || !this.plan) {
-      return;
-    }
-    this.graphviz = d3Graphviz.graphviz(this.div, { useWorker: false });
-    if (!this.graphviz) {
+    const graphDiv = this.graphDiv();
+    const fullPlan = this.fullPlan();
+    const graphviz = this.graphviz();
+    if (!this.wasViewInit() || !graphDiv || !fullPlan || !graphviz) {
       return;
     }
 
     const margin = { top: 16, right: 16, bottom: 16, left: 16 };
-    const height = this.div.clientHeight - margin.left - margin.right;
-    const width = this.div.clientWidth - margin.top - margin.bottom;
+    const height = graphDiv.clientHeight - margin.left - margin.right;
+    const width = graphDiv.clientWidth - margin.top - margin.bottom;
 
-    this.graphviz
+    graphviz
       .height(height + margin.top + margin.bottom)
       .width(width + margin.left + margin.right)
       .fit(true)
@@ -98,17 +60,18 @@ export class PlanGraphComponent implements AfterViewInit {
           d.attributes.fill = 'transparent';
         }
       })
-      .renderDot(this.plan.dotGraph)
+      .renderDot(fullPlan.dotGraph)
       .on('end', () => {
-        this.setInteractions();
+        this.setGraphInteractions();
         this.drawImportance();
       });
   }
 
-  setInteractions() {
-    if (!this.graphviz) {
+  setGraphInteractions() {
+    if (!this.graphviz()) {
       return;
     }
+    this.graphviz()!.resetZoom();
     const graphElement = d3.selectAll('#graph0');
     const nodes = graphElement.selectAll('.node');
 
@@ -130,8 +93,9 @@ export class PlanGraphComponent implements AfterViewInit {
         .selectAll('ellipse')
         .classed('selected', true);
 
-      if (this.plan) {
-        const graphNode = this.plan.graphNodes.find(n => n.nodeId == parseInt(nodeKey));
+      const fullPlan = this.fullPlan();
+      if (fullPlan) {
+        const graphNode = fullPlan.graphNodes.find(n => n.nodeId == parseInt(nodeKey));
         this.selectedNode.set(graphNode);
       }
     };
@@ -150,12 +114,12 @@ export class PlanGraphComponent implements AfterViewInit {
   }
 
   drawImportance() {
-    if (!this.graphviz) {
+    if (!this.graphviz()) {
       return;
     }
     const graphElement = d3.selectAll('#graph0');
     const nodes = graphElement.selectAll('.node');
-    const value = this._explanation?.nodeImportance;
+    const value = this.explanation()?.nodeImportance;
     if (!value) {
       nodes.selectAll('ellipse').attr('fill', '#FFFFFF');
       return;
@@ -168,5 +132,23 @@ export class PlanGraphComponent implements AfterViewInit {
       .attr('fill-opacity', (d: any) => {
         return value[d.parent.key] * 2;
       });
+  }
+
+  setSelectedNode() {
+    const selectedNode = this.selectedNode();
+    if (!selectedNode) {
+      return;
+    }
+    const graphElement = d3.selectAll('#graph0');
+    const nodes = graphElement.selectAll('.node');
+    const nodeToSelect = nodes.filter(e => (e as any).key == selectedNode.nodeId).selectAll('ellipse');
+    if (nodeToSelect.classed('selected')) {
+      return;
+    }
+    nodes //
+      .selectAll('ellipse')
+      .classed('selected', false);
+    nodeToSelect //
+      .classed('selected', true);
   }
 }
