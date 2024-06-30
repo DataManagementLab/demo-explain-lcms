@@ -48,17 +48,17 @@ import { NodeInfoListComponent } from './node-info-list/node-info-list.component
   host: { class: 'grid grid-cols-2 grid-rows-full gap-8 box-border max-h-full px-4 py-8 relative' },
 })
 export class MainPageComponent implements OnInit {
-  public plans = signal<Plan[]>([]);
-  public selectedPlan = signal<Plan | undefined>(undefined);
+  plans = signal<Plan[]>([]);
+  selectedPlan = signal<Plan | undefined>(undefined);
   private selectedPlan$ = toObservable(this.selectedPlan);
-  public selectedFullPlan = signal<FullPlan | undefined>(undefined);
-  public selectedNode = signal<GraphNode | undefined>(undefined);
-  public selectedPlanPrediction = signal<Prediction | undefined>(undefined);
-  public selectedPlanExplanation = signal<Explanation | undefined>(undefined);
-  public selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
+  selectedFullPlan = signal<FullPlan | undefined>(undefined);
+  selectedNode = signal<GraphNode | undefined>(undefined);
+  selectedPlanPrediction = signal<Prediction | undefined>(undefined);
+  selectedPlanExplanation = signal<Explanation | undefined>(undefined);
+  selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
   private selectedExplainer$ = toObservable(this.selectedExplainer);
 
-  public isLoading = computed(() => {
+  isLoading = computed(() => {
     return this.selectedPlan() && !(this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation());
   });
 

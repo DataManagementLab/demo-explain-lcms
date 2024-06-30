@@ -20,7 +20,7 @@ export class NodeImportanceListComponent {
   explanation = input.required<Explanation>();
   selectedNode = model<GraphNode>();
 
-  public nodeImportancesSorted = computed(() => {
+  nodeImportancesSorted = computed(() => {
     const res = this.fullPlan()
       .graphNodes.filter(node => node.nodeId in this.explanation().nodeImportance)
       .map(node => getNodeImportance(node, this.prediction(), this.explanation()));

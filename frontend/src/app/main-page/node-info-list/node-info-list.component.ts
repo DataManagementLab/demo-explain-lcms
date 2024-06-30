@@ -29,7 +29,7 @@ export class NodeInfoListComponent implements OnInit {
     this.apiService.getImportantFeatures().subscribe(value => this.importantFeatures.set(value));
   }
 
-  public displayedColumns = computed(() => {
+  displayedColumns = computed(() => {
     const explanation = this.explanation();
     const cols = ['attr', 'value'];
     if (explanation) {
@@ -38,7 +38,7 @@ export class NodeInfoListComponent implements OnInit {
     return cols;
   });
 
-  public selectedNodeImportance = computed(() => {
+  selectedNodeImportance = computed(() => {
     const selectedNode = this.selectedNode();
     const prediction = this.prediction();
     const explanation = this.explanation();
@@ -48,7 +48,7 @@ export class NodeInfoListComponent implements OnInit {
     return getNodeImportance(selectedNode, prediction, explanation);
   });
 
-  public selectedNodeInfoFields = computed(() => {
+  selectedNodeInfoFields = computed(() => {
     const selectedNode = this.selectedNode();
     if (!selectedNode) {
       return [];
