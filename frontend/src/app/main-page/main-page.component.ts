@@ -44,8 +44,8 @@ import { NodeInfoListComponent } from './node-info-list/node-info-list.component
     NodeInfoListComponent,
   ],
   templateUrl: './main-page.component.html',
-  styleUrl: './main-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'grid grid-cols-2 grid-rows-full gap-8 box-border max-h-full px-4 py-8 relative' },
 })
 export class MainPageComponent implements OnInit {
   public plans = signal<Plan[]>([]);

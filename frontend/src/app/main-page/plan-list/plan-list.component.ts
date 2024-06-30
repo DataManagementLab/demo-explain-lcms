@@ -1,13 +1,13 @@
 import { Component, input, model, signal } from '@angular/core';
 import Plan from '../../services/data/plan';
 import { MatTableModule } from '@angular/material/table';
+import { CnPipe } from '../../utils/cn.pipe';
 
 @Component({
   selector: 'expl-zs-plan-list',
   standalone: true,
-  imports: [MatTableModule],
+  imports: [MatTableModule, CnPipe],
   templateUrl: './plan-list.component.html',
-  styleUrl: './plan-list.component.scss',
 })
 export class PlanListComponent {
   plans = input<Plan[]>([]);

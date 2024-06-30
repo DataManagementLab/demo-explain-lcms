@@ -6,7 +6,7 @@ import { MainPageComponent } from './main-page/main-page.component';
   selector: 'expl-zs-root',
   standalone: true,
   imports: [RouterOutlet, MainPageComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+  template: '<router-outlet />',
+  host: { class: 'h-full' },
 })
 export class AppComponent {}

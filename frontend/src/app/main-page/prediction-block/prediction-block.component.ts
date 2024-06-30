@@ -7,7 +7,7 @@ import { DecimalPipe } from '@angular/common';
   standalone: true,
   imports: [DecimalPipe],
   templateUrl: './prediction-block.component.html',
-  styleUrl: './prediction-block.component.scss',
+  host: { class: 'flex flex-col gap-4' },
 })
 export class PredictionBlockComponent {
   prediction = input.required<Prediction>();

@@ -5,13 +5,14 @@ import FullPlan from '../../services/data/full-plan';
 import Prediction from '../../services/data/prediction';
 import GraphNode from '../../services/data/graph-node';
 import { getNodeImportance } from '../../utils/main-page-utils';
+import { CnPipe } from '../../utils/cn.pipe';
 
 @Component({
   selector: 'expl-zs-node-importance-list',
   standalone: true,
-  imports: [DecimalPipe, PercentPipe],
+  imports: [DecimalPipe, PercentPipe, CnPipe],
   templateUrl: './node-importance-list.component.html',
-  styleUrl: './node-importance-list.component.scss',
+  host: { class: 'flex flex-col gap-2 max-h-full overflow-y-auto' },
 })
 export class NodeImportanceListComponent {
   fullPlan = input.required<FullPlan>();

@@ -7,7 +7,6 @@ import ExplainerType from '../../services/data/explainer-type';
   standalone: true,
   imports: [MatRadioModule],
   templateUrl: './explainer-select.component.html',
-  styleUrl: './explainer-select.component.scss',
 })
 export class ExplainerSelectComponent {
   explainerType = ExplainerType;

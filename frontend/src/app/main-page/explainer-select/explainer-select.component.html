@@ -1,5 +1,5 @@
 <mat-radio-group
-  class="flexColumn"
+  class="flex max-h-full flex-col gap-2 overflow-y-auto"
   [value]="selectedExplainer()"
   (change)="selectedExplainer.set($event.value)">
   <mat-radio-button [value]="explainerType.gradient">Gradient</mat-radio-button>

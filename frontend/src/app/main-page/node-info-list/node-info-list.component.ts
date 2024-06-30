@@ -15,7 +15,7 @@ import { MatTableModule } from '@angular/material/table';
   standalone: true,
   imports: [DecimalPipe, PercentPipe, MatTableModule],
   templateUrl: './node-info-list.component.html',
-  styleUrl: './node-info-list.component.scss',
+  host: { class: 'flex flex-col gap-2' },
 })
 export class NodeInfoListComponent implements OnInit {
   prediction = input<Prediction>();

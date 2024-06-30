@@ -1,14 +1,14 @@
-<div class="leftGrid">
-  <div class="planList">
+<div class="grid h-full grid-rows-60-40 gap-4">
+  <div class="max-h-full overflow-auto border border-solid border-black">
     <expl-zs-plan-list
       [plans]="plans()"
       [(selectedPlan)]="selectedPlan" />
   </div>
-  <div class="leftBottomGrid">
+  <div class="grid grid-cols-2 grid-rows-full gap-4">
     @if (this.selectedPlan()) {
       <expl-zs-explainer-select [(selectedExplainer)]="selectedExplainer" />
     }
-    <div class="flexColumn">
+    <div class="flex max-h-full flex-col gap-2 overflow-y-auto">
       @if (this.selectedPlanPrediction(); as prediction) {
         <expl-zs-prediction-block [prediction]="prediction" />
         <mat-divider></mat-divider>
@@ -23,8 +23,8 @@
     </div>
   </div>
 </div>
-<div class="rightGrid">
-  <div class="graphBlock">
+<div class="grid grid-rows-60-40 gap-4">
+  <div>
     @if (this.selectedFullPlan()) {
       <expl-zs-plan-graph
         [graph]="this.selectedFullPlan()"
@@ -40,5 +40,7 @@
   }
 </div>
 @if (isLoading()) {
-  <mat-spinner></mat-spinner>
+  <div class="absolute left-1/2 top-1/2">
+    <mat-spinner></mat-spinner>
+  </div>
 }
