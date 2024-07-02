@@ -13,10 +13,10 @@
         <expl-zs-prediction-block [prediction]="prediction" />
         <mat-divider></mat-divider>
       }
-      @if (this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation()) {
+      @if (this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation() && this.fullCost()) {
         <expl-zs-node-importance-list
           [fullPlan]="this.selectedFullPlan()!"
-          [prediction]="this.selectedPlanPrediction()!"
+          [fullCost]="this.fullCost()!"
           [explanation]="this.selectedPlanExplanation()!"
           [(selectedNode)]="this.selectedNode" />
       }
@@ -30,12 +30,30 @@
         [fullPlan]="fullPlan"
         [explanation]="this.selectedPlanExplanation()"
         [(selectedNode)]="selectedNode"></expl-zs-plan-graph>
+      @if (this.allExplanationNodes(); as explanationNodes) {
+        @if (this.actualExplanation(); as explanation) {
+          <expl-zs-cost-bar
+            class="absolute right-4 top-8 w-64"
+            [(selectedNode)]="selectedNode"
+            [explanation]="explanation"
+            [nodesToShow]="explanationNodes"
+            [fullPlan]="selectedFullPlan()!" />
+        }
+        @if (this.selectedPlanExplanation(); as explanation) {
+          <expl-zs-cost-bar
+            class="absolute right-4 top-16 w-64"
+            [(selectedNode)]="selectedNode"
+            [explanation]="explanation"
+            [nodesToShow]="explanationNodes"
+            [fullPlan]="selectedFullPlan()!" />
+        }
+      }
     }
   </div>
   @if (this.selectedNode(); as selectedNode) {
     <expl-zs-node-info-list
       [selectedNode]="selectedNode"
-      [prediction]="this.selectedPlanPrediction()"
+      [fullCost]="this.fullCost()"
       [explanation]="this.selectedPlanExplanation()" />
   }
 </div>

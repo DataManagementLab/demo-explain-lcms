@@ -1,18 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
-import { MatListModule } from '@angular/material/list';
 import { ApiService } from '../services/api.service';
 import Plan from '../services/data/plan';
 import { PlanGraphComponent } from '../plan-graph/plan-graph.component';
 import FullPlan from '../services/data/full-plan';
 import GraphNode from '../services/data/graph-node';
-import { MatButtonModule } from '@angular/material/button';
 import Prediction from '../services/data/prediction';
 import Explanation from '../services/data/explanation';
-import { MatTableModule } from '@angular/material/table';
-import { MatSelectModule } from '@angular/material/select';
 import ExplainerType from '../services/data/explainer-type';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { DecimalPipe, PercentPipe } from '@angular/common';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PlanListComponent } from './plan-list/plan-list.component';
@@ -22,19 +16,13 @@ import { ExplainerSelectComponent } from './explainer-select/explainer-select.co
 import { PredictionBlockComponent } from './prediction-block/prediction-block.component';
 import { NodeImportanceListComponent } from './node-importance-list/node-importance-list.component';
 import { NodeInfoListComponent } from './node-info-list/node-info-list.component';
+import { CostBarComponent } from './cost-bar/cost-bar.component';
 
 @Component({
   selector: 'expl-zs-main-page',
   standalone: true,
   imports: [
-    MatListModule,
     PlanGraphComponent,
-    MatButtonModule,
-    MatTableModule,
-    MatSelectModule,
-    MatFormFieldModule,
-    DecimalPipe,
-    PercentPipe,
     MatDividerModule,
     MatProgressSpinnerModule,
     PlanListComponent,
@@ -42,6 +30,7 @@ import { NodeInfoListComponent } from './node-info-list/node-info-list.component
     PredictionBlockComponent,
     NodeImportanceListComponent,
     NodeInfoListComponent,
+    CostBarComponent,
   ],
   templateUrl: './main-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,9 +46,33 @@ export class MainPageComponent implements OnInit {
   selectedPlanExplanation = signal<Explanation | undefined>(undefined);
   selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
   private selectedExplainer$ = toObservable(this.selectedExplainer);
+  actualExplanation = signal<Explanation | undefined>(undefined);
 
   isLoading = computed(() => {
     return this.selectedPlan() && !(this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation());
+  });
+
+  fullCost = computed(() => {
+    const prediction = this.selectedPlanPrediction();
+    if (!prediction) {
+      return undefined;
+    }
+    return this.selectedExplainer() == ExplainerType.actual ? prediction.label : prediction.prediction;
+  });
+
+  allExplanationNodes = computed(() => {
+    const actualExplanation = this.actualExplanation();
+    const explanation = this.selectedPlanExplanation();
+    if (!actualExplanation || !explanation) {
+      return undefined;
+    }
+    const nodes = Object.keys(actualExplanation.nodeImportance)
+      .concat(Object.keys(explanation.nodeImportance))
+      .map(value => Number.parseInt(value))
+      .filter(value => actualExplanation.nodeImportance[value] > 0.05 || explanation.nodeImportance[value] > 0.05)
+      .filter((value, index, arr) => arr.indexOf(value) == index);
+    nodes.sort((x, y) => x - y);
+    return nodes;
   });
 
   constructor(private apiService: ApiService) {}
@@ -80,6 +93,9 @@ export class MainPageComponent implements OnInit {
     combineLatest([this.selectedPlan$, this.selectedExplainer$])
       .pipe(switchMap(([plan, explainerType]) => (plan ? this.apiService.getExplanation(plan.id, explainerType) : of(undefined))))
       .subscribe(value => this.selectedPlanExplanation.set(value));
+    this.selectedPlan$
+      .pipe(switchMap(plan => (plan ? this.apiService.getExplanation(plan.id, ExplainerType.actual) : of(undefined))))
+      .subscribe(value => this.actualExplanation.set(value));
   }
 
   onNodeSelected(node: GraphNode) {

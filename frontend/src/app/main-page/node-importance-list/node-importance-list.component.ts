@@ -2,7 +2,6 @@ import { DecimalPipe, PercentPipe } from '@angular/common';
 import { Component, computed, input, model } from '@angular/core';
 import Explanation from '../../services/data/explanation';
 import FullPlan from '../../services/data/full-plan';
-import Prediction from '../../services/data/prediction';
 import GraphNode from '../../services/data/graph-node';
 import { getNodeImportance } from '../../utils/main-page-utils';
 import { CnPipe } from '../../pipes/cn.pipe';
@@ -16,14 +15,14 @@ import { CnPipe } from '../../pipes/cn.pipe';
 })
 export class NodeImportanceListComponent {
   fullPlan = input.required<FullPlan>();
-  prediction = input.required<Prediction>();
+  fullCost = input.required<number>();
   explanation = input.required<Explanation>();
   selectedNode = model<GraphNode>();
 
   nodeImportancesSorted = computed(() => {
     const res = this.fullPlan()
       .graphNodes.filter(node => node.nodeId in this.explanation().nodeImportance)
-      .map(node => getNodeImportance(node, this.prediction(), this.explanation()));
+      .map(node => getNodeImportance(node, this.fullCost(), this.explanation()));
     res.sort((x, y) => y.importance - x.importance);
     return res;
   });

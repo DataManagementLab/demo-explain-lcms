@@ -1,6 +1,5 @@
 import { Component, OnInit, computed, input, signal } from '@angular/core';
 import GraphNode from '../../services/data/graph-node';
-import Prediction from '../../services/data/prediction';
 import Explanation from '../../services/data/explanation';
 import { getNodeImportance } from '../../utils/main-page-utils';
 import { DecimalPipe, PercentPipe } from '@angular/common';
@@ -18,7 +17,7 @@ import { MatTableModule } from '@angular/material/table';
   host: { class: 'flex flex-col gap-2' },
 })
 export class NodeInfoListComponent implements OnInit {
-  prediction = input<Prediction>();
+  fullCost = input<number>();
   explanation = input<Explanation>();
   selectedNode = input.required<GraphNode>();
   importantFeatures = signal<ImportantFeatures | undefined>(undefined);
@@ -40,12 +39,12 @@ export class NodeInfoListComponent implements OnInit {
 
   selectedNodeImportance = computed(() => {
     const selectedNode = this.selectedNode();
-    const prediction = this.prediction();
+    const fullCost = this.fullCost();
     const explanation = this.explanation();
-    if (!selectedNode || !prediction || !explanation) {
+    if (!selectedNode || !fullCost || !explanation) {
       return;
     }
-    return getNodeImportance(selectedNode, prediction, explanation);
+    return getNodeImportance(selectedNode, fullCost, explanation);
   });
 
   selectedNodeInfoFields = computed(() => {
