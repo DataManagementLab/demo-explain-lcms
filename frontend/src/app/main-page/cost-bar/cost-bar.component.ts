@@ -76,7 +76,9 @@ export class CostBarComponent implements AfterViewInit {
         .attr('height', height)
         .attr('fill', colors[i])
         .attr('nodeId', item.key)
-        .attr('fill', 'transparent');
+        .attr('fill', 'black')
+        .attr('opacity', 0)
+        .classed('transition-opacity', true);
       svg
         .append('rect')
         .attr('x', x)
@@ -102,7 +104,7 @@ export class CostBarComponent implements AfterViewInit {
       return;
     }
 
-    d3.select(graphDiv).selectAll('[nodeId]').attr('fill', 'transparent');
-    d3.select(graphDiv).select(`[nodeId="${node.nodeId}"]`).attr('fill', 'black');
+    d3.select(graphDiv).selectAll('[nodeId]').attr('opacity', 0);
+    d3.select(graphDiv).select(`[nodeId="${node.nodeId}"]`).attr('opacity', 1);
   }
 }
