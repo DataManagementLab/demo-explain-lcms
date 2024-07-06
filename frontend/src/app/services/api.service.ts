@@ -9,6 +9,7 @@ import ExplainerType from './data/explainer-type';
 import MostImportantNodeEvaluation from './data/most-important-node-evaluation';
 import TableToScoreEvaluation from './data/table-to-score-evaluation';
 import { of, tap } from 'rxjs';
+import FidelityEvaluation from './data/fidelity-evaluation';
 
 @Injectable({
   providedIn: 'root',
@@ -52,5 +53,9 @@ export class ApiService {
 
   getCostEvaluationAll(explainerType: ExplainerType) {
     return this.httpClient.get<TableToScoreEvaluation>(this.baseURL + 'evaluation/' + explainerType + '/cost');
+  }
+
+  getFidelityEvaluation(planId: number, explainerType: ExplainerType) {
+    return this.httpClient.get<FidelityEvaluation>(this.baseURL + 'plans/' + planId + '/evaluation/' + explainerType + '/fidelity');
   }
 }

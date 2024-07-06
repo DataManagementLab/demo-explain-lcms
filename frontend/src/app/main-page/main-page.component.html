@@ -5,13 +5,20 @@
       [(selectedPlan)]="selectedPlan" />
   </div>
   <div class="grid grid-cols-2 grid-rows-full gap-4">
-    @if (this.selectedPlan()) {
-      <expl-zs-explainer-select [(selectedExplainer)]="selectedExplainer" />
-    }
-    <div class="flex max-h-full flex-col gap-2 overflow-y-auto">
+    <div class="flex flex-col gap-2">
+      @if (this.selectedPlan()) {
+        <expl-zs-explainer-select [(selectedExplainer)]="selectedExplainer" />
+        @if (this.selectedPlanFidelityEvaluaiton(); as fidelity) {
+          <mat-divider />
+          <expl-zs-explainer-evaluation-block [fidelutyEvaluation]="fidelity" />
+        }
+      }
+    </div>
+
+    <div class="flex max-h-full flex-col gap-2">
       @if (this.selectedPlanPrediction(); as prediction) {
         <expl-zs-prediction-block [prediction]="prediction" />
-        <mat-divider></mat-divider>
+        <mat-divider />
       }
       @if (this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation() && this.fullCost()) {
         <expl-zs-node-importance-list

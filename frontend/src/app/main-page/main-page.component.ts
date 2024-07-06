@@ -17,6 +17,8 @@ import { PredictionBlockComponent } from './prediction-block/prediction-block.co
 import { NodeImportanceListComponent } from './node-importance-list/node-importance-list.component';
 import { NodeInfoListComponent } from './node-info-list/node-info-list.component';
 import { CostBarComponent } from './cost-bar/cost-bar.component';
+import FidelityEvaluation from '../services/data/fidelity-evaluation';
+import { ExplainerEvaluationBlockComponent } from './explainer-evaluation-block/explainer-evaluation-block.component';
 
 @Component({
   selector: 'expl-zs-main-page',
@@ -31,6 +33,7 @@ import { CostBarComponent } from './cost-bar/cost-bar.component';
     NodeImportanceListComponent,
     NodeInfoListComponent,
     CostBarComponent,
+    ExplainerEvaluationBlockComponent,
   ],
   templateUrl: './main-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,6 +50,7 @@ export class MainPageComponent implements OnInit {
   selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
   private selectedExplainer$ = toObservable(this.selectedExplainer);
   actualExplanation = signal<Explanation | undefined>(undefined);
+  selectedPlanFidelityEvaluaiton = signal<FidelityEvaluation | undefined>(undefined);
 
   isLoading = computed(() => {
     return this.selectedPlan() && !(this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation());
@@ -85,6 +89,7 @@ export class MainPageComponent implements OnInit {
       this.selectedNode.set(undefined);
       this.selectedPlanPrediction.set(undefined);
       this.selectedPlanExplanation.set(undefined);
+      this.selectedPlanFidelityEvaluaiton.set(undefined);
     });
     this.selectedPlan$.pipe(switchMap(plan => (plan ? this.apiService.getPlan(plan.id) : of(undefined)))).subscribe(value => this.selectedFullPlan.set(value));
     this.selectedPlan$
@@ -93,6 +98,9 @@ export class MainPageComponent implements OnInit {
     combineLatest([this.selectedPlan$, this.selectedExplainer$])
       .pipe(switchMap(([plan, explainerType]) => (plan ? this.apiService.getExplanation(plan.id, explainerType) : of(undefined))))
       .subscribe(value => this.selectedPlanExplanation.set(value));
+    combineLatest([this.selectedPlan$, this.selectedExplainer$])
+      .pipe(switchMap(([plan, explainerType]) => (plan ? this.apiService.getFidelityEvaluation(plan.id, explainerType) : of(undefined))))
+      .subscribe(value => this.selectedPlanFidelityEvaluaiton.set(value));
     this.selectedPlan$
       .pipe(switchMap(plan => (plan ? this.apiService.getExplanation(plan.id, ExplainerType.actual) : of(undefined))))
       .subscribe(value => this.actualExplanation.set(value));
