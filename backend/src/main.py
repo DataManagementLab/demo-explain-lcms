@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 from ml.dependencies import MLHelper
 from demo.router import router as demo_router
+from evaluation.router import router as evaluation_router
 
 
 settings = get_settings()
@@ -34,6 +35,7 @@ app.add_middleware(
 )
 
 app.include_router(demo_router)
+app.include_router(evaluation_router)
 
 
 # Index

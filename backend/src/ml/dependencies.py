@@ -1,4 +1,6 @@
 import os.path
+from typing import Annotated
+from fastapi import Depends, HTTPException, status as status_code
 import numpy as np
 import torch
 
@@ -63,3 +65,16 @@ class MLHelper:
         self._assert_loaded()
 
         return explainers[explainer_type](self.model)
+
+
+def get_explainer(explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
+    return ml.get_explainer(explainer_type)
+
+
+def get_plan(plan_id: int, ml: Annotated[MLHelper, Depends()]):
+    if plan_id < 0 or plan_id >= len(ml.parsed_plans):
+        raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid plan id")
+    plan = ml.parsed_plans[plan_id]
+    plan.id = plan_id
+    plan.prepare_plan_for_inference()
+    return plan
