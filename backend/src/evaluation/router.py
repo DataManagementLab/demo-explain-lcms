@@ -3,27 +3,37 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from tqdm import tqdm
 
-from evaluation.dependencies import get_evaluation_results_dir
-from evaluation.schemas import MostImportantNodeEvaluationAllRespose, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
+from evaluation.dependencies import EvaluationPlansLoader, evaluation_plans, get_evaluation_results_dir
+from evaluation.schemas import EvaluationPlansStats, MostImportantNodeEvaluationAllRespose, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
 from evaluation.utils import load_model_from_file, save_model_to_file
-from ml.dependencies import MLHelper, get_explainer, get_plan
+from ml.dependencies import get_explainer
 from ml.service import ExplainerType
 from zero_shot_learned_db.explainers.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
 from zero_shot_learned_db.explainers.explainers.base_explainer import BaseExplainer
-from zero_shot_learned_db.explainers.load import NodeType
+from zero_shot_learned_db.explainers.load import NodeType, ParsedPlan
 
 
 router = APIRouter(tags=["evaluation"], prefix="/evaluation")
 
 
+@router.get("/stats", response_model=EvaluationPlansStats)
+def evaluation_plans_stats(evaluation_plans_loader: Annotated[EvaluationPlansLoader, Depends()]):
+    return EvaluationPlansStats(table_count_nodes=evaluation_plans_loader.table_count_nodes)
+
+
 @router.get("/{explainer_type}/fidelity", response_model=TablesToScoreEvaluationResponse)
-def get_fidelity_evaluation_all(explainer_type: ExplainerType, explainer: Annotated[BaseExplainer, Depends(get_explainer)], ml: Annotated[MLHelper, Depends()], dir: Annotated[str, Depends(get_evaluation_results_dir)]):
+def get_fidelity_evaluation_all(
+    explainer_type: ExplainerType,
+    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+    evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
+    dir: Annotated[str, Depends(get_evaluation_results_dir)],
+):
     file_name = dir + f"/fidelity_{explainer_type}.json"
     response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
     if response is not None:
         return response
 
-    evaluations = [evaluation_fidelity_plus(explainer, get_plan(i, ml)) for i in tqdm(range(len(ml.parsed_plans)))]
+    evaluations = [evaluation_fidelity_plus(explainer, plan) for plan in tqdm(evaluation_plans)]
     table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
     table_counts.sort()
     scores: list[TablesToScore] = []
@@ -37,23 +47,19 @@ def get_fidelity_evaluation_all(explainer_type: ExplainerType, explainer: Annota
 
 
 @router.get("/evaluation/{explainer_type}/most-important-node", response_model=MostImportantNodeEvaluationAllRespose)
-def get_most_important_node_evaluation_all(explainer_type: ExplainerType, explainer: Annotated[BaseExplainer, Depends(get_explainer)], ml: Annotated[MLHelper, Depends()], dir: Annotated[str, Depends(get_evaluation_results_dir)]):
+def get_most_important_node_evaluation_all(
+    explainer_type: ExplainerType,
+    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+    evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
+    dir: Annotated[str, Depends(get_evaluation_results_dir)],
+):
     file_name = dir + f"/most_important_node_{explainer_type}.json"
     response = load_model_from_file(MostImportantNodeEvaluationAllRespose, file_name)
     if response is not None:
         return response
 
-    count = len(ml.parsed_plans)
-    evaluations = [most_important_node_evaluation(explainer, get_plan(i, ml)) for i in tqdm(range(count))]
-    actual_nodes = [e.actual_node for e in evaluations]
-    actual_nodes_stat = [
-        NodeStat(
-            node_name=node_name,
-            fraction=len([n for n in actual_nodes if n == node_name]) / count,
-        )
-        for node_name in set(actual_nodes)
-    ]
-    actual_nodes_stat.sort(key=lambda n: n.fraction, reverse=True)
+    count = len(evaluation_plans)
+    evaluations = [most_important_node_evaluation(explainer, plan) for plan in tqdm(evaluation_plans)]
     explained_nodes = [e.explained_node for e in evaluations]
     explained_nodes_stat = [
         NodeStat(
@@ -63,19 +69,24 @@ def get_most_important_node_evaluation_all(explainer_type: ExplainerType, explai
         for node_name in set(explained_nodes)
     ]
     explained_nodes_stat.sort(key=lambda n: n.fraction, reverse=True)
-    response = MostImportantNodeEvaluationAllRespose(actual_nodes=actual_nodes_stat, explained_nodes=explained_nodes_stat)
+    response = MostImportantNodeEvaluationAllRespose(nodes=explained_nodes_stat)
     save_model_to_file(response, file_name)
     return response
 
 
 @router.get("/evaluation/{explainer_type}/cost", response_model=TablesToScoreEvaluationResponse)
-def get_cost_evaluation_all(explainer_type: ExplainerType, explainer: Annotated[BaseExplainer, Depends(get_explainer)], ml: Annotated[MLHelper, Depends()], dir: Annotated[str, Depends(get_evaluation_results_dir)]):
+def get_cost_evaluation_all(
+    explainer_type: ExplainerType,
+    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+    evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
+    dir: Annotated[str, Depends(get_evaluation_results_dir)],
+):
     file_name = dir + f"/cost_{explainer_type}.json"
     response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
     if response is not None:
         return response
 
-    evaluations = [cost_accuracy_evaluation(explainer, get_plan(i, ml)) for i in tqdm(range(len(ml.parsed_plans)))]
+    evaluations = [cost_accuracy_evaluation(explainer, plan) for plan in tqdm(evaluation_plans)]
     table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
     table_counts.sort()
     scores: list[TablesToScore] = []

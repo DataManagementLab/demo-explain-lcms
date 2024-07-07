@@ -16,5 +16,8 @@ class NodeStat(CustomModel):
 
 
 class MostImportantNodeEvaluationAllRespose(CustomModel):
-    actual_nodes: list[NodeStat]
-    explained_nodes: list[NodeStat]
+    nodes: list[NodeStat]
+
+
+class EvaluationPlansStats(CustomModel):
+    table_count_nodes: dict[int, int]

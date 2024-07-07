@@ -56,6 +56,8 @@ class MLHelper:
             )
             for plan in self.workload_run.parsed_plans
         ]
+        for index, plan in enumerate(self.parsed_plans):
+            plan.id = index
         print(f"Loaded {len(self.parsed_plans)} plans from {dataset_file}")
 
     def _assert_loaded(self):
@@ -75,6 +77,6 @@ def get_plan(plan_id: int, ml: Annotated[MLHelper, Depends()]):
     if plan_id < 0 or plan_id >= len(ml.parsed_plans):
         raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid plan id")
     plan = ml.parsed_plans[plan_id]
-    plan.id = plan_id
     plan.prepare_plan_for_inference()
+    plan.prepare_plan_for_view()
     return plan

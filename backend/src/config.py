@@ -2,6 +2,7 @@ from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from demo.config import DemoSettings
+from evaluation.config import EvaluationSettings
 from ml.config import MLSettings
 
 
@@ -10,6 +11,7 @@ class Settings(BaseSettings):
 
     ml: MLSettings = MLSettings()
     demo: DemoSettings = DemoSettings()
+    eval: EvaluationSettings = EvaluationSettings()
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_nested_delimiter="__")
 
