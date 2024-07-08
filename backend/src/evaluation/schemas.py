@@ -20,7 +20,7 @@ class MostImportantNodeEvaluationAllRespose(CustomModel):
 
 
 class PlanStats(CustomModel):
-    count: int
+    plan_count: int
     hash_joins_count: int
 
 

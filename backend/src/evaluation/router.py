@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from evaluation.dependencies import EvaluationPlansLoader, evaluation_plans, get_evaluation_results_dir
 from evaluation.schemas import EvaluationPlansStats, MostImportantNodeEvaluationAllRespose, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
-from evaluation.service import draw_cost_score, draw_fidelity_score
+from evaluation.service import draw_cost_score, draw_fidelity_score, draw_table
 from evaluation.utils import load_model_from_file, save_model_to_file
 from ml.dependencies import get_explainer
 from ml.service import ExplainerType
@@ -105,6 +105,7 @@ def get_cost_evaluation_all(
 @router.get("/plots")
 def get_fidelity_evaluation_all_plot(
     dir: Annotated[str, Depends(get_evaluation_results_dir)],
+    evaluation_plans_loader: Annotated[EvaluationPlansLoader, Depends()],
 ):
     data_fidelity: dict[ExplainerType, list[TablesToScore]] = {}
     for explainer_type in ExplainerType:
@@ -117,3 +118,5 @@ def get_fidelity_evaluation_all_plot(
         file_name = f"{dir}/cost_{explainer_type}.json"
         data_cost[explainer_type] = load_model_from_file(TablesToScoreEvaluationResponse, file_name).scores
     draw_cost_score(data_cost, dir)
+
+    draw_table(evaluation_plans_loader.evaluation_plans_stats, dir)

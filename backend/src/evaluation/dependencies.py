@@ -48,7 +48,7 @@ class EvaluationPlansLoader:
             hash_joins_count = 0
             for plan in plans:
                 hash_joins_count += get_hash_joins_count(plan)
-            self.evaluation_plans_stats[table_count] = PlanStats(count=count, hash_joins_count=hash_joins_count)
+            self.evaluation_plans_stats[table_count] = PlanStats(plan_count=count, hash_joins_count=hash_joins_count)
 
     def prepare_all_plans_for_inference(self):
         if self.are_plans_prepared:

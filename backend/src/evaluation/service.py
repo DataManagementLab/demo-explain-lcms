@@ -1,6 +1,7 @@
 import math
 import matplotlib.pyplot as plt
-from evaluation.schemas import TablesToScore
+import numpy as np
+from evaluation.schemas import PlanStats, TablesToScore
 from evaluation.utils import float_range
 from ml.service import ExplainerType
 from zero_shot_learned_db.explainers.load import NodeType, ParsedPlan, Plan
@@ -44,3 +45,25 @@ def get_hash_joins_count(plan: ParsedPlan):
         if operator.plan_parameters.op_name == "Hash Join":
             hash_joins_count += 1
     return hash_joins_count
+
+
+def draw_table(data: dict[int, PlanStats], dir: str):
+    column_headers = ["Tables", "# of Plans", "# of Hash Join Operators"]
+    cell_text = []
+    for key, stat in data.items():
+        cell_text.append(list(map(str, [key, stat.plan_count, stat.hash_joins_count])))
+
+    plt.figure(
+        linewidth=2,
+        tight_layout={"pad": 1},
+    )
+    ccolors = plt.cm.BuPu(np.full(len(column_headers), 0.1))
+    the_table = plt.table(cellText=cell_text, colLabels=column_headers, colColours=ccolors, loc="center")
+
+    the_table.scale(1, 1.5)
+    ax = plt.gca()
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    plt.box(on=None)
+    plt.draw()
+    plt.savefig(f"{dir}/plot_stats_table.png", bbox_inches="tight", dpi=300)
