@@ -2,3 +2,14 @@ fastapi~=0.111.0
 uvicorn~=0.29.0
 pydantic-settings~=2.2.1
 pydantic~=2.7.1
+
+# zero_shot_learned_db packages
+pandas
+tqdm
+scikit-learn
+numpy
+paramiko
+dataclasses
+optuna
+matplotlib
+networkx
