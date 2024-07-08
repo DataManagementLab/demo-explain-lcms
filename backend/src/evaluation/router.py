@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 from evaluation.dependencies import EvaluationPlansLoader, evaluation_plans, get_evaluation_results_dir
 from evaluation.schemas import EvaluationPlansStats, MostImportantNodeEvaluationAllRespose, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
+from evaluation.service import draw_cost_score, draw_fidelity_score
 from evaluation.utils import load_model_from_file, save_model_to_file
 from ml.dependencies import get_explainer
 from ml.service import ExplainerType
@@ -18,7 +19,7 @@ router = APIRouter(tags=["evaluation"], prefix="/evaluation")
 
 @router.get("/stats", response_model=EvaluationPlansStats)
 def evaluation_plans_stats(evaluation_plans_loader: Annotated[EvaluationPlansLoader, Depends()]):
-    return EvaluationPlansStats(table_count_nodes=evaluation_plans_loader.table_count_nodes)
+    return EvaluationPlansStats(stats=evaluation_plans_loader.evaluation_plans_stats)
 
 
 @router.get("/{explainer_type}/fidelity", response_model=TablesToScoreEvaluationResponse)
@@ -28,7 +29,7 @@ def get_fidelity_evaluation_all(
     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
     dir: Annotated[str, Depends(get_evaluation_results_dir)],
 ):
-    file_name = dir + f"/fidelity_{explainer_type}.json"
+    file_name = f"{dir}/fidelity_{explainer_type}.json"
     response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
     if response is not None:
         return response
@@ -53,7 +54,7 @@ def get_most_important_node_evaluation_all(
     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
     dir: Annotated[str, Depends(get_evaluation_results_dir)],
 ):
-    file_name = dir + f"/most_important_node_{explainer_type}.json"
+    file_name = f"{dir}/most_important_node_{explainer_type}.json"
     response = load_model_from_file(MostImportantNodeEvaluationAllRespose, file_name)
     if response is not None:
         return response
@@ -81,7 +82,7 @@ def get_cost_evaluation_all(
     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
     dir: Annotated[str, Depends(get_evaluation_results_dir)],
 ):
-    file_name = dir + f"/cost_{explainer_type}.json"
+    file_name = f"{dir}/cost_{explainer_type}.json"
     response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
     if response is not None:
         return response
@@ -99,3 +100,20 @@ def get_cost_evaluation_all(
     response = TablesToScoreEvaluationResponse(scores=scores)
     save_model_to_file(response, file_name)
     return response
+
+
+@router.get("/plots")
+def get_fidelity_evaluation_all_plot(
+    dir: Annotated[str, Depends(get_evaluation_results_dir)],
+):
+    data_fidelity: dict[ExplainerType, list[TablesToScore]] = {}
+    for explainer_type in ExplainerType:
+        file_name = f"{dir}/fidelity_{explainer_type}.json"
+        data_fidelity[explainer_type] = load_model_from_file(TablesToScoreEvaluationResponse, file_name).scores
+    draw_fidelity_score(data_fidelity, dir)
+
+    data_cost: dict[ExplainerType, list[TablesToScore]] = {}
+    for explainer_type in ExplainerType:
+        file_name = f"{dir}/cost_{explainer_type}.json"
+        data_cost[explainer_type] = load_model_from_file(TablesToScoreEvaluationResponse, file_name).scores
+    draw_cost_score(data_cost, dir)

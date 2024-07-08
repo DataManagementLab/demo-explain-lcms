@@ -5,6 +5,8 @@ from fastapi import Depends, HTTPException
 from tqdm import tqdm
 
 from config import Settings, get_settings
+from evaluation.schemas import PlanStats
+from evaluation.service import get_hash_joins_count
 from ml.dependencies import MLHelper
 from zero_shot_learned_db.explainers.load import NodeType, ParsedPlan
 
@@ -18,22 +20,35 @@ def get_evaluation_results_dir(config: Annotated[Settings, Depends(get_settings)
 class EvaluationPlansLoader:
     evaluation_plans: list[ParsedPlan]
     are_plans_prepared: bool = False
-    table_count_nodes: dict[int, int]
+    # table_count_nodes: dict[int, int]
+    evaluation_plans_dict: dict[int, list[ParsedPlan]]
+    evaluation_plans_stats: dict[int, PlanStats]
 
     def load(self, settings: Settings, ml: MLHelper):
         self.evaluation_plans = []
         self.table_count_nodes = {}
-        current_count = 0
-        print("Load evaluation plans")
-        for table_count in tqdm(range(1, settings.eval.max_table_count + 1)):
+        self.evaluation_plans_dict = {}
+        for table_count in range(1, settings.eval.max_table_count + 1):
+            current_plans = []
             for plan in ml.parsed_plans:
-                if plan.graph_nodes_stats[NodeType.TABLE] == table_count:
-                    self.evaluation_plans.append(plan)
-                    current_count += 1
-                    if current_count >= settings.eval.max_plans_per_table_count:
+                if plan.graph_nodes_stats[NodeType.TABLE] == table_count and get_hash_joins_count(plan) == table_count - 1:
+                    current_plans.append(plan)
+                    if len(current_plans) >= settings.eval.max_plans_per_table_count:
                         break
-            self.table_count_nodes[table_count] = current_count
-            current_count = 0
+            self.evaluation_plans_dict[table_count] = current_plans
+            self.evaluation_plans.extend(current_plans)
+        print(f"Loaded {len(self.evaluation_plans)} evaluation nodes. Expected: {settings.eval.max_plans_per_table_count * settings.eval.max_table_count}")
+        self.calculate_stats(settings)
+
+    def calculate_stats(self, settings: Settings):
+        self.evaluation_plans_stats = {}
+        for table_count in range(1, settings.eval.max_table_count + 1):
+            plans = self.evaluation_plans_dict[table_count]
+            count = len(plans)
+            hash_joins_count = 0
+            for plan in plans:
+                hash_joins_count += get_hash_joins_count(plan)
+            self.evaluation_plans_stats[table_count] = PlanStats(count=count, hash_joins_count=hash_joins_count)
 
     def prepare_all_plans_for_inference(self):
         if self.are_plans_prepared:

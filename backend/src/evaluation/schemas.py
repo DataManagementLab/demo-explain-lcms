@@ -19,5 +19,10 @@ class MostImportantNodeEvaluationAllRespose(CustomModel):
     nodes: list[NodeStat]
 
 
+class PlanStats(CustomModel):
+    count: int
+    hash_joins_count: int
+
+
 class EvaluationPlansStats(CustomModel):
-    table_count_nodes: dict[int, int]
+    stats: dict[int, PlanStats]
