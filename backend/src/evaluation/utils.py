@@ -2,7 +2,7 @@ import os.path
 from typing import TypeVar
 from pydantic import BaseModel
 
-from zero_shot_learned_db.explanations.load import load_json_str
+from zero_shot_learned_db.explanations.utils import load_json_str
 
 
 def save_model_to_file(model: BaseModel, file_name: str):

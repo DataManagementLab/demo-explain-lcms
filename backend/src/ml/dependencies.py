@@ -7,8 +7,11 @@ import torch
 from config import Settings
 from ml.service import ExplainerType, explainers
 from zero_shot_learned_db.cross_db_benchmark.benchmark_tools.database import DatabaseSystem
-from zero_shot_learned_db.explanations.explain import prepare_model
-from zero_shot_learned_db.explanations.load import FeatureStatistics, HyperParameters, ParsedPlan, WorkloadRun, get_label_norm, load_hyperparameters, load_statistics, read_run
+from zero_shot_learned_db.explanations.data_models.hyperparameters import HyperParameters, load_hyperparameters
+from zero_shot_learned_db.explanations.data_models.statistics import FeatureStatistics, load_statistics
+from zero_shot_learned_db.explanations.data_models.workload_run import WorkloadRun, load_workload_run
+from zero_shot_learned_db.explanations.load import ParsedPlan, get_label_norm
+from zero_shot_learned_db.explanations.model import prepare_model
 from zero_shot_learned_db.models.zero_shot_models.zero_shot_model import ZeroShotModel
 
 
@@ -35,7 +38,7 @@ class MLHelper:
         np.random.seed(self.hyperparameters.seed)
 
         self.feature_statistics = load_statistics(statistics_file)
-        self.workload_run = read_run(dataset_file)
+        self.workload_run = load_workload_run(dataset_file)
         if settings.ml.limit_plans is not None:
             self.workload_run.parsed_plans = self.workload_run.parsed_plans[: settings.ml.limit_plans]
         label_norm = get_label_norm(self.workload_run.parsed_plans, self.hyperparameters.final_mlp_kwargs.loss_class_name)

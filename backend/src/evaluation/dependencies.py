@@ -8,7 +8,8 @@ from config import Settings, get_settings
 from evaluation.schemas import PlanStats
 from evaluation.service import get_hash_joins_count
 from ml.dependencies import MLHelper
-from zero_shot_learned_db.explanations.load import NodeType, ParsedPlan
+from zero_shot_learned_db.explanations.data_models.nodes import NodeType
+from zero_shot_learned_db.explanations.load import ParsedPlan
 
 
 def get_evaluation_results_dir(config: Annotated[Settings, Depends(get_settings)]):
