@@ -16,9 +16,9 @@ from demo.service import round_explanation_values
 from demo.utils import dict_keys_to_camel, list_values_to_camel
 from ml.dependencies import MLHelper, get_explainer, get_plan
 from ml.service import ExplainerType
-from zero_shot_learned_db.explainers.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
-from zero_shot_learned_db.explainers.explainers.base_explainer import BaseExplainer
-from zero_shot_learned_db.explainers.load import ParsedPlan
+from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
+from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
+from zero_shot_learned_db.explanations.load import ParsedPlan
 
 
 router = APIRouter(tags=["demo"])

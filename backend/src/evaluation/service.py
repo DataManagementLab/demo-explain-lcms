@@ -4,7 +4,7 @@ import numpy as np
 from evaluation.schemas import PlanStats, TablesToScore
 from evaluation.utils import float_range
 from ml.service import ExplainerType
-from zero_shot_learned_db.explainers.load import NodeType, ParsedPlan, Plan
+from zero_shot_learned_db.explanations.load import NodeType, ParsedPlan, Plan
 
 explainer_to_string = {
     ExplainerType.BASE: "Based on the actual runtime",

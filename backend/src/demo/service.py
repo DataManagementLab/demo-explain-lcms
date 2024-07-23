@@ -1,4 +1,4 @@
-from zero_shot_learned_db.explainers.explainers.explanation import Explanation
+from zero_shot_learned_db.explanations.explainers.explanation import Explanation
 
 
 def round_explanation_values(explanation: Explanation, min=0.01, round_digits=2):

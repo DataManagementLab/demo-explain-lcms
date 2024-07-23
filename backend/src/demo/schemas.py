@@ -2,8 +2,8 @@ from pydantic import Field
 from pydantic.json_schema import SkipJsonSchema
 from custom_model import CustomModel
 
-from zero_shot_learned_db.explainers.evaluation import CostAccuracyEvaluation, CostEvaluation, MostImportantNodeEvaluation
-import zero_shot_learned_db.explainers.load as base_models
+from zero_shot_learned_db.explanations.evaluation import CostAccuracyEvaluation, CostEvaluation, MostImportantNodeEvaluation
+import zero_shot_learned_db.explanations.load as base_models
 
 # -----------------
 

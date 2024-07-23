@@ -7,8 +7,8 @@ import torch
 from config import Settings
 from ml.service import ExplainerType, explainers
 from zero_shot_learned_db.cross_db_benchmark.benchmark_tools.database import DatabaseSystem
-from zero_shot_learned_db.explainers.explain import prepare_model
-from zero_shot_learned_db.explainers.load import FeatureStatistics, HyperParameters, ParsedPlan, WorkloadRun, get_label_norm, load_hyperparameters, load_statistics, read_run
+from zero_shot_learned_db.explanations.explain import prepare_model
+from zero_shot_learned_db.explanations.load import FeatureStatistics, HyperParameters, ParsedPlan, WorkloadRun, get_label_norm, load_hyperparameters, load_statistics, read_run
 from zero_shot_learned_db.models.zero_shot_models.zero_shot_model import ZeroShotModel
 
 

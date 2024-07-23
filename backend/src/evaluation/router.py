@@ -9,9 +9,9 @@ from evaluation.service import draw_cost_score, draw_fidelity_score, draw_table
 from evaluation.utils import load_model_from_file, save_model_to_file
 from ml.dependencies import get_explainer
 from ml.service import ExplainerType
-from zero_shot_learned_db.explainers.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
-from zero_shot_learned_db.explainers.explainers.base_explainer import BaseExplainer
-from zero_shot_learned_db.explainers.load import NodeType, ParsedPlan
+from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
+from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
+from zero_shot_learned_db.explanations.load import NodeType, ParsedPlan
 
 
 router = APIRouter(tags=["evaluation"], prefix="/evaluation")
