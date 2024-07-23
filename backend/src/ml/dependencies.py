@@ -68,15 +68,18 @@ class MLHelper:
 
         return explainers[explainer_type](self.model)
 
+    def get_plan(self, plan_id: int):
+        if plan_id < 0 or plan_id >= len(self.parsed_plans):
+            raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid plan id")
+        plan = self.parsed_plans[plan_id]
+        plan.prepare_plan_for_inference()
+        plan.prepare_plan_for_view()
+        return plan
+
 
 def get_explainer(explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
     return ml.get_explainer(explainer_type)
 
 
 def get_plan(plan_id: int, ml: Annotated[MLHelper, Depends()]):
-    if plan_id < 0 or plan_id >= len(ml.parsed_plans):
-        raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid plan id")
-    plan = ml.parsed_plans[plan_id]
-    plan.prepare_plan_for_inference()
-    plan.prepare_plan_for_view()
-    return plan
+    return ml.get_plan(plan_id)

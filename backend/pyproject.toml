@@ -32,3 +32,13 @@ extend-exclude = [
 
 [tool.ruff.format]
 line-ending = "lf"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "src",
+  "src/zero_shot_learned_db",
+  "tests"
+]
+testpaths = [
+    "tests"
+]
