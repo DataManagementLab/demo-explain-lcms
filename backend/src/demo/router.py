@@ -12,7 +12,6 @@ from demo.schemas import (
     PlanResponse,
     PredictionResponse,
 )
-from demo.service import round_explanation_values
 from demo.utils import dict_keys_to_camel, list_values_to_camel
 from ml.dependencies import MLHelper, get_explainer, get_plan
 from ml.service import ExplainerType
@@ -58,7 +57,6 @@ def get_plan_explanation(plan: Annotated[ParsedPlan, Depends(get_plan)], explain
     explanation = explainer.explain(plan)
     for grad in explanation.feature_importance.values():
         dict_keys_to_camel(grad)
-    round_explanation_values(explanation)
     return explanation
 
 

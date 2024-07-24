@@ -70,12 +70,20 @@ export class MainPageComponent implements OnInit {
     if (!actualExplanation || !explanation) {
       return undefined;
     }
+    const minExplanation = 0.001;
     const nodes = Object.keys(actualExplanation.nodeImportance)
       .concat(Object.keys(explanation.nodeImportance))
       .map(value => Number.parseInt(value))
-      .filter(value => actualExplanation.nodeImportance[value] > 0.05 || explanation.nodeImportance[value] > 0.05)
-      .filter((value, index, arr) => arr.indexOf(value) == index);
-    nodes.sort((x, y) => x - y);
+      .filter((value, index, arr) => arr.indexOf(value) == index)
+      .filter(value => actualExplanation.nodeImportance[value] > minExplanation || explanation.nodeImportance[value] > minExplanation);
+    nodes
+      .sort((x, y) => {
+        if (actualExplanation.nodeImportance[x] == undefined) {
+          return -1;
+        }
+        return actualExplanation.nodeImportance[x] - actualExplanation.nodeImportance[y];
+      })
+      .reverse();
     return nodes;
   });
 

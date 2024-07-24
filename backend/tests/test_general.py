@@ -1,6 +1,8 @@
+import pytest
 from ml.dependencies import MLHelper
 from ml.service import ExplainerType
-from utils import get_test_value
+from utils import get_test_value, approx_rel
+from zero_shot_learned_db.explanations.data_models.nodes import NodeType
 
 
 def test_ml_loaded(ml: MLHelper):
@@ -29,3 +31,10 @@ def test_explain(ml: MLHelper):
     assert get_test_value(explanation.node_importance[26]) == 0.2330
     assert get_test_value(explanation.node_importance[27]) == 0.1047
     assert get_test_value(explanation.node_importance[36]) == 0.2022
+    assert sum(explanation.node_importance.values()) == pytest.approx(1.0, rel=approx_rel)
+
+
+def test_actual_importance(ml: MLHelper):
+    for plan in ml.parsed_plans:
+        sum_importance = sum([node.node.actual_importance for node in plan.graph_nodes if node.node.node_type == NodeType.PLAN])
+        assert sum_importance == pytest.approx(1.0, rel=approx_rel)

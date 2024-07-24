@@ -6,9 +6,38 @@ import * as d3 from 'd3';
 import recordToList from '../../utils/recordToList';
 import FullPlan from '../../services/data/full-plan';
 
-const colors = ['#ebac23', '#b80058', '#008cf9', '#006e00', '#00bbad', '#d163e6', '#b24502', '#5954d6', '#00c6f8', '#878500', '#00a76c', '#bdbdbd'];
-// const colors = ['#003f5c', '#2f4b7c', '#665191', '#a05195', '#d45087', '#f95d6a', '#ff7c43', '#ffa600'];
-// const colors = ['#00876c', '#3a966c', '#5ea56b', '#80b36a', '#a2c06b', '#c6cd6f', '#ebd877', '#edc063', '#eca855', '#eb8e4d', '#e6744a', '#df5a4c', '#d43d51'];
+const colors = [
+  '#B34962',
+  '#5EC353',
+  '#9957CA',
+  '#9CB835',
+  '#5B6FD9',
+  '#409538',
+  '#D561C5',
+  '#69882B',
+  '#D5448E',
+  '#5DC08A',
+  '#D33B55',
+  '#40C0BC',
+  '#C64221',
+  '#48A8D7',
+  '#DE882F',
+  '#6D8ED3',
+  '#CBAA3E',
+  '#6C60A6',
+  '#A1B56D',
+  '#9F4D8F',
+  '#408147',
+  '#CF90D0',
+  '#626A2A',
+  '#E2828C',
+  '#308266',
+  '#E56E4F',
+  '#944C68',
+  '#977D33',
+  '#9D5930',
+  '#DC9A6C',
+];
 
 @Component({
   selector: 'expl-zs-cost-bar',
@@ -59,6 +88,7 @@ export class CostBarComponent implements AfterViewInit {
     svg.append('rect').attr('width', width).attr('height', height).attr('fill', '#FFFFFF');
 
     const recordList = recordToList(this.explanation().nodeImportance);
+    recordList.sort((x, y) => this.nodesToShow().indexOf(Number.parseInt(x.key)) - this.nodesToShow().indexOf(Number.parseInt(y.key)));
     let x = 0;
     let i = 0;
     for (const item of recordList) {
@@ -68,13 +98,20 @@ export class CostBarComponent implements AfterViewInit {
       if (!this.nodesToShow().includes(Number.parseInt(item.key))) {
         continue;
       }
+      const colorId = this.nodesToShow().indexOf(Number.parseInt(item.key));
+      if (colorId == -1 || colorId > colors.length) {
+        console.error(`Not enough colors: ${colorId}`);
+        continue;
+      }
+      const color = colors[colorId];
       const borderOffset = 8;
+      const item_width = Math.round(width * item.value);
       svg
         .append('rect')
         .attr('x', x)
-        .attr('width', width * item.value)
+        .attr('width', item_width)
         .attr('height', height)
-        .attr('fill', colors[i])
+        .attr('fill', color)
         .attr('nodeId', item.key)
         .attr('fill', 'black')
         .attr('opacity', 0)
@@ -83,12 +120,12 @@ export class CostBarComponent implements AfterViewInit {
         .append('rect')
         .attr('x', x)
         .attr('y', borderOffset / 2)
-        .attr('width', width * item.value)
+        .attr('width', item_width)
         .attr('height', height - borderOffset)
-        .attr('fill', colors[i])
+        .attr('fill', color)
         .attr('clickNode', item.key)
         .datum(item.key);
-      x += width * item.value;
+      x += item_width;
       i++;
     }
 
