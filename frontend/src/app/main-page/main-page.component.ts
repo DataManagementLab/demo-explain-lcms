@@ -78,8 +78,8 @@ export class MainPageComponent implements OnInit {
       .filter(value => actualExplanation.nodeImportance[value] > minExplanation || explanation.nodeImportance[value] > minExplanation);
     nodes
       .sort((x, y) => {
-        if (actualExplanation.nodeImportance[x] == undefined) {
-          return -1;
+        if (actualExplanation.nodeImportance[x] == undefined || actualExplanation.nodeImportance[x] < minExplanation) {
+          return explanation.nodeImportance[x] - explanation.nodeImportance[y];
         }
         return actualExplanation.nodeImportance[x] - actualExplanation.nodeImportance[y];
       })
@@ -98,6 +98,7 @@ export class MainPageComponent implements OnInit {
       this.selectedPlanPrediction.set(undefined);
       this.selectedPlanExplanation.set(undefined);
       this.selectedPlanFidelityEvaluaiton.set(undefined);
+      this.actualExplanation.set(undefined);
     });
     this.selectedPlan$.pipe(switchMap(plan => (plan ? this.apiService.getPlan(plan.id) : of(undefined)))).subscribe(value => this.selectedFullPlan.set(value));
     this.selectedPlan$
