@@ -78,7 +78,7 @@ export class MainPageComponent implements OnInit {
       .filter(value => actualExplanation.nodeImportance[value] > minExplanation || explanation.nodeImportance[value] > minExplanation);
     nodes
       .sort((x, y) => {
-        if (actualExplanation.nodeImportance[x] == undefined || actualExplanation.nodeImportance[x] < minExplanation) {
+        if (actualExplanation.nodeImportance[x] == undefined) {
           return explanation.nodeImportance[x] - explanation.nodeImportance[y];
         }
         return actualExplanation.nodeImportance[x] - actualExplanation.nodeImportance[y];
