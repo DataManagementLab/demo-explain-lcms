@@ -1,7 +1,9 @@
-import math
+from statistics import mean
+from typing import Callable
 import matplotlib.pyplot as plt
-import numpy as np
-from evaluation.schemas import PlanStats, TablesToScore
+import scipy
+import scipy.stats
+from evaluation.schemas import CommonNodeImportance, CorrelationEvaluation, CorrelationScore, TablesToScore
 from evaluation.utils import float_range
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType, Plan
@@ -14,22 +16,22 @@ explainer_to_string = {
 }
 
 
-def draw_fidelity_score(data: dict[ExplainerType, list[TablesToScore]], dir: str):
+def draw_fidelity_score(data: dict[ExplainerType, list[TablesToScore]], output_dir: str):
     plt.figure()
-    max_tables = max([score.table_count for scores in data.values() for score in scores])
-    max_score = math.ceil(max([score.score for scores in data.values() for score in scores]))
+    # max_tables = max([score.table_count for scores in data.values() for score in scores])
+    # max_score = math.ceil(max([score.score for scores in data.values() for score in scores]))
     for key, scores in data.items():
         plt.plot([s.table_count for s in scores], [s.score for s in scores], label=explainer_to_string[key])
-    plt.xticks(range(1, max_tables + 1))
-    plt.yticks(float_range(1, max_score + 1))
+    # plt.xticks(range(1, max_tables + 1))
+    # plt.yticks(float_range(1, max_score + 1))
     plt.xlabel("Table count")
     plt.ylabel("Fidelity")
     plt.title("Fidelity Evaluation")
     plt.legend()
-    plt.savefig(f"{dir}/plot_fidelity.png")
+    plt.savefig(f"{output_dir}/plot_fidelity.png")
 
 
-def draw_cost_score(data: dict[ExplainerType, list[TablesToScore]], dir: str):
+def draw_cost_score(data: dict[ExplainerType, list[TablesToScore]], output_dir: str):
     plt.figure()
     max_tables = max([score.table_count for scores in data.values() for score in scores])
     for key, scores in data.items():
@@ -40,7 +42,7 @@ def draw_cost_score(data: dict[ExplainerType, list[TablesToScore]], dir: str):
     plt.ylabel("Cost hit rate")
     plt.title("Cost Evaluation")
     plt.legend()
-    plt.savefig(f"{dir}/plot_cost.png")
+    plt.savefig(f"{output_dir}/plot_cost.png")
 
 
 def get_hash_joins_count(plan: ParsedPlan):
@@ -54,23 +56,69 @@ def get_hash_joins_count(plan: ParsedPlan):
     return hash_joins_count
 
 
-def draw_table(data: dict[int, PlanStats], dir: str):
-    column_headers = ["Tables", "# of Plans", "# of Hash Join Operators"]
-    cell_text = []
-    for key, stat in data.items():
-        cell_text.append(list(map(str, [key, stat.plan_count, stat.hash_joins_count])))
+def draw_scatter_node_importance(node_importances: list[dict[int, float]], actual_node_importances: list[dict[int, float]], explainer: ExplainerType, output_dir: str):
+    plt.figure()
 
-    plt.figure(
-        linewidth=2,
-        tight_layout={"pad": 1},
-    )
-    ccolors = plt.cm.BuPu(np.full(len(column_headers), 0.1))
-    the_table = plt.table(cellText=cell_text, colLabels=column_headers, colColours=ccolors, loc="center")
+    x: list[float] = []
+    y: list[float] = []
 
-    the_table.scale(1, 1.5)
-    ax = plt.gca()
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    plt.box(on=None)
-    plt.draw()
-    plt.savefig(f"{dir}/plot_stats_table.png", bbox_inches="tight", dpi=300)
+    for plan in zip(node_importances, actual_node_importances):
+        node_importance = plan[0]
+        actual_node_importance = plan[1]
+        for node in node_importance:
+            if node not in actual_node_importance:
+                continue
+            x.append(node_importance[node])
+            y.append(actual_node_importance[node])
+
+    plt.scatter(x, y)
+    plt.plot([0, 1], [0, 1])
+
+    plt.xlabel("Importance from explainer")
+    plt.ylabel("Importance from runtime")
+    plt.title("Correlation between actual runtime and importance")
+    plt.legend()
+    plt.savefig(f"{output_dir}/plot_scatter_node_importance_{explainer}.png")
+
+
+def draw_correlation_evaluations(correlation_evaluations: dict[ExplainerType, CorrelationEvaluation], plot_name: str, output_dir: str):
+    plt.figure()
+
+    for explainer, correlation in correlation_evaluations.items():
+        plt.plot([c.table_count for c in correlation.correlations_mean], [c.score for c in correlation.correlations_mean], label=explainer_to_string[explainer])
+    plt.xlabel("Table count")
+    plt.ylabel("Correlation score")
+    plt.title(plot_name)
+    plt.legend()
+    plt.savefig(f"{output_dir}/plot_correlation_{plot_name.replace(' ', '_').lower()}.png")
+
+
+def spearman_correlation(node_importance: dict[int, float], actual_node_importance: dict[int, float]):
+    importances = get_common_node_importances(node_importance, actual_node_importance)
+    result = scipy.stats.spearmanr([i.explained for i in importances], [i.actual for i in importances])
+    return abs(result.statistic)
+
+
+def pearson_correlation(node_importance: dict[int, float], actual_node_importance: dict[int, float]):
+    importances = get_common_node_importances(node_importance, actual_node_importance)
+    result = scipy.stats.pearsonr([i.explained for i in importances], [i.actual for i in importances])
+    return abs(result.statistic)
+
+
+def get_common_node_importances(node_importance: dict[int, float], actual_node_importance: dict[int, float]):
+    common_importances: list[CommonNodeImportance] = []
+    for node in node_importance:
+        if node not in actual_node_importance:
+            continue
+        common_importances.append(CommonNodeImportance(node_id=node, actual=actual_node_importance[node], explained=node_importance[node]))
+    return common_importances
+
+
+def get_correlation_evaluation(node_importances: list[dict[int, float]], actual_node_importances: list[dict[int, float]], plans: list[ParsedPlan], correlation_fn: Callable[[dict[int, float], dict[int, float]], float], table_counts: list[int]):
+    correlations_to_table = [CorrelationScore(table_count=plans[i].graph_nodes_stats[NodeType.TABLE], score=correlation_fn(node_importances[i], actual_node_importances[i])) for i in range(0, len(plans))]
+    correlations_to_table_mean: list[CorrelationScore] = []
+    for table_count in table_counts:
+        correlations = [c.score for c in correlations_to_table if c.table_count == table_count]
+        correlations_to_table_mean.append(CorrelationScore(table_count=table_count, score=mean(correlations)))
+    correlations_mean = mean([c.score for c in correlations_to_table])
+    return CorrelationEvaluation(correlations=correlations_to_table, correlations_mean=correlations_to_table_mean, correlations_mean_all=correlations_mean)

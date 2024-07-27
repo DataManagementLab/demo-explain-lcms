@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends
 from tqdm import tqdm
 
 from evaluation.dependencies import EvaluationPlansLoader, evaluation_plans, get_evaluation_results_dir
-from evaluation.schemas import EvaluationPlansStats, MostImportantNodeEvaluationAllRespose, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
-from evaluation.service import draw_cost_score, draw_fidelity_score, draw_table
+from evaluation.schemas import CorrelationEvaluation, EvaluationPlansStats, MostImportantNodeEvaluationAllRespose, NodeImportanceEvaluation, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
+from evaluation.service import draw_correlation_evaluations, draw_cost_score, draw_fidelity_score, draw_scatter_node_importance, get_correlation_evaluation, pearson_correlation, spearman_correlation
 from evaluation.utils import load_model_from_file, save_model_to_file
-from ml.dependencies import get_explainer
+from ml.dependencies import get_base_explainer, get_explainer
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType
 from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
@@ -28,9 +28,9 @@ def get_fidelity_evaluation_all(
     explainer_type: ExplainerType,
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
-    dir: Annotated[str, Depends(get_evaluation_results_dir)],
+    output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
 ):
-    file_name = f"{dir}/fidelity_{explainer_type}.json"
+    file_name = f"{output_dir}/fidelity_{explainer_type}.json"
     response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
     if response is not None:
         return response
@@ -53,9 +53,9 @@ def get_most_important_node_evaluation_all(
     explainer_type: ExplainerType,
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
-    dir: Annotated[str, Depends(get_evaluation_results_dir)],
+    output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
 ):
-    file_name = f"{dir}/most_important_node_{explainer_type}.json"
+    file_name = f"{output_dir}/most_important_node_{explainer_type}.json"
     response = load_model_from_file(MostImportantNodeEvaluationAllRespose, file_name)
     if response is not None:
         return response
@@ -81,9 +81,9 @@ def get_cost_evaluation_all(
     explainer_type: ExplainerType,
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
-    dir: Annotated[str, Depends(get_evaluation_results_dir)],
+    output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
 ):
-    file_name = f"{dir}/cost_{explainer_type}.json"
+    file_name = f"{output_dir}/cost_{explainer_type}.json"
     response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
     if response is not None:
         return response
@@ -103,21 +103,69 @@ def get_cost_evaluation_all(
     return response
 
 
-@router.get("/plots")
-def get_fidelity_evaluation_all_plot(
-    dir: Annotated[str, Depends(get_evaluation_results_dir)],
-    evaluation_plans_loader: Annotated[EvaluationPlansLoader, Depends()],
+@router.get("/evaluation/{explainer_type}/node-importance", response_model=NodeImportanceEvaluation)
+def get_node_importance_evaluation(
+    explainer_type: ExplainerType,
+    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+    evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
+    output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
+    base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
 ):
+    file_name = f"{output_dir}/node_importance_{explainer_type}.json"
+    response = load_model_from_file(NodeImportanceEvaluation, file_name)
+    if response is not None:
+        return response
+
+    actual_importances = [base_explainer.explain(plan).node_importance for plan in tqdm(evaluation_plans)]
+    node_importances = [explainer.explain(plan).node_importance for plan in tqdm(evaluation_plans)]
+    table_counts = list(set([plan.graph_nodes_stats[NodeType.TABLE] for plan in evaluation_plans]))
+    table_counts.sort()
+
+    response = NodeImportanceEvaluation(
+        node_importances=node_importances,
+        pearson_correlation=get_correlation_evaluation(
+            node_importances,
+            actual_importances,
+            evaluation_plans,
+            pearson_correlation,
+            table_counts,
+        ),
+        spearman_correlation=get_correlation_evaluation(
+            node_importances,
+            actual_importances,
+            evaluation_plans,
+            spearman_correlation,
+            table_counts,
+        ),
+    )
+    save_model_to_file(response, file_name)
+    return response
+
+
+@router.get("/plots")
+def get_fidelity_evaluation_all_plot(output_dir: Annotated[str, Depends(get_evaluation_results_dir)]):
     data_fidelity: dict[ExplainerType, list[TablesToScore]] = {}
     for explainer_type in ExplainerType:
-        file_name = f"{dir}/fidelity_{explainer_type}.json"
+        file_name = f"{output_dir}/fidelity_{explainer_type}.json"
         data_fidelity[explainer_type] = load_model_from_file(TablesToScoreEvaluationResponse, file_name).scores
-    draw_fidelity_score(data_fidelity, dir)
+    draw_fidelity_score(data_fidelity, output_dir)
 
     data_cost: dict[ExplainerType, list[TablesToScore]] = {}
     for explainer_type in ExplainerType:
-        file_name = f"{dir}/cost_{explainer_type}.json"
+        file_name = f"{output_dir}/cost_{explainer_type}.json"
         data_cost[explainer_type] = load_model_from_file(TablesToScoreEvaluationResponse, file_name).scores
-    draw_cost_score(data_cost, dir)
+    draw_cost_score(data_cost, output_dir)
 
-    draw_table(evaluation_plans_loader.evaluation_plans_stats, dir)
+    actual_importance = load_model_from_file(NodeImportanceEvaluation, f"{output_dir}/node_importance_{ExplainerType.BASE}.json")
+    data_correlation_pearson: dict[ExplainerType, CorrelationEvaluation] = {ExplainerType.BASE: actual_importance.pearson_correlation}
+    data_correlation_spearman: dict[ExplainerType, CorrelationEvaluation] = {ExplainerType.BASE: actual_importance.spearman_correlation}
+    for explainer_type in ExplainerType:
+        if explainer_type == ExplainerType.BASE:
+            continue
+        file_name = f"{output_dir}/node_importance_{explainer_type}.json"
+        data = load_model_from_file(NodeImportanceEvaluation, file_name)
+        draw_scatter_node_importance(data.node_importances, actual_importance.node_importances, explainer_type, output_dir)
+        data_correlation_pearson[explainer_type] = data.pearson_correlation
+        data_correlation_spearman[explainer_type] = data.spearman_correlation
+    draw_correlation_evaluations(data_correlation_pearson, "Pearson correlation", output_dir)
+    draw_correlation_evaluations(data_correlation_spearman, "Spearman correlation", output_dir)

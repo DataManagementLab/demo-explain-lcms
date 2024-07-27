@@ -26,3 +26,26 @@ class PlanStats(CustomModel):
 
 class EvaluationPlansStats(CustomModel):
     stats: dict[int, PlanStats]
+
+
+class CorrelationScore(CustomModel):
+    table_count: int
+    score: float
+
+
+class CorrelationEvaluation(CustomModel):
+    correlations: list[CorrelationScore]
+    correlations_mean: list[CorrelationScore]
+    correlations_mean_all: float
+
+
+class NodeImportanceEvaluation(CustomModel):
+    node_importances: list[dict[int, float]]
+    pearson_correlation: CorrelationEvaluation
+    spearman_correlation: CorrelationEvaluation
+
+
+class CommonNodeImportance(CustomModel):
+    node_id: float
+    actual: float
+    explained: float

@@ -84,5 +84,9 @@ def get_explainer(explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends
     return ml.get_explainer(explainer_type)
 
 
+def get_base_explainer(ml: Annotated[MLHelper, Depends()]):
+    return ml.get_explainer(ExplainerType.BASE)
+
+
 def get_plan(plan_id: int, ml: Annotated[MLHelper, Depends()]):
     return ml.get_plan(plan_id)
