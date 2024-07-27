@@ -19,6 +19,9 @@ import { NodeInfoListComponent } from './node-info-list/node-info-list.component
 import { CostBarComponent } from './cost-bar/cost-bar.component';
 import FidelityEvaluation from '../services/data/fidelity-evaluation';
 import { ExplainerEvaluationBlockComponent } from './explainer-evaluation-block/explainer-evaluation-block.component';
+import { animate, style, transition, trigger } from '@angular/animations';
+
+const enterAnimation = [style({ opacity: 0 }), animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1 }))];
 
 @Component({
   selector: 'expl-zs-main-page',
@@ -38,6 +41,9 @@ import { ExplainerEvaluationBlockComponent } from './explainer-evaluation-block/
   templateUrl: './main-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'grid grid-cols-2 grid-rows-full gap-8 box-border max-h-full px-4 py-8 relative' },
+  animations: [
+    trigger('enter', [transition(':enter', enterAnimation)]), //
+  ],
 })
 export class MainPageComponent implements OnInit {
   plans = signal<Plan[]>([]);
@@ -78,8 +84,12 @@ export class MainPageComponent implements OnInit {
       .filter(value => actualExplanation.nodeImportance[value] > minExplanation || explanation.nodeImportance[value] > minExplanation);
     nodes
       .sort((x, y) => {
-        if (actualExplanation.nodeImportance[x] == undefined) {
-          return explanation.nodeImportance[x] - explanation.nodeImportance[y];
+        if (actualExplanation.nodeImportance[x] == undefined || actualExplanation.nodeImportance[y] == undefined) {
+          if (actualExplanation.nodeImportance[x] == undefined && actualExplanation.nodeImportance[y] == undefined) {
+            return explanation.nodeImportance[x] - explanation.nodeImportance[y];
+          } else {
+            return actualExplanation.nodeImportance[x] == undefined ? -1 : 1;
+          }
         }
         return actualExplanation.nodeImportance[x] - actualExplanation.nodeImportance[y];
       })

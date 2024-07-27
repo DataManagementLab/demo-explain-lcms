@@ -92,7 +92,7 @@ export class CostBarComponent implements AfterViewInit {
     let x = 0;
     let i = 0;
     for (const item of recordList) {
-      if (i >= colors.length) {
+      if (i >= colors.length || x >= width) {
         break;
       }
       if (!this.nodesToShow().includes(Number.parseInt(item.key))) {

@@ -85,6 +85,6 @@
   <tr
     mat-row
     *matRowDef="let plan; columns: columns()"
-    [class]="['hover:bg-gray-200', { '!bg-gray-300 hover:bg-gray-300': this.selectedPlan() && this.selectedPlan()!.id === plan.id }] | cn"
+    [class]="['transition-colors hover:bg-gray-200', { '!bg-gray-300 hover:bg-gray-300': this.selectedPlan() && this.selectedPlan()!.id === plan.id }] | cn"
     (click)="selectedPlan.set(plan)"></tr>
 </table>
