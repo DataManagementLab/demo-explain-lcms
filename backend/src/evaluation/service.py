@@ -1,10 +1,14 @@
+from enum import StrEnum
 from statistics import mean
 from typing import Callable
 import matplotlib.pyplot as plt
-from evaluation.schemas import CorrelationEvaluation, CorrelationScore, TablesToScore
-from evaluation.utils import float_range
+from tqdm import tqdm
+from evaluation.schemas import CorrelationEvaluation, CorrelationScore, TablesToScore, TablesToScoreEvaluationResponse
+from evaluation.utils import float_range, load_model_from_file, save_model_to_file
 from ml.service import ExplainerType
+from zero_shot_learned_db.explanations.data_models.evaluation import FidelityEvaluation
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType, Plan
+from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
 explainer_to_string = {
@@ -14,19 +18,23 @@ explainer_to_string = {
 }
 
 
-def draw_fidelity_score(data: dict[ExplainerType, list[TablesToScore]], output_dir: str):
+class FidelityType(StrEnum):
+    PLUS = "plus"
+    MINUS = "minus"
+
+
+def draw_fidelity_score(data: dict[ExplainerType, list[TablesToScore]], output_dir: str, fidelity_type: FidelityType):
     plt.figure()
-    # max_tables = max([score.table_count for scores in data.values() for score in scores])
-    # max_score = math.ceil(max([score.score for scores in data.values() for score in scores]))
     for key, scores in data.items():
         plt.plot([s.table_count for s in scores], [s.score for s in scores], label=explainer_to_string[key])
-    # plt.xticks(range(1, max_tables + 1))
-    # plt.yticks(float_range(1, max_score + 1))
+    max_tables = max([score.table_count for scores in data.values() for score in scores])
+    plt.xticks(range(1, max_tables + 1))
+    plt.ylim(0, 1)
     plt.xlabel("Table count")
-    plt.ylabel("Fidelity")
-    plt.title("Fidelity Evaluation")
+    plt.ylabel(f"Fidelity {fidelity_type}")
+    plt.title(f"Fidelity {fidelity_type} evaluation")
     plt.legend()
-    plt.savefig(f"{output_dir}/plot_fidelity.png")
+    plt.savefig(f"{output_dir}/plot_fidelity_{fidelity_type}.png")
 
 
 def draw_cost_score(data: dict[ExplainerType, list[TablesToScore]], output_dir: str):
@@ -98,3 +106,29 @@ def get_correlation_evaluation(node_importances: list[dict[int, float]], actual_
         correlations_to_table_mean.append(CorrelationScore(table_count=table_count, score=mean(correlations)))
     correlations_mean = mean([c.score for c in correlations_to_table])
     return CorrelationEvaluation(correlations=correlations_to_table, correlations_mean=correlations_to_table_mean, correlations_mean_all=correlations_mean)
+
+
+def compute_fidelity(
+    explainer_type: ExplainerType,
+    explainer: BaseExplainer,
+    evaluation_plans: list[ParsedPlan],
+    output_dir: str,
+    fidelity_function: Callable[[BaseExplainer, ParsedPlan], FidelityEvaluation],
+    fidelity_type: FidelityType,
+):
+    file_name = f"{output_dir}/fidelity_{fidelity_type}_{explainer_type}.json"
+    response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
+    if response is not None:
+        return response
+
+    evaluations = [fidelity_function(explainer, plan) for plan in tqdm(evaluation_plans)]
+    table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
+    table_counts.sort()
+    scores: list[TablesToScore] = []
+    for table_count in table_counts:
+        score = mean([e.score for e in evaluations if e._parsed_plan.graph_nodes_stats[NodeType.TABLE] == table_count])
+        scores.append(TablesToScore(table_count=table_count, score=score))
+
+    response = TablesToScoreEvaluationResponse(scores=scores)
+    save_model_to_file(response, file_name)
+    return response

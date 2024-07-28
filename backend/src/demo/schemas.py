@@ -77,9 +77,11 @@ class ImportantFeaturesResponse(CustomModel):
 
 
 class FidelityEvaluationResponse(CustomModel):
-    normal_output: PredictionResponse
+    output: PredictionResponse
     masked_output: PredictionResponse
-    score: float
+    relative_change: float
+    outputs_equal: bool
+    score: int
 
 
 class MostImportantNodeEvaluationRespose(CustomModel, MostImportantNodeEvaluation):

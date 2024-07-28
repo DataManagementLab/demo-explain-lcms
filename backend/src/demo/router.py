@@ -16,7 +16,7 @@ from demo.schemas import (
 from demo.utils import dict_keys_to_camel, list_values_to_camel
 from ml.dependencies import MLHelper, get_base_explainer, get_explainer, get_plan
 from ml.service import ExplainerType
-from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation, spearman_correlation
+from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_minus, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation, spearman_correlation
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -70,9 +70,14 @@ def get_important_features(ml: Annotated[MLHelper, Depends()]):
     return ImportantFeaturesResponse(features=features)
 
 
-@router.get("/plans/{plan_id}/evaluation/{explainer_type}/fidelity", response_model=FidelityEvaluationResponse)
-def get_fidelity_evaluation(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer: Annotated[BaseExplainer, Depends(get_explainer)]):
+@router.get("/plans/{plan_id}/evaluation/{explainer_type}/fidelity_plus", response_model=FidelityEvaluationResponse)
+def get_fidelity_plus_evaluation(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer: Annotated[BaseExplainer, Depends(get_explainer)]):
     return evaluation_fidelity_plus(explainer, plan)
+
+
+@router.get("/plans/{plan_id}/evaluation/{explainer_type}/fidelity_minus", response_model=FidelityEvaluationResponse)
+def get_fidelity_minus_evaluation(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer: Annotated[BaseExplainer, Depends(get_explainer)]):
+    return evaluation_fidelity_minus(explainer, plan)
 
 
 @router.get("/plans/{plan_id}/evaluation/{explainer_type}/most-important-node", response_model=MostImportantNodeEvaluationRespose)

@@ -1,16 +1,15 @@
-from statistics import mean
 from typing import Annotated
 from fastapi import APIRouter, Depends
 from tqdm import tqdm
 
 from evaluation.dependencies import EvaluationPlansLoader, evaluation_plans, get_evaluation_results_dir
 from evaluation.schemas import CorrelationEvaluation, EvaluationPlansStats, MostImportantNodeEvaluationAllRespose, NodeImportanceEvaluation, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
-from evaluation.service import draw_correlation_evaluations, draw_cost_score, draw_fidelity_score, draw_scatter_node_importance, get_correlation_evaluation
+from evaluation.service import FidelityType, compute_fidelity, draw_correlation_evaluations, draw_cost_score, draw_fidelity_score, draw_scatter_node_importance, get_correlation_evaluation
 from evaluation.utils import load_model_from_file, save_model_to_file
 from ml.dependencies import get_base_explainer, get_explainer
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType
-from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation_internal, spearman_correlation_inernal
+from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_minus, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation_internal, spearman_correlation_inernal
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -23,29 +22,24 @@ def evaluation_plans_stats(evaluation_plans_loader: Annotated[EvaluationPlansLoa
     return EvaluationPlansStats(stats=evaluation_plans_loader.evaluation_plans_stats)
 
 
-@router.get("/{explainer_type}/fidelity", response_model=TablesToScoreEvaluationResponse)
-def get_fidelity_evaluation_all(
+@router.get("/{explainer_type}/fidelity_plus", response_model=TablesToScoreEvaluationResponse)
+def get_fidelity_plus_evaluation_all(
     explainer_type: ExplainerType,
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
     output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
 ):
-    file_name = f"{output_dir}/fidelity_{explainer_type}.json"
-    response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
-    if response is not None:
-        return response
+    return compute_fidelity(explainer_type, explainer, evaluation_plans, output_dir, evaluation_fidelity_plus, FidelityType.PLUS)
 
-    evaluations = [evaluation_fidelity_plus(explainer, plan) for plan in tqdm(evaluation_plans)]
-    table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
-    table_counts.sort()
-    scores: list[TablesToScore] = []
-    for table_count in table_counts:
-        score = mean([e.score for e in evaluations if e._parsed_plan.graph_nodes_stats[NodeType.TABLE] == table_count])
-        scores.append(TablesToScore(table_count=table_count, score=score))
 
-    response = TablesToScoreEvaluationResponse(scores=scores)
-    save_model_to_file(response, file_name)
-    return response
+@router.get("/{explainer_type}/fidelity_minus", response_model=TablesToScoreEvaluationResponse)
+def get_fidelity_minus_evaluation_all(
+    explainer_type: ExplainerType,
+    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+    evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
+    output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
+):
+    return compute_fidelity(explainer_type, explainer, evaluation_plans, output_dir, evaluation_fidelity_minus, FidelityType.MINUS)
 
 
 @router.get("/evaluation/{explainer_type}/most-important-node", response_model=MostImportantNodeEvaluationAllRespose)
@@ -144,11 +138,12 @@ def get_node_importance_evaluation(
 
 @router.get("/plots")
 def get_fidelity_evaluation_all_plot(output_dir: Annotated[str, Depends(get_evaluation_results_dir)]):
-    data_fidelity: dict[ExplainerType, list[TablesToScore]] = {}
-    for explainer_type in ExplainerType:
-        file_name = f"{output_dir}/fidelity_{explainer_type}.json"
-        data_fidelity[explainer_type] = load_model_from_file(TablesToScoreEvaluationResponse, file_name).scores
-    draw_fidelity_score(data_fidelity, output_dir)
+    for fidelity_type in FidelityType:
+        data_fidelity: dict[ExplainerType, list[TablesToScore]] = {}
+        for explainer_type in ExplainerType:
+            file_name = f"{output_dir}/fidelity_{fidelity_type}_{explainer_type}.json"
+            data_fidelity[explainer_type] = load_model_from_file(TablesToScoreEvaluationResponse, file_name).scores
+        draw_fidelity_score(data_fidelity, output_dir, fidelity_type)
 
     data_cost: dict[ExplainerType, list[TablesToScore]] = {}
     for explainer_type in ExplainerType:
