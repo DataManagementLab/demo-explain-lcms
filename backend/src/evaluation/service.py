@@ -1,9 +1,7 @@
 from statistics import mean
 from typing import Callable
 import matplotlib.pyplot as plt
-import scipy
-import scipy.stats
-from evaluation.schemas import CommonNodeImportance, CorrelationEvaluation, CorrelationScore, TablesToScore
+from evaluation.schemas import CorrelationEvaluation, CorrelationScore, TablesToScore
 from evaluation.utils import float_range
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType, Plan
@@ -77,7 +75,6 @@ def draw_scatter_node_importance(node_importances: list[dict[int, float]], actua
     plt.xlabel("Importance from explainer")
     plt.ylabel("Importance from runtime")
     plt.title("Correlation between actual runtime and importance")
-    plt.legend()
     plt.savefig(f"{output_dir}/plot_scatter_node_importance_{explainer}.png")
 
 
@@ -91,27 +88,6 @@ def draw_correlation_evaluations(correlation_evaluations: dict[ExplainerType, Co
     plt.title(plot_name)
     plt.legend()
     plt.savefig(f"{output_dir}/plot_correlation_{plot_name.replace(' ', '_').lower()}.png")
-
-
-def spearman_correlation(node_importance: dict[int, float], actual_node_importance: dict[int, float]):
-    importances = get_common_node_importances(node_importance, actual_node_importance)
-    result = scipy.stats.spearmanr([i.explained for i in importances], [i.actual for i in importances])
-    return abs(result.statistic)
-
-
-def pearson_correlation(node_importance: dict[int, float], actual_node_importance: dict[int, float]):
-    importances = get_common_node_importances(node_importance, actual_node_importance)
-    result = scipy.stats.pearsonr([i.explained for i in importances], [i.actual for i in importances])
-    return abs(result.statistic)
-
-
-def get_common_node_importances(node_importance: dict[int, float], actual_node_importance: dict[int, float]):
-    common_importances: list[CommonNodeImportance] = []
-    for node in node_importance:
-        if node not in actual_node_importance:
-            continue
-        common_importances.append(CommonNodeImportance(node_id=node, actual=actual_node_importance[node], explained=node_importance[node]))
-    return common_importances
 
 
 def get_correlation_evaluation(node_importances: list[dict[int, float]], actual_node_importances: list[dict[int, float]], plans: list[ParsedPlan], correlation_fn: Callable[[dict[int, float], dict[int, float]], float], table_counts: list[int]):

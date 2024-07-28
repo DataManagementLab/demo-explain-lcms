@@ -93,3 +93,8 @@ class CostEvaluationResponse(CostEvaluation):
 class CostAccuracyEvaluationResponse(CostAccuracyEvaluation):
     actual_costs: list[CostEvaluationResponse]
     explanation_costs: list[CostEvaluationResponse]
+
+
+class CorrelationEvaluationResponse(CustomModel):
+    pearson_correlation: float
+    spearman_correlation: float

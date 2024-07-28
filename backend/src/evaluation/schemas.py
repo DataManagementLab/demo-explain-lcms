@@ -43,9 +43,3 @@ class NodeImportanceEvaluation(CustomModel):
     node_importances: list[dict[int, float]]
     pearson_correlation: CorrelationEvaluation
     spearman_correlation: CorrelationEvaluation
-
-
-class CommonNodeImportance(CustomModel):
-    node_id: float
-    actual: float
-    explained: float

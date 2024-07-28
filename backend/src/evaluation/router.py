@@ -5,12 +5,12 @@ from tqdm import tqdm
 
 from evaluation.dependencies import EvaluationPlansLoader, evaluation_plans, get_evaluation_results_dir
 from evaluation.schemas import CorrelationEvaluation, EvaluationPlansStats, MostImportantNodeEvaluationAllRespose, NodeImportanceEvaluation, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
-from evaluation.service import draw_correlation_evaluations, draw_cost_score, draw_fidelity_score, draw_scatter_node_importance, get_correlation_evaluation, pearson_correlation, spearman_correlation
+from evaluation.service import draw_correlation_evaluations, draw_cost_score, draw_fidelity_score, draw_scatter_node_importance, get_correlation_evaluation
 from evaluation.utils import load_model_from_file, save_model_to_file
 from ml.dependencies import get_base_explainer, get_explainer
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType
-from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
+from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation_internal, spearman_correlation_inernal
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -127,14 +127,14 @@ def get_node_importance_evaluation(
             node_importances,
             actual_importances,
             evaluation_plans,
-            pearson_correlation,
+            pearson_correlation_internal,
             table_counts,
         ),
         spearman_correlation=get_correlation_evaluation(
             node_importances,
             actual_importances,
             evaluation_plans,
-            spearman_correlation,
+            spearman_correlation_inernal,
             table_counts,
         ),
     )

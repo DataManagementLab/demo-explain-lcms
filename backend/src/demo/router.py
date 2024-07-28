@@ -2,6 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from demo.schemas import (
+    CorrelationEvaluationResponse,
     CostAccuracyEvaluationResponse,
     ExplanationResponse,
     FidelityEvaluationResponse,
@@ -13,9 +14,9 @@ from demo.schemas import (
     PredictionResponse,
 )
 from demo.utils import dict_keys_to_camel, list_values_to_camel
-from ml.dependencies import MLHelper, get_explainer, get_plan
+from ml.dependencies import MLHelper, get_base_explainer, get_explainer, get_plan
 from ml.service import ExplainerType
-from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation
+from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation, spearman_correlation
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -82,3 +83,15 @@ def get_most_important_node_evaluation(plan: Annotated[ParsedPlan, Depends(get_p
 @router.get("/plans/{plan_id}/evaluation/{explainer_type}/cost", response_model=CostAccuracyEvaluationResponse)
 def get_cost_evaluation(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer: Annotated[BaseExplainer, Depends(get_explainer)]):
     return cost_accuracy_evaluation(explainer, plan)
+
+
+@router.get("/plans/{plan_id}/evaluation/{explainer_type}/correlation-node-importance", response_model=CorrelationEvaluationResponse)
+def get_correlation_evaluation(
+    plan: Annotated[ParsedPlan, Depends(get_plan)],
+    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+    base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
+):
+    return CorrelationEvaluationResponse(
+        pearson_correlation=pearson_correlation(explainer, base_explainer, plan),
+        spearman_correlation=spearman_correlation(explainer, base_explainer, plan),
+    )
