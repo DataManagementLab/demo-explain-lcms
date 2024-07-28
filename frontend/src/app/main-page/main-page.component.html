@@ -10,11 +10,13 @@
         <expl-zs-explainer-select
           @enter
           [(selectedExplainer)]="selectedExplainer" />
-        @if (this.selectedPlanFidelityEvaluaiton(); as fidelity) {
+        @if (this.selectedPlanCorrelationEvaluation() && this.selectedPlanFidelityPlusEvaluaiton() && this.selectedPlanFidelityMinusEvaluaiton()) {
           <mat-divider @enter />
           <expl-zs-explainer-evaluation-block
             @enter
-            [fidelutyEvaluation]="fidelity" />
+            [correlationEvaluation]="this.selectedPlanCorrelationEvaluation()!"
+            [fidelityPlusEvaluation]="this.selectedPlanFidelityPlusEvaluaiton()!"
+            [fidelityMinusEvaluation]="this.selectedPlanFidelityMinusEvaluaiton()!" />
         }
       }
     </div>

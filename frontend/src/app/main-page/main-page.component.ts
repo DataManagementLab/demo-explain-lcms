@@ -11,7 +11,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PlanListComponent } from './plan-list/plan-list.component';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { combineLatest, of, switchMap } from 'rxjs';
+import { combineLatest, filter, map, of, switchMap, tap } from 'rxjs';
 import { ExplainerSelectComponent } from './explainer-select/explainer-select.component';
 import { PredictionBlockComponent } from './prediction-block/prediction-block.component';
 import { NodeImportanceListComponent } from './node-importance-list/node-importance-list.component';
@@ -20,6 +20,7 @@ import { CostBarComponent } from './cost-bar/cost-bar.component';
 import FidelityEvaluation from '../services/data/fidelity-evaluation';
 import { ExplainerEvaluationBlockComponent } from './explainer-evaluation-block/explainer-evaluation-block.component';
 import { animate, style, transition, trigger } from '@angular/animations';
+import CorrelationEvaluation from '../services/data/correlation-evaluation';
 
 const enterAnimation = [style({ opacity: 0 }), animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1 }))];
 
@@ -56,7 +57,9 @@ export class MainPageComponent implements OnInit {
   selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
   private selectedExplainer$ = toObservable(this.selectedExplainer);
   actualExplanation = signal<Explanation | undefined>(undefined);
-  selectedPlanFidelityEvaluaiton = signal<FidelityEvaluation | undefined>(undefined);
+  selectedPlanFidelityPlusEvaluaiton = signal<FidelityEvaluation | undefined>(undefined);
+  selectedPlanFidelityMinusEvaluaiton = signal<FidelityEvaluation | undefined>(undefined);
+  selectedPlanCorrelationEvaluation = signal<CorrelationEvaluation | undefined>(undefined);
 
   isLoading = computed(() => {
     return this.selectedPlan() && !(this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation());
@@ -107,7 +110,8 @@ export class MainPageComponent implements OnInit {
       this.selectedNode.set(undefined);
       this.selectedPlanPrediction.set(undefined);
       this.selectedPlanExplanation.set(undefined);
-      this.selectedPlanFidelityEvaluaiton.set(undefined);
+      this.selectedPlanFidelityPlusEvaluaiton.set(undefined);
+      this.selectedPlanFidelityMinusEvaluaiton.set(undefined);
       this.actualExplanation.set(undefined);
     });
     this.selectedPlan$.pipe(switchMap(plan => (plan ? this.apiService.getPlan(plan.id) : of(undefined)))).subscribe(value => this.selectedFullPlan.set(value));
@@ -115,11 +119,36 @@ export class MainPageComponent implements OnInit {
       .pipe(switchMap(plan => (plan ? this.apiService.getPrediction(plan.id) : of(undefined))))
       .subscribe(value => this.selectedPlanPrediction.set(value));
     combineLatest([this.selectedPlan$, this.selectedExplainer$])
-      .pipe(switchMap(([plan, explainerType]) => (plan ? this.apiService.getExplanation(plan.id, explainerType) : of(undefined))))
-      .subscribe(value => this.selectedPlanExplanation.set(value));
-    combineLatest([this.selectedPlan$, this.selectedExplainer$])
-      .pipe(switchMap(([plan, explainerType]) => (plan ? this.apiService.getFidelityEvaluation(plan.id, explainerType) : of(undefined))))
-      .subscribe(value => this.selectedPlanFidelityEvaluaiton.set(value));
+      .pipe(
+        map(([plan, explainerType]) => ({ plan, explainerType })),
+        filter(({ plan }) => plan !== undefined),
+        map(({ plan, explainerType }) => ({ plan: plan!, explainerType })),
+        switchMap(({ plan, explainerType }) =>
+          this.apiService.getExplanation(plan.id, explainerType).pipe(
+            tap(value => this.selectedPlanExplanation.set(value)),
+            map(() => ({ plan, explainerType }))
+          )
+        ),
+        switchMap(({ plan, explainerType }) =>
+          this.apiService.getFidelityPlusEvaluation(plan.id, explainerType).pipe(
+            tap(value => this.selectedPlanFidelityPlusEvaluaiton.set(value)),
+            map(() => ({ plan, explainerType }))
+          )
+        ),
+        switchMap(({ plan, explainerType }) =>
+          this.apiService.getFidelityMinusEvaluation(plan.id, explainerType).pipe(
+            tap(value => this.selectedPlanFidelityMinusEvaluaiton.set(value)),
+            map(() => ({ plan, explainerType }))
+          )
+        ),
+        switchMap(({ plan, explainerType }) =>
+          this.apiService.getCorrelationEvaluation(plan.id, explainerType).pipe(
+            tap(value => this.selectedPlanCorrelationEvaluation.set(value)),
+            map(() => ({ plan, explainerType }))
+          )
+        )
+      )
+      .subscribe();
     this.selectedPlan$
       .pipe(switchMap(plan => (plan ? this.apiService.getExplanation(plan.id, ExplainerType.actual) : of(undefined))))
       .subscribe(value => this.actualExplanation.set(value));

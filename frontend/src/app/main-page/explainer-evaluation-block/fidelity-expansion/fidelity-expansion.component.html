@@ -1,0 +1,19 @@
+<mat-expansion-panel
+  [expanded]="true"
+  hideToggle>
+  <mat-expansion-panel-header>
+    <mat-panel-title>{{ title() }}</mat-panel-title>
+  </mat-expansion-panel-header>
+  <div class="flex flex-col gap-2">
+    <p>
+      <span class="font-bold">Masked Prediction: </span>
+      <span>{{ fidelityEvaluation().maskedOutput.prediction | number: '1.0-2' }}</span>
+    </p>
+    <p>
+      <span [class]="['font-bold', { 'text-green-700': fidelityEvaluation().score === 1, 'text-red-700': fidelityEvaluation().score === 0 }] | cn"
+        >Relative Change:
+      </span>
+      <span>{{ fidelityEvaluation().relativeChange | percent }}</span>
+    </p>
+  </div>
+</mat-expansion-panel>

@@ -1,8 +1,26 @@
-<p>
-  <span class="font-bold">Masked Prediction: </span>
-  <span>{{ fidelutyEvaluation().maskedOutput.prediction | number: '1.0-2' }}</span>
-</p>
-<p>
-  <span class="font-bold">Fidelity: </span>
-  <span>{{ fidelutyEvaluation().score | number: '1.0-2' }}</span>
-</p>
+<div>
+  <mat-expansion-panel
+    [expanded]="true"
+    hideToggle>
+    <mat-expansion-panel-header>
+      <mat-panel-title>Correlations with actual cost</mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="flex flex-col gap-2">
+      <p>
+        <span class="font-bold">Pearson: </span>
+        <span>{{ correlationEvaluation().pearsonCorrelation | number: '1.0-2' }}</span>
+      </p>
+      <p>
+        <span class="font-bold">Spearman: </span>
+        <span>{{ correlationEvaluation().spearmanCorrelation | number: '1.0-2' }}</span>
+      </p>
+    </div>
+  </mat-expansion-panel>
+</div>
+
+<expl-zs-fidelity-expansion
+  title="Fidelity Plus (Masked important nodes)"
+  [fidelityEvaluation]="fidelityPlusEvaluation()" />
+<expl-zs-fidelity-expansion
+  title="Fidelity Minus (Masked unimportant nodes)"
+  [fidelityEvaluation]="fidelityMinusEvaluation()" />

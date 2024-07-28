@@ -1,6 +1,6 @@
 <table
   mat-table
-  [dataSource]="this.plans()">
+  [dataSource]="this.paginatedPlans()">
   <ng-container matColumnDef="id">
     <th
       mat-header-cell
@@ -88,3 +88,7 @@
     [class]="['transition-colors hover:bg-gray-200', { '!bg-gray-300 hover:bg-gray-300': this.selectedPlan() && this.selectedPlan()!.id === plan.id }] | cn"
     (click)="selectedPlan.set(plan)"></tr>
 </table>
+<mat-paginator
+  (page)="onPage($event)"
+  [length]="itemsCount()">
+</mat-paginator>
