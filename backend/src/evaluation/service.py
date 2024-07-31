@@ -62,11 +62,18 @@ def get_hash_joins_count(plan: ParsedPlan):
     return hash_joins_count
 
 
-def draw_scatter_node_importance(node_importances: list[dict[int, float]], actual_node_importances: list[dict[int, float]], explainer: ExplainerType, output_dir: str):
+def draw_scatter_node_importance(
+    node_importances: list[dict[int, float]],
+    actual_node_importances: list[dict[int, float]],
+    explainer: ExplainerType,
+    output_dir: str,
+    postfix: str = "all",
+):
     plt.figure()
 
     x: list[float] = []
     y: list[float] = []
+    max_value = 0
 
     for plan in zip(node_importances, actual_node_importances):
         node_importance = plan[0]
@@ -76,14 +83,15 @@ def draw_scatter_node_importance(node_importances: list[dict[int, float]], actua
                 continue
             x.append(node_importance[node])
             y.append(actual_node_importance[node])
+            max_value = max(node_importance[node], actual_node_importance[node], max_value)
 
-    plt.scatter(x, y)
-    plt.plot([0, 1], [0, 1])
+    plt.scatter(x, y, marker="x")
+    plt.plot([0, max_value], [0, max_value], "g--")
 
     plt.xlabel("Importance from explainer")
     plt.ylabel("Importance from runtime")
     plt.title("Correlation between actual runtime and importance")
-    plt.savefig(f"{output_dir}/plot_scatter_node_importance_{explainer}.png")
+    plt.savefig(f"{output_dir}/plot_scatter_node_importance_{explainer}_{postfix}.png")
 
 
 def draw_correlation_evaluations(correlation_evaluations: dict[ExplainerType, CorrelationEvaluation], plot_name: str, output_dir: str):
@@ -91,6 +99,8 @@ def draw_correlation_evaluations(correlation_evaluations: dict[ExplainerType, Co
 
     for explainer, correlation in correlation_evaluations.items():
         plt.plot([c.table_count for c in correlation.correlations_mean], [c.score for c in correlation.correlations_mean], label=explainer_to_string[explainer])
+    max_tables = max([c.table_count for correlation in correlation_evaluations.values() for c in correlation.correlations])
+    plt.xticks(range(1, max_tables + 1))
     plt.xlabel("Table count")
     plt.ylabel("Correlation score")
     plt.title(plot_name)
