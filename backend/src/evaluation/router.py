@@ -1,5 +1,6 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
+import httpx
 from tqdm import tqdm
 
 from evaluation.dependencies import EvaluationPlansLoader, evaluation_plans, get_evaluation_results_dir
@@ -22,7 +23,7 @@ def evaluation_plans_stats(evaluation_plans_loader: Annotated[EvaluationPlansLoa
     return EvaluationPlansStats(stats=evaluation_plans_loader.evaluation_plans_stats)
 
 
-@router.get("/{explainer_type}/fidelity_plus", response_model=TablesToScoreEvaluationResponse)
+@router.get("/{explainer_type}/fidelity-plus", response_model=TablesToScoreEvaluationResponse)
 def get_fidelity_plus_evaluation_all(
     explainer_type: ExplainerType,
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
@@ -32,7 +33,7 @@ def get_fidelity_plus_evaluation_all(
     return compute_fidelity(explainer_type, explainer, evaluation_plans, output_dir, evaluation_fidelity_plus, FidelityType.PLUS)
 
 
-@router.get("/{explainer_type}/fidelity_minus", response_model=TablesToScoreEvaluationResponse)
+@router.get("/{explainer_type}/fidelity-minus", response_model=TablesToScoreEvaluationResponse)
 def get_fidelity_minus_evaluation_all(
     explainer_type: ExplainerType,
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
@@ -42,7 +43,7 @@ def get_fidelity_minus_evaluation_all(
     return compute_fidelity(explainer_type, explainer, evaluation_plans, output_dir, evaluation_fidelity_minus, FidelityType.MINUS)
 
 
-@router.get("/evaluation/{explainer_type}/most-important-node", response_model=MostImportantNodeEvaluationAllRespose)
+@router.get("/{explainer_type}/most-important-node", response_model=MostImportantNodeEvaluationAllRespose)
 def get_most_important_node_evaluation_all(
     explainer_type: ExplainerType,
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
@@ -70,7 +71,7 @@ def get_most_important_node_evaluation_all(
     return response
 
 
-@router.get("/evaluation/{explainer_type}/cost", response_model=TablesToScoreEvaluationResponse)
+@router.get("/{explainer_type}/cost", response_model=TablesToScoreEvaluationResponse)
 def get_cost_evaluation_all(
     explainer_type: ExplainerType,
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
@@ -97,7 +98,7 @@ def get_cost_evaluation_all(
     return response
 
 
-@router.get("/evaluation/{explainer_type}/node-importance", response_model=NodeImportanceEvaluation)
+@router.get("/{explainer_type}/node-importance", response_model=NodeImportanceEvaluation)
 def get_node_importance_evaluation(
     explainer_type: ExplainerType,
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
@@ -164,3 +165,17 @@ def get_fidelity_evaluation_all_plot(output_dir: Annotated[str, Depends(get_eval
         data_correlation_spearman[explainer_type] = data.spearman_correlation
     draw_correlation_evaluations(data_correlation_pearson, "Pearson correlation", output_dir)
     draw_correlation_evaluations(data_correlation_spearman, "Spearman correlation", output_dir)
+
+
+@router.get("/run_all_evaluations")
+def run_all_evaluations(request: Request):
+    base_url = str(request.base_url) + "evaluation"
+    client = httpx.Client(timeout=None, base_url=base_url)
+    httpx.get(f"{base_url}/stats")
+    for explainer_type in ExplainerType:
+        client.get(f"/{explainer_type}/fidelity-plus")
+        client.get(f"/{explainer_type}/fidelity-minus")
+        client.get(f"/{explainer_type}/most-important-node")
+        client.get(f"/{explainer_type}/cost")
+        client.get(f"/{explainer_type}/node-importance")
+    client.get("/plots")
