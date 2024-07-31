@@ -26,11 +26,11 @@ class FidelityType(StrEnum):
 def draw_fidelity_score(data: dict[ExplainerType, list[TablesToScore]], output_dir: str, fidelity_type: FidelityType):
     plt.figure()
     for key, scores in data.items():
-        plt.plot([s.table_count for s in scores], [s.score for s in scores], label=explainer_to_string[key])
+        plt.plot([s.table_count - 1 for s in scores], [s.score for s in scores], label=explainer_to_string[key])
     max_tables = max([score.table_count for scores in data.values() for score in scores])
-    plt.xticks(range(1, max_tables + 1))
+    plt.xticks(range(0, max_tables))
     plt.ylim(0, 1)
-    plt.xlabel("Table count")
+    plt.xlabel("# of join operators")
     plt.ylabel(f"Fidelity {fidelity_type}")
     plt.title(f"Fidelity {fidelity_type} evaluation")
     plt.legend()
@@ -41,10 +41,10 @@ def draw_cost_score(data: dict[ExplainerType, list[TablesToScore]], output_dir: 
     plt.figure()
     max_tables = max([score.table_count for scores in data.values() for score in scores])
     for key, scores in data.items():
-        plt.plot([s.table_count for s in scores], [s.score for s in scores], label=explainer_to_string[key])
-    plt.xticks(range(1, max_tables + 1))
+        plt.plot([s.table_count - 1 for s in scores], [s.score for s in scores], label=explainer_to_string[key])
+    plt.xticks(range(0, max_tables))
     plt.yticks(float_range(0, 2, floats=10))
-    plt.xlabel("Table count")
+    plt.xlabel("# of join operators")
     plt.ylabel("Cost hit rate")
     plt.title("Cost Evaluation")
     plt.legend()
@@ -98,10 +98,10 @@ def draw_correlation_evaluations(correlation_evaluations: dict[ExplainerType, Co
     plt.figure()
 
     for explainer, correlation in correlation_evaluations.items():
-        plt.plot([c.table_count for c in correlation.correlations_mean], [c.score for c in correlation.correlations_mean], label=explainer_to_string[explainer])
+        plt.plot([c.table_count - 1 for c in correlation.correlations_mean], [c.score for c in correlation.correlations_mean], label=explainer_to_string[explainer])
     max_tables = max([c.table_count for correlation in correlation_evaluations.values() for c in correlation.correlations])
-    plt.xticks(range(1, max_tables + 1))
-    plt.xlabel("Table count")
+    plt.xticks(range(0, max_tables))
+    plt.xlabel("# of join operators")
     plt.ylabel("Correlation score")
     plt.title(plot_name)
     plt.legend()
