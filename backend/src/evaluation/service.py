@@ -13,7 +13,7 @@ from zero_shot_learned_db.explanations.load import ParsedPlan
 
 explainer_to_string = {
     ExplainerType.BASE: "Based on the actual runtime",
-    ExplainerType.GRADIENT: "Gradient",
+    ExplainerType.GRADIENT: "Sensitivity Analysis",
     ExplainerType.GUIDED_BP: "Guided Backpropagation",
 }
 
