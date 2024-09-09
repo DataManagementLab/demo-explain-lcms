@@ -8,6 +8,7 @@ from config import Settings, get_settings
 from evaluation.schemas import PlanStats
 from evaluation.service import get_hash_joins_count
 from ml.dependencies import MLHelper
+from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -19,13 +20,16 @@ def get_evaluation_results_dir(config: Annotated[Settings, Depends(get_settings)
 
 
 class EvaluationPlansLoader:
+    ml: MLHelper
     evaluation_plans: list[ParsedPlan]
     are_plans_prepared: bool = False
-    # table_count_nodes: dict[int, int]
+    are_plans_explained: bool = False
+
     evaluation_plans_dict: dict[int, list[ParsedPlan]]
     evaluation_plans_stats: dict[int, PlanStats]
 
     def load(self, settings: Settings, ml: MLHelper):
+        self.ml = ml
         self.evaluation_plans = []
         self.table_count_nodes = {}
         self.evaluation_plans_dict = {}
@@ -60,6 +64,20 @@ class EvaluationPlansLoader:
         for plan in tqdm(self.evaluation_plans):
             plan.prepare_plan_for_inference()
         self.are_plans_prepared = True
+
+    def explain_all(self):
+        self.prepare_all_plans_for_inference()
+        if self.are_plans_explained:
+            return
+
+        self.explanations = {}
+        print("Explain all plans")
+        for explainer_type in ExplainerType:
+            self.explanations[explainer_type] = []
+            print(explainer_type)
+            for plan in tqdm(self.evaluation_plans):
+                plan._explanation_cache_for_evaluation[explainer_type] = self.ml.get_explainer(explainer_type).explain(plan)
+        self.are_plans_explained = True
 
 
 def evaluation_plans(evaluation_plans_loader: Annotated[EvaluationPlansLoader, Depends()]):

@@ -10,7 +10,7 @@ from evaluation.utils import load_model_from_file, save_model_to_file
 from ml.dependencies import get_base_explainer, get_explainer, get_plan
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType
-from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_minus, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation_internal, spearman_correlation_inernal
+from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_minus, evaluation_fidelity_plus, get_explanation, most_important_node_evaluation, pearson_correlation_internal, spearman_correlation_inernal
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -112,7 +112,7 @@ def get_node_importance_evaluation(
         return response
 
     actual_importances = [base_explainer.explain(plan).node_importance for plan in tqdm(evaluation_plans)]
-    node_importances = [explainer.explain(plan).node_importance for plan in tqdm(evaluation_plans)]
+    node_importances = [get_explanation(plan, explainer).node_importance for plan in tqdm(evaluation_plans)]
     table_counts = list(set([plan.graph_nodes_stats[NodeType.TABLE] for plan in evaluation_plans]))
     table_counts.sort()
 
@@ -168,7 +168,8 @@ def get_fidelity_evaluation_all_plot(output_dir: Annotated[str, Depends(get_eval
 
 
 @router.get("/run_all_evaluations")
-def run_all_evaluations(request: Request):
+def run_all_evaluations(request: Request, evaluation_plans_loader: Annotated[EvaluationPlansLoader, Depends()]):
+    evaluation_plans_loader.explain_all()
     base_url = str(request.base_url) + "evaluation"
     client = httpx.Client(timeout=None, base_url=base_url)
     httpx.get(f"{base_url}/stats")
@@ -189,6 +190,6 @@ def draw_plot_node_importance(
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
     output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
 ):
-    explanation = explainer.explain(plan)
+    explanation = get_explanation(plan, explainer)
     actual_importance = base_explainer.explain(plan)
     draw_scatter_node_importance([explanation.node_importance], [actual_importance.node_importance], explainer_type, output_dir, plan.id)

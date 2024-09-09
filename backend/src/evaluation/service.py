@@ -15,6 +15,7 @@ explainer_to_string = {
     ExplainerType.BASE: "Based on the actual runtime",
     ExplainerType.GRADIENT: "Sensitivity Analysis",
     ExplainerType.GUIDED_BP: "Guided Backpropagation",
+    ExplainerType.GNN_EXPLAINER: "GNNExplainer",
 }
 
 

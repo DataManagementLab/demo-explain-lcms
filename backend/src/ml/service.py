@@ -7,10 +7,10 @@ from zero_shot_learned_db.explanations.explainers.guided_bp_explainer import Gui
 
 
 class ExplainerType(StrEnum):
-    BASE = "base_explainer"
-    GRADIENT = "gradient_explainer"
-    GUIDED_BP = "guided_bp_explainer"
-    GNN_EXPLAINER = "gnn_explainer"
+    BASE = BaseExplainer.__name__
+    GRADIENT = GradientExplainer.__name__
+    GUIDED_BP = GuidedBPExplainer.__name__
+    GNN_EXPLAINER = GNNExplainer.__name__
 
 
 explainers: dict[ExplainerType, type[BaseExplainer]] = {
