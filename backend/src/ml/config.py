@@ -14,3 +14,5 @@ class MLSettings(BaseModel):
     device: str = "cpu"
     batch_size: int = 1
     seed: int = 0
+
+    explainers_log: bool = False

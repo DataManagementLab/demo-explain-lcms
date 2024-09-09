@@ -21,8 +21,10 @@ class MLHelper:
     workload_run: WorkloadRun
     model: ZeroShotModel
     parsed_plans: list[ParsedPlan]
+    settings: Settings
 
     def load(self, settings: Settings):
+        self.settings = settings
         dataset_file = os.path.join(settings.ml.base_data_dir, settings.ml.dataset_file)
         statistics_file = os.path.join(settings.ml.base_data_dir, settings.ml.statistics_file)
         model_dir = os.path.join(settings.ml.base_data_dir, settings.ml.zs_model_dir)
@@ -69,7 +71,7 @@ class MLHelper:
     def get_explainer(self, explainer_type: ExplainerType):
         self._assert_loaded()
 
-        return explainers[explainer_type](self.model)
+        return explainers[explainer_type](self.model, log=self.settings.ml.explainers_log)
 
     def get_plan(self, plan_id: int):
         if plan_id < 0 or plan_id >= len(self.parsed_plans):
