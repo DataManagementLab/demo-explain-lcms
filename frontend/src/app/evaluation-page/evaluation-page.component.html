@@ -54,4 +54,14 @@
         [chartData]="chartData"></expl-zs-line-chart>
     }
   </div>
+  <div class="flex flex-col items-center gap-4">
+    <p class="text-xl font-bold">Cost Guided Backpropagation</p>
+    @if (costEvaluations()[explainerTypeEnum.gnnExplainer]; as chartData) {
+      <expl-zs-line-chart
+        class="m size-line-chart"
+        xTitle="# Tables"
+        yTitle="Cost Hit Rate"
+        [chartData]="chartData"></expl-zs-line-chart>
+    }
+  </div>
 </div>
