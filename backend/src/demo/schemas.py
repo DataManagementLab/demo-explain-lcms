@@ -68,7 +68,6 @@ class PredictionResponse(CustomModel):
 
 
 class ExplanationResponse(CustomModel):
-    feature_importance: dict[int, dict[str, float]]
     node_importance: dict[int, float]
 
 

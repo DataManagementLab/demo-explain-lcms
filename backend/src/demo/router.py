@@ -13,7 +13,7 @@ from demo.schemas import (
     PlanResponse,
     PredictionResponse,
 )
-from demo.utils import dict_keys_to_camel, list_values_to_camel
+from demo.utils import list_values_to_camel
 from ml.dependencies import MLHelper, get_base_explainer, get_explainer, get_plan
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_minus, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation, spearman_correlation
@@ -55,10 +55,7 @@ def get_plan_prediction(plan: Annotated[ParsedPlan, Depends(get_plan)], ml: Anno
 
 @router.get("/plans/{plan_id}/explanation/{explainer_type}", response_model=ExplanationResponse)
 def get_plan_explanation(plan: Annotated[ParsedPlan, Depends(get_plan)], explainer: Annotated[BaseExplainer, Depends(get_explainer)]):
-    explanation = explainer.explain(plan)
-    for grad in explanation.feature_importance.values():
-        dict_keys_to_camel(grad)
-    return explanation
+    return explainer.explain(plan)
 
 
 @router.get("/important-features", response_model=ImportantFeaturesResponse)
