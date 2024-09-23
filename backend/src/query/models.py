@@ -3,23 +3,6 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from query.db import Base
 
 
-class ColumnStats(Base):
-    __tablename__ = "columns"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    database_stats_id: Mapped[int] = mapped_column(ForeignKey("database_stats.id"))
-    id_in_run = Mapped[int]
-    tablename: Mapped[str]
-    attname: Mapped[str]
-    null_frac: Mapped[float]
-    avg_width: Mapped[int]
-    n_distinct: Mapped[float]
-    correlation: Mapped[float | None]
-    data_type: Mapped[str]
-    table_size: Mapped[float]
-    node_type: Mapped[str]
-
-
 class TableStats(Base):
     __tablename__ = "tables"
 
@@ -29,6 +12,25 @@ class TableStats(Base):
     relname: Mapped[str]
     reltuples: Mapped[float]
     relpages: Mapped[int]
+    node_type: Mapped[str]
+
+
+class ColumnStats(Base):
+    __tablename__ = "columns"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    database_stats_id: Mapped[int] = mapped_column(ForeignKey("database_stats.id"))
+    id_in_run = Mapped[int]
+    tablename: Mapped[str]
+    table_id: Mapped[int] = mapped_column(ForeignKey(TableStats.id))
+    table: Mapped[TableStats] = relationship()
+    attname: Mapped[str]
+    null_frac: Mapped[float]
+    avg_width: Mapped[int]
+    n_distinct: Mapped[float]
+    correlation: Mapped[float | None]
+    data_type: Mapped[str]
+    table_size: Mapped[float]
     node_type: Mapped[str]
 
 

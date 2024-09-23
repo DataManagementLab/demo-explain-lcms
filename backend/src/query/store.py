@@ -34,7 +34,7 @@ def store_workload_queries_in_db(settings: Settings, ml: MLHelper):
     for i, stat in enumerate(json_workload_run.database_stats.table_stats):
         db_stats.table_stats.append(create_db_model(TableStats, stat, id_in_run=i))
     for i, stat in enumerate(json_workload_run.database_stats.column_stats):
-        db_stats.column_stats.append(create_db_model(ColumnStats, stat, id_in_run=i))
+        db_stats.column_stats.append(create_db_model(ColumnStats, stat, id_in_run=i, table=next(filter(lambda t: t.relname == stat.tablename, db_stats.table_stats))))
     db_workload_run.database_stats = db_stats
 
     for plan in json_workload_run.parsed_plans:
