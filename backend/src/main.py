@@ -1,5 +1,8 @@
 import sys
 
+from db_utils import is_db_exists
+
+
 sys.path.append("./zero_shot_learned_db")
 
 from contextlib import asynccontextmanager
@@ -12,6 +15,8 @@ from evaluation.dependencies import EvaluationPlansLoader
 from demo.router import router as demo_router
 from evaluation.router import router as evaluation_router
 from test_approaches.router import router as test_approaches_router
+from query.db import setup_db_connection as setup_query_db_connection
+from query.store import store_workload_queries_in_db
 
 
 settings = get_settings()
@@ -25,6 +30,12 @@ async def lifespan(app: FastAPI):
     evaluation_plans_loader.load(settings, ml_helper)
     app.dependency_overrides[MLHelper] = lambda: ml_helper
     app.dependency_overrides[EvaluationPlansLoader] = lambda: evaluation_plans_loader
+
+    is_query_db_exists = is_db_exists(settings, settings.query.db_name)
+    setup_query_db_connection(settings)
+    if not is_query_db_exists:
+        store_workload_queries_in_db(settings, ml_helper)
+
     yield
 
 

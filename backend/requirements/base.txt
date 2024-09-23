@@ -3,6 +3,7 @@ uvicorn~=0.29.0
 pydantic-settings~=2.2.1
 pydantic~=2.7.1
 pygraphviz~=1.12
+sqlalchemy~=2.0.29
 
 # zero_shot_learned_db packages
 pandas~=2.2.2
