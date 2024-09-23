@@ -1,0 +1,19 @@
+{
+  "runs": [
+    {
+      "dataset": "IMDB",
+      "directory": "imdb",
+      "file": "workload_100k_s1_c8220.json"
+    },
+    {
+      "dataset": "Baseball",
+      "directory": "baseball",
+      "file": "workload_100k_s1_c8220.json"
+    },
+    {
+      "dataset": "TPC H",
+      "directory": "tpc_h",
+      "file": "workload_100k_s1_c8220.json"
+    }
+  ]
+}

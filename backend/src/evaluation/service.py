@@ -4,7 +4,8 @@ from typing import Callable
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from evaluation.schemas import CorrelationEvaluation, CorrelationScore, TablesToScore, TablesToScoreEvaluationResponse
-from evaluation.utils import float_range, load_model_from_file, save_model_to_file
+from utils import load_model_from_file, save_model_to_file
+from evaluation.utils import float_range
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.evaluation import FidelityEvaluation
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType, Plan

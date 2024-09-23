@@ -16,7 +16,7 @@ from demo.router import router as demo_router
 from evaluation.router import router as evaluation_router
 from test_approaches.router import router as test_approaches_router
 from query.db import setup_db_connection as setup_query_db_connection
-from query.store import store_workload_queries_in_db
+from query.store import store_all_workload_queries_in_db
 
 
 settings = get_settings()
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
     is_query_db_exists = is_db_exists(settings, settings.query.db_name)
     setup_query_db_connection(settings)
     if not is_query_db_exists:
-        store_workload_queries_in_db(settings, ml_helper)
+        store_all_workload_queries_in_db(settings)
 
     yield
 

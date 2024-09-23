@@ -1,14 +1,13 @@
 import os.path
-from pathlib import Path
 from typing import Type, TypeVar
 from config import Settings
-from ml.dependencies import MLHelper
+from utils import load_model_from_file
 from query.db import get_db
 from sqlalchemy.orm import class_mapper
 from pydantic import BaseModel as PydanticBaseModel
-from query.models import ColumnStats, DatabaseStats, OutputColumn, Plan, PlanParameters, TableStats, RunKwargs, WorkloadRun, LogicalPredicate, FilterColumn
+from query.models import ColumnStats, DatabaseStats, OutputColumn, Plan, PlanParameters, TableStats, RunKwargs, LogicalPredicate, FilterColumn, WorkloadRun
 from zero_shot_learned_db.explanations.data_models.nodes import FilterColumn as PydanticFilterColumn, LogicalPredicate as PydanticLogicalPredicate, NodeType, Plan as PydanticPlan
-from zero_shot_learned_db.explanations.data_models.workload_run import load_workload_run
+from zero_shot_learned_db.explanations.data_models.workload_run import WorkloadRun as PydanticWorkloadRun, load_workload_run
 
 T = TypeVar("T")
 
@@ -19,11 +18,38 @@ def create_db_model(model_type: Type[T], data: PydanticBaseModel, **kwargs):
     return model_type(**valid_fields, **kwargs)
 
 
-def store_workload_queries_in_db(settings: Settings, ml: MLHelper):
-    dataset_file = os.path.join(settings.ml.base_data_dir, settings.ml.dataset_file)
-    json_workload_run = load_workload_run(dataset_file)
+class RawPlan(PydanticBaseModel):
+    sql: str
 
-    db_workload_run = create_db_model(WorkloadRun, json_workload_run, file_name=Path(dataset_file).stem)
+
+class RawRun(PydanticBaseModel):
+    query_list: list[RawPlan]
+
+
+class SavedRun(PydanticBaseModel):
+    dataset: str
+    directory: str
+    file: str
+
+
+class SavedRunsConfig(PydanticBaseModel):
+    runs: list[SavedRun]
+
+
+def store_all_workload_queries_in_db(settings: Settings):
+    runs_config = load_model_from_file(SavedRunsConfig, settings.query.saved_runs_config_file)
+    base_runs_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_dir)
+    base_runs_raw_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_raw_dir)
+    for saved_run in runs_config.runs:
+        run_file = os.path.join(base_runs_dir, saved_run.directory, saved_run.file)
+        raw_run_file = os.path.join(base_runs_raw_dir, saved_run.directory, saved_run.file)
+        print("Store Started", saved_run.dataset, saved_run.file)
+        store_workload_queries_in_db(load_workload_run(run_file), saved_run, load_model_from_file(RawRun, raw_run_file))
+        print("Store Finished", saved_run.dataset, saved_run.file)
+
+
+def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_run: SavedRun, raw_run: RawRun):
+    db_workload_run = create_db_model(WorkloadRun, json_workload_run, file_name=saved_run.file, dataset_name=saved_run.dataset)
     run_kwargs = create_db_model(RunKwargs, json_workload_run.run_kwargs)
     db_workload_run.run_kwargs = run_kwargs
 
@@ -37,8 +63,10 @@ def store_workload_queries_in_db(settings: Settings, ml: MLHelper):
         db_stats.column_stats.append(create_db_model(ColumnStats, stat, id_in_run=i, table=next(filter(lambda t: t.relname == stat.tablename, db_stats.table_stats))))
     db_workload_run.database_stats = db_stats
 
-    for plan in json_workload_run.parsed_plans:
-        db_workload_run.parsed_plans.append(create_plan_db_model(plan, db_stats))
+    for plan, raw_plan in zip(json_workload_run.parsed_plans, raw_run.query_list):
+        db_plan = create_plan_db_model(plan, db_stats)
+        db_plan.sql = raw_plan.sql
+        db_workload_run.parsed_plans.append(db_plan)
 
     with next(get_db()) as db:
         db.add(db_workload_run)

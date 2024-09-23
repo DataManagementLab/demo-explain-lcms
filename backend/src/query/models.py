@@ -144,6 +144,7 @@ class Plan(Base):
     database_id: Mapped[int]
     node_type: Mapped[str]
     workload_run_id: Mapped[int | None] = mapped_column(ForeignKey("workload_runs.id"))
+    sql: Mapped[str | None]
 
     # plain_content: list
     # join_conds: list[str]
@@ -171,6 +172,7 @@ class WorkloadRun(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     file_name: Mapped[str]
+    dataset_name: Mapped[str]
     parsed_plans: Mapped[list[Plan]] = relationship()
     database_stats_id: Mapped[int] = mapped_column(ForeignKey(DatabaseStats.id))
     database_stats: Mapped[DatabaseStats] = relationship()

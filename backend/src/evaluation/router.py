@@ -6,7 +6,7 @@ from tqdm import tqdm
 from evaluation.dependencies import EvaluationPlansLoader, evaluation_plans, get_evaluation_results_dir
 from evaluation.schemas import CorrelationEvaluation, EvaluationPlansStats, MostImportantNodeEvaluationAllRespose, NodeImportanceEvaluation, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
 from evaluation.service import FidelityType, compute_fidelity, draw_correlation_evaluations, draw_cost_score, draw_fidelity_score, draw_scatter_node_importance, get_correlation_evaluation
-from evaluation.utils import load_model_from_file, save_model_to_file
+from utils import load_model_from_file, save_model_to_file
 from ml.dependencies import get_base_explainer, get_explainer, get_plan
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType
