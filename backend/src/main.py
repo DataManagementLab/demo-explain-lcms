@@ -17,6 +17,7 @@ from evaluation.router import router as evaluation_router
 from test_approaches.router import router as test_approaches_router
 from query.db import setup_db_connection as setup_query_db_connection
 from query.store import store_all_workload_queries_in_db
+from query.router import router as query_router
 
 
 settings = get_settings()
@@ -53,6 +54,7 @@ app.add_middleware(
 app.include_router(demo_router)
 app.include_router(evaluation_router)
 app.include_router(test_approaches_router)
+app.include_router(query_router)
 
 
 # Index
