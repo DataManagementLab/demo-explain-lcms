@@ -1,8 +1,5 @@
 import sys
 
-from db_utils import is_db_exists
-
-
 sys.path.append("./zero_shot_learned_db")
 
 from contextlib import asynccontextmanager
@@ -32,10 +29,8 @@ async def lifespan(app: FastAPI):
     app.dependency_overrides[MLHelper] = lambda: ml_helper
     app.dependency_overrides[EvaluationPlansLoader] = lambda: evaluation_plans_loader
 
-    is_query_db_exists = is_db_exists(settings, settings.query.db_name)
     setup_query_db_connection(settings)
-    if not is_query_db_exists:
-        store_all_workload_queries_in_db(settings)
+    store_all_workload_queries_in_db(settings)
 
     yield
 

@@ -41,6 +41,11 @@ def store_all_workload_queries_in_db(settings: Settings):
     base_runs_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_dir)
     base_runs_raw_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_raw_dir)
     for saved_run in runs_config.runs:
+        with next(get_db()) as db:
+            run = db.query(WorkloadRun).filter(WorkloadRun.file_name == saved_run.file, WorkloadRun.dataset_name == saved_run.dataset).first()
+            if run is not None:
+                continue
+
         run_file = os.path.join(base_runs_dir, saved_run.directory, saved_run.file)
         raw_run_file = os.path.join(base_runs_raw_dir, saved_run.directory, saved_run.file)
         print("Store Started", saved_run.dataset, saved_run.file)
