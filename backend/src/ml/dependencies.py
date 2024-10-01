@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status as status_code
 import numpy as np
 import torch
+from tqdm import tqdm
 
 from config import Settings
 from ml.service import ExplainerType, explainers
@@ -65,6 +66,9 @@ class MLHelper:
             plan.id = index
         print(f"Loaded {len(self.parsed_plans)} plans from {dataset_file}")
 
+        if settings.ml.validate_graphs_from_nodes:
+            self._validate_graphs_from_nodes()
+
     def _assert_loaded(self):
         assert self.model is not None
 
@@ -80,6 +84,11 @@ class MLHelper:
         plan.prepare_plan_for_inference()
         plan.prepare_plan_for_view()
         return plan
+
+    def _validate_graphs_from_nodes(self):
+        print("Validating graphs from nodes")
+        for i in tqdm(range(len(self.parsed_plans))):
+            self.get_plan(i)
 
 
 def get_explainer(explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):

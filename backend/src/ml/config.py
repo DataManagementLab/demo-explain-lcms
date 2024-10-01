@@ -16,3 +16,4 @@ class MLSettings(BaseModel):
     seed: int = 0
 
     explainers_log: bool = False
+    validate_graphs_from_nodes: bool = False
