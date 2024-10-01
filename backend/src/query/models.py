@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from query.db import Base
@@ -50,20 +51,15 @@ class OutputColumnColumn(Base):
     output_column_id: Mapped[int] = mapped_column(ForeignKey(OutputColumn.id), primary_key=True)
 
 
-class LogicalNodeChild(Base):
-    __tablename__ = "logical_nodes_children"
-
-    node_id: Mapped[int] = mapped_column(ForeignKey("logical_nodes.id"), primary_key=True)
-    child_id: Mapped[int] = mapped_column(ForeignKey("logical_nodes.id"), primary_key=True)
-
-
 class LogicalPredicate(Base):
     __tablename__ = "logical_nodes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     type: Mapped[str]
     operator: Mapped[str]
-    children: Mapped[list["LogicalPredicate"]] = relationship(secondary="logical_nodes_children", primaryjoin=id == LogicalNodeChild.node_id, secondaryjoin=id == LogicalNodeChild.child_id)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey(id))
+    parent: Mapped[Optional["LogicalPredicate"]] = relationship(back_populates="children", remote_side=[id])
+    children: Mapped[list["LogicalPredicate"]] = relationship(back_populates="parent")
     node_type: Mapped[str]
 
     __mapper_args__ = {
@@ -126,13 +122,6 @@ class PlanOutputColumn(Base):
     output_column_id: Mapped[int] = mapped_column(ForeignKey(OutputColumn.id), primary_key=True)
 
 
-class PlanChild(Base):
-    __tablename__ = "plan_children"
-
-    plan_id: Mapped[int] = mapped_column(ForeignKey("plans.id"), primary_key=True)
-    child_id: Mapped[int] = mapped_column(ForeignKey("plans.id"), primary_key=True)
-
-
 class Plan(Base):
     __tablename__ = "plans"
 
@@ -140,7 +129,9 @@ class Plan(Base):
     plan_parameters_id: Mapped[int] = mapped_column(ForeignKey(PlanParameters.id))
     plan_parameters: Mapped[PlanParameters] = relationship()
     plan_runtime: Mapped[float]
-    children: Mapped[list["Plan"]] = relationship(secondary="plan_children", primaryjoin=id == PlanChild.plan_id, secondaryjoin=id == PlanChild.child_id)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey(id))
+    parent: Mapped[Optional["Plan"]] = relationship(back_populates="children", remote_side=[id])
+    children: Mapped[list["Plan"]] = relationship(back_populates="parent")
     database_id: Mapped[int]
     node_type: Mapped[str]
     workload_run_id: Mapped[int | None] = mapped_column(ForeignKey("workload_runs.id"))
