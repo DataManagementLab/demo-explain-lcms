@@ -47,7 +47,6 @@ class Plan(CustomModel, base_models.Plan):
 class PlanResponse(CustomModel):
     id: int
     graph_nodes_stats: dict[base_models.NodeType, int]
-    sql: str
 
 
 class GraphNodeResponse(CustomModel):

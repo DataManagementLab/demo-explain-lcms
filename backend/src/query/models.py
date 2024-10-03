@@ -42,6 +42,8 @@ class OutputColumn(Base):
     aggregation: Mapped[str]
     columns: Mapped[list[ColumnStats]] = relationship(secondary="output_columns_columns")
     node_type: Mapped[str]
+    top_plan_id: Mapped[int] = mapped_column(ForeignKey("plans.id"))
+    top_plan: Mapped["Plan"] = relationship()
 
 
 class OutputColumnColumn(Base):
@@ -61,6 +63,8 @@ class LogicalPredicate(Base):
     parent: Mapped[Optional["LogicalPredicate"]] = relationship(back_populates="children", remote_side=[id])
     children: Mapped[list["LogicalPredicate"]] = relationship(back_populates="parent")
     node_type: Mapped[str]
+    top_plan_id: Mapped[int] = mapped_column(ForeignKey("plans.id"))
+    top_plan: Mapped["Plan"] = relationship()
 
     __mapper_args__ = {
         "polymorphic_on": "type",
@@ -130,12 +134,14 @@ class Plan(Base):
     plan_parameters: Mapped[PlanParameters] = relationship()
     plan_runtime: Mapped[float]
     parent_id: Mapped[int | None] = mapped_column(ForeignKey(id))
-    parent: Mapped[Optional["Plan"]] = relationship(back_populates="children", remote_side=[id])
-    children: Mapped[list["Plan"]] = relationship(back_populates="parent")
+    parent: Mapped[Optional["Plan"]] = relationship(back_populates="children", remote_side=[id], foreign_keys=[parent_id])
+    children: Mapped[list["Plan"]] = relationship(back_populates="parent", foreign_keys=[parent_id])
     database_id: Mapped[int]
     node_type: Mapped[str]
     workload_run_id: Mapped[int | None] = mapped_column(ForeignKey("workload_runs.id"))
     sql: Mapped[str | None]
+    top_plan_id: Mapped[int | None] = mapped_column(ForeignKey(id))
+    top_plan: Mapped[Optional["Plan"]] = relationship(foreign_keys=[top_plan_id], remote_side=[id])
 
     # plain_content: list
     # join_conds: list[str]

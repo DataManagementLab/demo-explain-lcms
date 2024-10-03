@@ -78,31 +78,36 @@ def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_r
         db.commit()
 
 
-def create_plan_db_model(json_plan: PydanticPlan, db_stats: DatabaseStats):
+def create_plan_db_model(json_plan: PydanticPlan, db_stats: DatabaseStats, top_plan: Plan | None = None):
     plan = create_db_model(Plan, json_plan)
+    if top_plan is None:
+        top_plan = plan
+    else:
+        plan.top_plan = top_plan
     plan.plan_parameters = create_db_model(PlanParameters, json_plan.plan_parameters)
     for json_output_column in json_plan.plan_parameters.output_columns:
         output_column = create_db_model(OutputColumn, json_output_column)
+        output_column.top_plan = top_plan
         plan.plan_parameters.output_columns.append(output_column)
         for json_column in json_output_column.columns:
             output_column.columns.append(db_stats.column_stats[json_column])
     if json_plan.plan_parameters.filter_columns is not None:
-        plan.plan_parameters.filter_columns = create_logical_node(json_plan.plan_parameters.filter_columns, db_stats)
+        plan.plan_parameters.filter_columns = create_logical_node(json_plan.plan_parameters.filter_columns, db_stats, top_plan)
     for json_child_plan in json_plan.children:
-        plan.children.append(create_plan_db_model(json_child_plan, db_stats))
+        plan.children.append(create_plan_db_model(json_child_plan, db_stats, top_plan))
     return plan
 
 
-def create_logical_node(json_node: PydanticLogicalPredicate | PydanticFilterColumn, db_stats: DatabaseStats):
+def create_logical_node(json_node: PydanticLogicalPredicate | PydanticFilterColumn, db_stats: DatabaseStats, top_plan: Plan):
     if json_node.node_type == NodeType.LOGICAL_PRED:
         logical_predicate = create_db_model(LogicalPredicate, json_node)
+        logical_predicate.top_plan = top_plan
         for child in json_node.children:
-            logical_predicate.children.append(create_logical_node(child, db_stats))
+            logical_predicate.children.append(create_logical_node(child, db_stats, top_plan))
         return logical_predicate
     elif json_node.node_type == NodeType.FILTER_COLUMN:
         filter_column = create_db_model(FilterColumn, json_node)
-        for child in json_node.children:
-            filter_column.children.append(create_logical_node(child, db_stats))
+        filter_column.top_plan = top_plan
         filter_column.column_stats = db_stats.column_stats[json_node.column]
         return filter_column
     else:
