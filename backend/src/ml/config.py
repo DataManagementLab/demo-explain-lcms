@@ -17,3 +17,5 @@ class MLSettings(BaseModel):
 
     explainers_log: bool = False
     validate_graphs_from_nodes: bool = False
+
+    plans_cache_max_size: int = 10

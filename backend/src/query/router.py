@@ -1,12 +1,14 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
-from demo.schemas import GraphNodeResponse
+from demo.schemas import ExplanationResponse, GraphNodeResponse, PredictionResponse
+from ml.dependencies import get_base_explainer, get_explainer
 from query.db import db_depends
-from query.dependecies import get_parsed_plan
+from query.dependecies import get_parsed_plan, get_parsed_plan_for_inference
 from query.models import Dataset, Plan, WorkloadRun
 from query.schemas import DatasetResponse, FullQueryResponse, QueryResponse, WorkloadRunResponse
 from query.service import get_query_stats, get_workload_run_queries_count
+from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
 
@@ -70,3 +72,19 @@ def get_query(parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan)]):
     )
 
     return response
+
+
+@router.get("/query/{query_id}/prediction", response_model=PredictionResponse)
+def get_prediction(
+    parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
+    base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
+):
+    return base_explainer.predict(parsed_plan)
+
+
+@router.get("/query/{query_id}/explanation/{explainer_type}", response_model=ExplanationResponse)
+def get_explanation(
+    parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
+    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+):
+    return explainer.explain(parsed_plan)
