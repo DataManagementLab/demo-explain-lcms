@@ -1,17 +1,18 @@
 import os.path
 from typing import Annotated
-from fastapi import Depends, HTTPException, status as status_code
+from fastapi import Depends
 import numpy as np
 import torch
-from tqdm import tqdm
 
 from config import Settings
 from ml.service import ExplainerType, explainers
+from query.db import Session
+from query.models import DatabaseStats, Plan, WorkloadRun
 from zero_shot_learned_db.cross_db_benchmark.benchmark_tools.database import DatabaseSystem
 from zero_shot_learned_db.explanations.data_models.hyperparameters import HyperParameters, load_hyperparameters
 from zero_shot_learned_db.explanations.data_models.statistics import FeatureStatistics, load_statistics
-from zero_shot_learned_db.explanations.data_models.workload_run import WorkloadRun, load_workload_run
-from zero_shot_learned_db.explanations.load import ParsedPlan, get_label_norm
+from zero_shot_learned_db.explanations.data_models.workload_run import DatabaseStats as PydanticDatabaseStats
+from zero_shot_learned_db.explanations.load import get_label_norm_runtimes
 from zero_shot_learned_db.explanations.model import prepare_model
 from zero_shot_learned_db.models.zero_shot_models.zero_shot_model import ZeroShotModel
 
@@ -19,14 +20,12 @@ from zero_shot_learned_db.models.zero_shot_models.zero_shot_model import ZeroSho
 class MLHelper:
     hyperparameters: HyperParameters
     feature_statistics: FeatureStatistics
-    workload_run: WorkloadRun
     model: ZeroShotModel
-    parsed_plans: list[ParsedPlan]
     settings: Settings
+    database_stats: dict[int, PydanticDatabaseStats]
 
-    def load(self, settings: Settings):
+    def load(self, settings: Settings, db: Session):
         self.settings = settings
-        dataset_file = os.path.join(settings.ml.base_data_dir, settings.ml.dataset_file)
         statistics_file = os.path.join(settings.ml.base_data_dir, settings.ml.statistics_file)
         model_dir = os.path.join(settings.ml.base_data_dir, settings.ml.zs_model_dir)
 
@@ -41,10 +40,7 @@ class MLHelper:
         np.random.seed(self.hyperparameters.seed)
 
         self.feature_statistics = load_statistics(statistics_file)
-        self.workload_run = load_workload_run(dataset_file)
-        if settings.ml.limit_plans is not None:
-            self.workload_run.parsed_plans = self.workload_run.parsed_plans[: settings.ml.limit_plans]
-        label_norm = get_label_norm(self.workload_run.parsed_plans, self.hyperparameters.final_mlp_kwargs.loss_class_name)
+        label_norm = get_label_norm_runtimes([i[0] for i in db.query(Plan.plan_runtime).filter(Plan.sql.is_not(None)).all()], self.hyperparameters.final_mlp_kwargs.loss_class_name)
         self.model = prepare_model(
             self.hyperparameters,
             self.feature_statistics,
@@ -53,21 +49,10 @@ class MLHelper:
             settings.ml.zs_model_file_name,
         )
 
-        self.parsed_plans = [
-            ParsedPlan(
-                plan,
-                self.workload_run.database_stats,
-                self.hyperparameters,
-                self.feature_statistics,
-            )
-            for plan in self.workload_run.parsed_plans
-        ]
-        for index, plan in enumerate(self.parsed_plans):
-            plan.id = index
-        print(f"Loaded {len(self.parsed_plans)} plans from {dataset_file}")
-
-        if settings.ml.validate_graphs_from_nodes:
-            self._validate_graphs_from_nodes()
+        self.database_stats = {}
+        for db_stats in db.query(DatabaseStats).all():
+            workload_run = db.query(WorkloadRun.id).filter(WorkloadRun.database_stats_id == db_stats.id).first()
+            self.database_stats[workload_run[0]] = db_stats.to_pydantic()
 
     def _assert_loaded(self):
         assert self.model is not None
@@ -77,19 +62,6 @@ class MLHelper:
 
         return explainers[explainer_type](self.model, log=self.settings.ml.explainers_log)
 
-    def get_plan(self, plan_id: int):
-        if plan_id < 0 or plan_id >= len(self.parsed_plans):
-            raise HTTPException(status_code=status_code.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid plan id")
-        plan = self.parsed_plans[plan_id]
-        plan.prepare_plan_for_inference()
-        plan.prepare_plan_for_view()
-        return plan
-
-    def _validate_graphs_from_nodes(self):
-        print("Validating graphs from nodes")
-        for i in tqdm(range(len(self.parsed_plans))):
-            self.get_plan(i)
-
 
 def get_explainer(explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
     return ml.get_explainer(explainer_type)
@@ -97,7 +69,3 @@ def get_explainer(explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends
 
 def get_base_explainer(ml: Annotated[MLHelper, Depends()]):
     return ml.get_explainer(ExplainerType.BASE)
-
-
-def get_plan(plan_id: int, ml: Annotated[MLHelper, Depends()]):
-    return ml.get_plan(plan_id)

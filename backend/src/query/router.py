@@ -1,46 +1,72 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
-from ml.dependencies import MLHelper
+from demo.schemas import GraphNodeResponse
 from query.db import db_depends
-from query.models import Plan, WorkloadRun
-from query.schemas import FullWorkloadRunResponse, QueryResponse, WorkloadRunResponse
+from query.dependecies import get_parsed_plan
+from query.models import Dataset, Plan, WorkloadRun
+from query.schemas import DatasetResponse, FullQueryResponse, QueryResponse, WorkloadRunResponse
 from query.service import get_query_stats, get_workload_run_queries_count
+from zero_shot_learned_db.explanations.load import ParsedPlan
 
 
 router = APIRouter(tags=["query"])
 
 
-@router.get("/workloads", response_model=list[WorkloadRunResponse])
-def get_workloads(db: db_depends):
-    runs = db.query(WorkloadRun).all()
+@router.get("/datasets", response_model=list[DatasetResponse])
+def get_datasets(db: db_depends):
+    return db.query(Dataset).all()
+
+
+@router.get("/datasets/{dataset_id}/workloads", response_model=list[WorkloadRunResponse])
+def get_workloads(dataset_id: int, db: db_depends):
+    dataset = db.query(Dataset).filter(Dataset.id == dataset_id).first()
+    if dataset is None:
+        raise HTTPException(422, f"Dataset with id == {dataset_id} was not found")
+    runs = db.query(WorkloadRun).filter(WorkloadRun.dataset_id == dataset_id).all()
     return [
         WorkloadRunResponse(
             id=run.id,
             file_name=run.file_name,
-            dataset_name=run.dataset_name,
             queries_count=get_workload_run_queries_count(run.id, db),
         )
         for run in runs
     ]
 
 
-@router.get("/workloads/{workload_id}", response_model=FullWorkloadRunResponse)
-def get_workload_by_id(workload_id: int, db: db_depends, ml: Annotated[MLHelper, Depends()], offset: int = 0, limit: int = 20):
+@router.get("/workloads/{workload_id}/queries", response_model=list[QueryResponse])
+def get_workload_by_id(workload_id: int, db: db_depends, offset: int = 0, limit: int = 20):
     workload_run = db.query(WorkloadRun).filter(WorkloadRun.id == workload_id).first()
+    if workload_run is None:
+        raise HTTPException(422, f"Workload with id == {workload_id} was not found")
     plans = db.query(Plan).filter(Plan.workload_run_id == workload_id).offset(offset).limit(limit).all()
-    return FullWorkloadRunResponse(
-        id=workload_run.id,
-        file_name=workload_run.file_name,
-        dataset_name=workload_run.dataset_name,
-        queries_count=get_workload_run_queries_count(workload_id, db),
-        queries=[
-            QueryResponse(
-                id=plan.id,
-                plan_runtime=plan.plan_runtime,
-                sql=plan.sql,
-                query_stats=get_query_stats(plan.id, db),
+    return [
+        QueryResponse(
+            id=plan.id,
+            plan_runtime=plan.plan_runtime,
+            sql=plan.sql,
+            query_stats=get_query_stats(plan.id, db),
+        )
+        for plan in plans
+    ]
+
+
+@router.get("/query/{query_id}", response_model=FullQueryResponse)
+def get_query(parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan)]):
+    response = FullQueryResponse(
+        id=parsed_plan.id,
+        plan_runtime=parsed_plan.plan.plan_runtime,
+        query_stats=parsed_plan.graph_nodes_stats,
+        dot_graph=parsed_plan.get_dot(),
+        graph_nodes=[
+            GraphNodeResponse(
+                node_id=n.id_in_nx_graph,
+                label=n.node.get_label(),
+                node_info=n.node,
             )
-            for plan in plans
+            for n in parsed_plan.graph_nodes
         ],
+        sql=parsed_plan.plan.sql,
     )
+
+    return response

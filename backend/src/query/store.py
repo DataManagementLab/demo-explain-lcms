@@ -5,7 +5,7 @@ from utils import load_model_from_file
 from query.db import get_db
 from sqlalchemy.orm import class_mapper
 from pydantic import BaseModel as PydanticBaseModel
-from query.models import ColumnStats, DatabaseStats, OutputColumn, Plan, PlanParameters, TableStats, RunKwargs, LogicalPredicate, FilterColumn, WorkloadRun
+from query.models import ColumnStats, DatabaseStats, Dataset, OutputColumn, Plan, PlanParameters, TableStats, RunKwargs, LogicalPredicate, FilterColumn, WorkloadRun
 from zero_shot_learned_db.explanations.data_models.nodes import FilterColumn as PydanticFilterColumn, LogicalPredicate as PydanticLogicalPredicate, NodeType, Plan as PydanticPlan
 from zero_shot_learned_db.explanations.data_models.workload_run import WorkloadRun as PydanticWorkloadRun, load_workload_run
 
@@ -42,7 +42,7 @@ def store_all_workload_queries_in_db(settings: Settings):
     base_runs_raw_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_raw_dir)
     for saved_run in runs_config.runs:
         with next(get_db()) as db:
-            run = db.query(WorkloadRun).filter(WorkloadRun.file_name == saved_run.file, WorkloadRun.dataset_name == saved_run.dataset).first()
+            run = db.query(Dataset).join(WorkloadRun.dataset).filter(Dataset.name == saved_run.dataset, WorkloadRun.file_name == saved_run.file).first()
             if run is not None:
                 continue
 
@@ -54,7 +54,12 @@ def store_all_workload_queries_in_db(settings: Settings):
 
 
 def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_run: SavedRun, raw_run: RawRun):
-    db_workload_run = create_db_model(WorkloadRun, json_workload_run, file_name=saved_run.file, dataset_name=saved_run.dataset)
+    with next(get_db()) as db:
+        dataset = db.query(Dataset).filter(Dataset.name == saved_run.dataset).first()
+    if dataset is None:
+        dataset = Dataset(name=saved_run.dataset)
+    db_workload_run = create_db_model(WorkloadRun, json_workload_run, file_name=saved_run.file)
+    db_workload_run.dataset = dataset
     run_kwargs = create_db_model(RunKwargs, json_workload_run.run_kwargs)
     db_workload_run.run_kwargs = run_kwargs
 
