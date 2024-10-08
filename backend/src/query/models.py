@@ -122,7 +122,15 @@ class FilterColumn(LogicalPredicate):
     }
 
     def to_pydantic(self):
-        kwargs = get_kwargs(self, [FilterColumn.operator, FilterColumn.column, FilterColumn.literal_feature])
+        kwargs = get_kwargs(
+            self,
+            [
+                FilterColumn.operator,
+                FilterColumn.column,
+                FilterColumn.literal_feature,
+                FilterColumn.literal,
+            ],
+        )
         return nodes.FilterColumn(**kwargs, children=[])
 
 

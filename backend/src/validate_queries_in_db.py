@@ -4,9 +4,10 @@ from config import Settings
 from ml.dependencies import MLHelper, MLHelperOld
 from ml.service import ExplainerType
 from query.db import Session
-from query.dependecies import get_parsed_plan
 from query.models import Dataset, Plan, WorkloadRun
 import networkx as nx
+
+from zero_shot_learned_db.explanations.load import ParsedPlan
 
 
 def validate_queries_in_db(ml_helper: MLHelper, db: Session, settings: Settings):
@@ -29,16 +30,24 @@ def validate_queries_in_db(ml_helper: MLHelper, db: Session, settings: Settings)
             assert table_old.relname == table.relname
 
         print(f"Validating queries for {workload[0]}/{workload[1]}")
+        queries = db.query(Plan).filter(Plan.workload_run_id == workload[2], Plan.id_in_run.is_not(None)).all()
+        queries: list[Plan] = sorted(queries, key=lambda x: x.id_in_run)
         base_explainer_old = ml_helper_old.get_explainer(ExplainerType.BASE)
         for plan_id in tqdm(range(len(ml_helper_old.parsed_plans))):
-            plan_id_db = db.query(Plan).filter(Plan.id_in_run == plan_id, Plan.workload_run_id == workload[2]).first().id
+            plan = ParsedPlan(
+                queries[plan_id].to_pydantic(),
+                ml_helper.database_stats[queries[plan_id].workload_run_id],
+                ml_helper.hyperparameters,
+                ml_helper.feature_statistics,
+            )
             plan_old = ml_helper_old.get_plan(plan_id)
-            plan = get_parsed_plan(plan_id_db, db, ml_helper)
             plan.prepare_plan_for_inference()
             plan.prepare_plan_for_view()
+            assert len(plan.graph_nodes) == len(plan_old.graph_nodes)
             assert nx.is_isomorphic(plan_old.nx_graph, plan.nx_graph)
+            plan_old_strs = [str(node) for node in plan_old.graph_nodes]
             for i in range(len(plan.graph_nodes)):
-                assert i in plan_old.nx_graph.nodes
+                assert str(plan.graph_nodes[i]) in plan_old_strs
             prediction = base_explainer.predict(plan)
             prediction_old = base_explainer_old.predict(plan_old)
-            assert abs(prediction.label - prediction_old.label) < 0.0001
+            assert prediction.label == prediction_old.label
