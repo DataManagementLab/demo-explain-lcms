@@ -4,6 +4,8 @@ from pydantic import BaseModel
 class MLSettings(BaseModel):
     base_data_dir: str = ""
     dataset_file: str = ""
+    validation_base_dir: str = ""
+    validate_queries_in_db: bool = False
     limit_plans: int | None = None
     statistics_file: str = ""
     zs_model_dir: str = ""

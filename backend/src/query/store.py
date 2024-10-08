@@ -42,7 +42,7 @@ def store_all_workload_queries_in_db(settings: Settings):
     base_runs_raw_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_raw_dir)
     for saved_run in runs_config.runs:
         with next(get_db()) as db:
-            run = db.query(Dataset).join(WorkloadRun.dataset).filter(Dataset.name == saved_run.dataset, WorkloadRun.file_name == saved_run.file).first()
+            run = db.query(Dataset).join(WorkloadRun.dataset).filter(Dataset.directory == saved_run.directory, WorkloadRun.file_name == saved_run.file).first()
             if run is not None:
                 continue
 
@@ -55,9 +55,9 @@ def store_all_workload_queries_in_db(settings: Settings):
 
 def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_run: SavedRun, raw_run: RawRun):
     with next(get_db()) as db:
-        dataset = db.query(Dataset).filter(Dataset.name == saved_run.dataset).first()
+        dataset = db.query(Dataset).filter(Dataset.directory == saved_run.directory).first()
     if dataset is None:
-        dataset = Dataset(name=saved_run.dataset)
+        dataset = Dataset(name=saved_run.dataset, directory=saved_run.directory)
     db_workload_run = create_db_model(WorkloadRun, json_workload_run, file_name=saved_run.file)
     db_workload_run.dataset = dataset
     run_kwargs = create_db_model(RunKwargs, json_workload_run.run_kwargs)
@@ -73,9 +73,10 @@ def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_r
         db_stats.column_stats.append(create_db_model(ColumnStats, stat, id_in_run=i, table=next(filter(lambda t: t.relname == stat.tablename, db_stats.table_stats))))
     db_workload_run.database_stats = db_stats
 
-    for plan, raw_plan in zip(json_workload_run.parsed_plans, raw_run.query_list):
+    for i, (plan, raw_plan) in enumerate(zip(json_workload_run.parsed_plans, raw_run.query_list)):
         db_plan = create_plan_db_model(plan, db_stats)
         db_plan.sql = raw_plan.sql
+        db_plan.id_in_run = i
         db_workload_run.parsed_plans.append(db_plan)
 
     with next(get_db()) as db:
@@ -114,6 +115,7 @@ def create_logical_node(json_node: PydanticLogicalPredicate | PydanticFilterColu
         filter_column = create_db_model(FilterColumn, json_node)
         filter_column.top_plan = top_plan
         filter_column.column_stats = db_stats.column_stats[json_node.column]
+        filter_column.literal = str(json_node.literal)
         return filter_column
     else:
         raise Exception("Node should be either LogicalPredicate or FilterColumn")

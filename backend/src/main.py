@@ -16,6 +16,7 @@ from test_approaches.router import router as test_approaches_router
 from query.db import get_db, setup_db_connection as setup_query_db_connection
 from query.store import store_all_workload_queries_in_db
 from query.router import router as query_router
+from validate_queries_in_db import validate_queries_in_db
 
 
 settings = get_settings()
@@ -33,6 +34,10 @@ async def lifespan(app: FastAPI):
     # evaluation_plans_loader.load(settings, ml_helper)
     app.dependency_overrides[MLHelper] = lambda: ml_helper
     # app.dependency_overrides[EvaluationPlansLoader] = lambda: evaluation_plans_loader
+
+    if settings.ml.validate_queries_in_db:
+        with next(get_db()) as db:
+            validate_queries_in_db(ml_helper, db, settings)
 
     yield
 

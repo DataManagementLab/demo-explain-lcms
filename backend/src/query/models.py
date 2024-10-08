@@ -114,7 +114,7 @@ class FilterColumn(LogicalPredicate):
     column_id: Mapped[int] = mapped_column(ForeignKey(ColumnStats.id), nullable=True)
     column: Mapped[int] = mapped_column(nullable=True)
     column_stats: Mapped[ColumnStats] = relationship()
-    # literal: Mapped[str] = mapped_column(nullable=True)  # Mapped[str | int | float]
+    literal: Mapped[str] = mapped_column(nullable=True)
     literal_feature: Mapped[str] = mapped_column(nullable=True)
 
     __mapper_args__ = {
@@ -201,6 +201,7 @@ class Plan(Base):
     __tablename__ = "plans"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    id_in_run: Mapped[int | None]
     plan_parameters_id: Mapped[int] = mapped_column(ForeignKey(PlanParameters.id))
     plan_parameters: Mapped[PlanParameters] = relationship()
     plan_runtime: Mapped[float]
@@ -245,8 +246,8 @@ class DatabaseStats(Base):
 
     def to_pydantic(self):
         return workload_run.DatabaseStats(
-            column_stats=[c.to_pydantic() for c in self.column_stats],
-            table_stats=[t.to_pydantic() for t in self.table_stats],
+            column_stats=[c.to_pydantic() for c in sorted(self.column_stats, key=lambda x: x.id_in_run)],
+            table_stats=[t.to_pydantic() for t in sorted(self.table_stats, key=lambda x: x.id_in_run)],
         )
 
 
@@ -269,4 +270,5 @@ class Dataset(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
+    directory: Mapped[str]
     runs: Mapped[list[WorkloadRun]] = relationship(back_populates="dataset")
