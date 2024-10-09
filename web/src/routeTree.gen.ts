@@ -11,10 +11,34 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as EvaluationResultsImport } from './routes/evaluation-results'
+import { Route as EvaluationImport } from './routes/evaluation'
+import { Route as EditorImport } from './routes/editor'
+import { Route as DemoImport } from './routes/demo'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const EvaluationResultsRoute = EvaluationResultsImport.update({
+  path: '/evaluation-results',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EvaluationRoute = EvaluationImport.update({
+  path: '/evaluation',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EditorRoute = EditorImport.update({
+  path: '/editor',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DemoRoute = DemoImport.update({
+  path: '/demo',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AboutRoute = AboutImport.update({
   path: '/about',
@@ -44,6 +68,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoImport
+      parentRoute: typeof rootRoute
+    }
+    '/editor': {
+      id: '/editor'
+      path: '/editor'
+      fullPath: '/editor'
+      preLoaderRoute: typeof EditorImport
+      parentRoute: typeof rootRoute
+    }
+    '/evaluation': {
+      id: '/evaluation'
+      path: '/evaluation'
+      fullPath: '/evaluation'
+      preLoaderRoute: typeof EvaluationImport
+      parentRoute: typeof rootRoute
+    }
+    '/evaluation-results': {
+      id: '/evaluation-results'
+      path: '/evaluation-results'
+      fullPath: '/evaluation-results'
+      preLoaderRoute: typeof EvaluationResultsImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -52,36 +104,75 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/demo': typeof DemoRoute
+  '/editor': typeof EditorRoute
+  '/evaluation': typeof EvaluationRoute
+  '/evaluation-results': typeof EvaluationResultsRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/demo': typeof DemoRoute
+  '/editor': typeof EditorRoute
+  '/evaluation': typeof EvaluationRoute
+  '/evaluation-results': typeof EvaluationResultsRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/demo': typeof DemoRoute
+  '/editor': typeof EditorRoute
+  '/evaluation': typeof EvaluationRoute
+  '/evaluation-results': typeof EvaluationResultsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/demo'
+    | '/editor'
+    | '/evaluation'
+    | '/evaluation-results'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to:
+    | '/'
+    | '/about'
+    | '/demo'
+    | '/editor'
+    | '/evaluation'
+    | '/evaluation-results'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/demo'
+    | '/editor'
+    | '/evaluation'
+    | '/evaluation-results'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  DemoRoute: typeof DemoRoute
+  EditorRoute: typeof EditorRoute
+  EvaluationRoute: typeof EvaluationRoute
+  EvaluationResultsRoute: typeof EvaluationResultsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  DemoRoute: DemoRoute,
+  EditorRoute: EditorRoute,
+  EvaluationRoute: EvaluationRoute,
+  EvaluationResultsRoute: EvaluationResultsRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,7 +188,11 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about"
+        "/about",
+        "/demo",
+        "/editor",
+        "/evaluation",
+        "/evaluation-results"
       ]
     },
     "/": {
@@ -105,6 +200,18 @@ export const routeTree = rootRoute
     },
     "/about": {
       "filePath": "about.tsx"
+    },
+    "/demo": {
+      "filePath": "demo.tsx"
+    },
+    "/editor": {
+      "filePath": "editor.tsx"
+    },
+    "/evaluation": {
+      "filePath": "evaluation.tsx"
+    },
+    "/evaluation-results": {
+      "filePath": "evaluation-results.tsx"
     }
   }
 }
