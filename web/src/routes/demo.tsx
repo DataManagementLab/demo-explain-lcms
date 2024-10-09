@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getDatasets, getWorkloads } from '@/api/demo';
+import { Card } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -11,7 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/demo')({
-  component: () => Demo(),
+  component: Demo,
   loader: () => getDatasets(),
 });
 
@@ -26,8 +27,8 @@ function Demo() {
   const [workloadId, setWorkloadId] = useState<number | undefined>();
 
   return (
-    <div className="flex flex-col">
-      <div className="flex space-x-1">
+    <div className="grid grid-cols-2">
+      <Card className="col-span-1 flex gap-2 p-4">
         <Select
           value={datasetId?.toString()}
           onValueChange={(value) => {
@@ -35,7 +36,7 @@ function Demo() {
             setWorkloadId(undefined);
           }}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="grow">
             <SelectValue placeholder="Select Dataset" />
           </SelectTrigger>
           <SelectContent>
@@ -53,7 +54,7 @@ function Demo() {
             value={workloadId?.toString()}
             onValueChange={(value) => setWorkloadId(parseInt(value))}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="grow">
               <SelectValue placeholder="Select Workload" />
             </SelectTrigger>
             <SelectContent>
@@ -65,7 +66,8 @@ function Demo() {
             </SelectContent>
           </Select>
         )}
-      </div>
+        {!workloads.isSuccess && <div className="w-full grow px-3"></div>}
+      </Card>
     </div>
   );
 }
