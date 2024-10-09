@@ -23,11 +23,18 @@ function Demo() {
     queryFn: () => getWorkloads(datasetId!),
     enabled: datasetId != undefined,
   });
+  const [workloadId, setWorkloadId] = useState<number | undefined>();
 
   return (
     <div className="flex flex-col">
       <div className="flex space-x-1">
-        <Select onValueChange={(value) => setDatasetId(parseInt(value))}>
+        <Select
+          value={datasetId?.toString()}
+          onValueChange={(value) => {
+            setDatasetId(parseInt(value));
+            setWorkloadId(undefined);
+          }}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select Dataset" />
           </SelectTrigger>
@@ -41,7 +48,11 @@ function Demo() {
         </Select>
 
         {workloads.isSuccess && (
-          <Select>
+          <Select
+            key={workloadId}
+            value={workloadId?.toString()}
+            onValueChange={(value) => setWorkloadId(parseInt(value))}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select Workload" />
             </SelectTrigger>
