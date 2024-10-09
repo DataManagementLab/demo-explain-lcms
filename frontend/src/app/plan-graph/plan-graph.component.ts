@@ -1,5 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AfterViewInit, Component, ElementRef, ViewChild, ViewEncapsulation, effect, input, model, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  ViewChild,
+  ViewEncapsulation,
+  effect,
+  input,
+  model,
+  signal,
+} from '@angular/core';
 import FullPlan from '../services/data/full-plan';
 
 import * as d3 from 'd3';
@@ -13,12 +23,14 @@ import Explanation from '../services/data/explanation';
   imports: [],
   encapsulation: ViewEncapsulation.None,
   template: "<div class='h-full' #graphDiv></div>",
-  styleUrl: './plan-graph.component.scss',
+  styleUrl: './plan-graph.component.css',
 })
 export class PlanGraphComponent implements AfterViewInit {
   @ViewChild('graphDiv') graphDivRef: ElementRef | undefined;
   private graphDiv = signal<HTMLDivElement | undefined>(undefined);
-  private graphviz = signal<d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined>(undefined);
+  private graphviz = signal<
+    d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined
+  >(undefined);
 
   fullPlan = input.required<FullPlan>();
   explanation = input<Explanation>();
@@ -33,7 +45,11 @@ export class PlanGraphComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     if (this.graphDivRef) {
       this.graphDiv.set(this.graphDivRef.nativeElement);
-      this.graphviz.set(d3Graphviz.graphviz(this.graphDivRef.nativeElement, { useWorker: false }));
+      this.graphviz.set(
+        d3Graphviz.graphviz(this.graphDivRef.nativeElement, {
+          useWorker: false,
+        }),
+      );
     }
   }
 
@@ -93,7 +109,9 @@ export class PlanGraphComponent implements AfterViewInit {
 
       const fullPlan = this.fullPlan();
       if (fullPlan) {
-        const graphNode = fullPlan.graphNodes.find(n => n.nodeId == parseInt(nodeKey));
+        const graphNode = fullPlan.graphNodes.find(
+          (n) => n.nodeId == parseInt(nodeKey),
+        );
         this.selectedNode.set(graphNode);
       }
     };
@@ -139,7 +157,9 @@ export class PlanGraphComponent implements AfterViewInit {
     }
     const graphElement = d3.selectAll('#graph0');
     const nodes = graphElement.selectAll('.node');
-    const nodeToSelect = nodes.filter(e => (e as any).key == selectedNode.nodeId).selectAll('ellipse');
+    const nodeToSelect = nodes
+      .filter((e) => (e as any).key == selectedNode.nodeId)
+      .selectAll('ellipse');
     if (nodeToSelect.classed('selected')) {
       return;
     }

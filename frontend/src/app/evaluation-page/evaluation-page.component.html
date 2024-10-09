@@ -1,13 +1,23 @@
 <div class="flex w-full justify-center gap-8">
   <expl-zs-most-important-node-table
     title="Actual"
-    [tableData]="mostImportantNodeEvaluation()[explainerTypeEnum.gradient]?.actualNodes"></expl-zs-most-important-node-table>
+    [tableData]="
+      mostImportantNodeEvaluation()[explainerTypeEnum.gradient]?.actualNodes
+    "
+  ></expl-zs-most-important-node-table>
   <expl-zs-most-important-node-table
     title="Gradient"
-    [tableData]="mostImportantNodeEvaluation()[explainerTypeEnum.gradient]?.explainedNodes"></expl-zs-most-important-node-table>
+    [tableData]="
+      mostImportantNodeEvaluation()[explainerTypeEnum.gradient]?.explainedNodes
+    "
+  ></expl-zs-most-important-node-table>
   <expl-zs-most-important-node-table
     title="Guided Backpropagation"
-    [tableData]="mostImportantNodeEvaluation()[explainerTypeEnum.guidedBackpropagation]?.explainedNodes"></expl-zs-most-important-node-table>
+    [tableData]="
+      mostImportantNodeEvaluation()[explainerTypeEnum.guidedBackpropagation]
+        ?.explainedNodes
+    "
+  ></expl-zs-most-important-node-table>
 </div>
 <div class="flex w-full justify-center gap-8">
   <div class="flex flex-col items-center gap-4">
@@ -18,18 +28,23 @@
         xTitle="# Tables"
         yTitle="Fidelity"
         [maxScore]="3"
-        [chartData]="chartData"></expl-zs-line-chart>
+        [chartData]="chartData"
+      ></expl-zs-line-chart>
     }
   </div>
   <div class="flex flex-col items-center gap-4">
     <p class="text-xl font-bold">Fidelity Guided Backpropagation</p>
-    @if (fidelityEvaluation()[explainerTypeEnum.guidedBackpropagation]; as chartData) {
+    @if (
+      fidelityEvaluation()[explainerTypeEnum.guidedBackpropagation];
+      as chartData
+    ) {
       <expl-zs-line-chart
         class="m size-line-chart"
         xTitle="# Tables"
         yTitle="Fidelity"
         [maxScore]="3"
-        [chartData]="chartData"></expl-zs-line-chart>
+        [chartData]="chartData"
+      ></expl-zs-line-chart>
     }
   </div>
 </div>
@@ -41,17 +56,22 @@
         class="m size-line-chart"
         xTitle="# Tables"
         yTitle="Cost Hit Rate"
-        [chartData]="chartData"></expl-zs-line-chart>
+        [chartData]="chartData"
+      ></expl-zs-line-chart>
     }
   </div>
   <div class="flex flex-col items-center gap-4">
     <p class="text-xl font-bold">Cost Guided Backpropagation</p>
-    @if (costEvaluations()[explainerTypeEnum.guidedBackpropagation]; as chartData) {
+    @if (
+      costEvaluations()[explainerTypeEnum.guidedBackpropagation];
+      as chartData
+    ) {
       <expl-zs-line-chart
         class="m size-line-chart"
         xTitle="# Tables"
         yTitle="Cost Hit Rate"
-        [chartData]="chartData"></expl-zs-line-chart>
+        [chartData]="chartData"
+      ></expl-zs-line-chart>
     }
   </div>
   <div class="flex flex-col items-center gap-4">
@@ -61,7 +81,8 @@
         class="m size-line-chart"
         xTitle="# Tables"
         yTitle="Cost Hit Rate"
-        [chartData]="chartData"></expl-zs-line-chart>
+        [chartData]="chartData"
+      ></expl-zs-line-chart>
     }
   </div>
 </div>

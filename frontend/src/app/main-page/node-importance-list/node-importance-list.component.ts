@@ -21,8 +21,12 @@ export class NodeImportanceListComponent {
 
   nodeImportancesSorted = computed(() => {
     const res = this.fullPlan()
-      .graphNodes.filter(node => node.nodeId in this.explanation().nodeImportance)
-      .map(node => getNodeImportance(node, this.fullCost(), this.explanation()));
+      .graphNodes.filter(
+        (node) => node.nodeId in this.explanation().nodeImportance,
+      )
+      .map((node) =>
+        getNodeImportance(node, this.fullCost(), this.explanation()),
+      );
     res.sort((x, y) => y.importance - x.importance);
     return res;
   });

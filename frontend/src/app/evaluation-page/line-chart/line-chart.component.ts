@@ -1,5 +1,16 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, ViewEncapsulation, effect, input, signal } from '@angular/core';
-import TableToScoreEvaluation, { TableToScore } from '../../services/data/table-to-score-evaluation';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  ViewChild,
+  ViewEncapsulation,
+  effect,
+  input,
+  signal,
+} from '@angular/core';
+import TableToScoreEvaluation, {
+  TableToScore,
+} from '../../services/data/table-to-score-evaluation';
 
 import * as d3 from 'd3';
 
@@ -46,7 +57,8 @@ export class LineChartComponent implements AfterViewInit {
       .attr('height', height + margin.top + margin.bottom)
       .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-    const maxTableCount = Math.max(...this.chartData().scores.map(s => s.tableCount)) + 1;
+    const maxTableCount =
+      Math.max(...this.chartData().scores.map((s) => s.tableCount)) + 1;
     const x = d3 //
       .scaleLinear()
       .domain([0, maxTableCount])
@@ -56,7 +68,9 @@ export class LineChartComponent implements AfterViewInit {
       .attr('transform', 'translate(0,' + height + ')')
       .call(d3.axisBottom(x).tickFormat(d3.format('d')).ticks(maxTableCount));
 
-    const maxScore = this.maxScore() ?? Math.ceil(Math.max(...this.chartData().scores.map(s => s.score)));
+    const maxScore =
+      this.maxScore() ??
+      Math.ceil(Math.max(...this.chartData().scores.map((s) => s.score)));
 
     const y = d3 //
       .scaleLinear()
@@ -79,7 +93,7 @@ export class LineChartComponent implements AfterViewInit {
           })
           .y(function (d) {
             return y(d.score);
-          })
+          }),
       );
 
     svg

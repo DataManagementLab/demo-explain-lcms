@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  signal,
+} from '@angular/core';
 import { ApiService } from '../services/api.service';
 import Plan from '../services/data/plan';
 import { PlanGraphComponent } from '../plan-graph/plan-graph.component';
@@ -22,7 +28,10 @@ import { ExplainerEvaluationBlockComponent } from './explainer-evaluation-block/
 import { animate, style, transition, trigger } from '@angular/animations';
 import CorrelationEvaluation from '../services/data/correlation-evaluation';
 
-const enterAnimation = [style({ opacity: 0 }), animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1 }))];
+const enterAnimation = [
+  style({ opacity: 0 }),
+  animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1 })),
+];
 
 @Component({
   selector: 'expl-zs-main-page',
@@ -41,7 +50,10 @@ const enterAnimation = [style({ opacity: 0 }), animate('300ms cubic-bezier(0.4, 
   ],
   templateUrl: './main-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'grid grid-cols-2 grid-rows-full gap-8 box-border max-h-full px-4 py-8 relative' },
+  host: {
+    class:
+      'grid grid-cols-2 grid-rows-full gap-8 box-border max-h-full px-4 py-8 relative',
+  },
   animations: [
     trigger('enter', [transition(':enter', enterAnimation)]), //
   ],
@@ -57,12 +69,25 @@ export class MainPageComponent implements OnInit {
   selectedExplainer = signal<ExplainerType>(ExplainerType.gradient);
   private selectedExplainer$ = toObservable(this.selectedExplainer);
   actualExplanation = signal<Explanation | undefined>(undefined);
-  selectedPlanFidelityPlusEvaluaiton = signal<FidelityEvaluation | undefined>(undefined);
-  selectedPlanFidelityMinusEvaluaiton = signal<FidelityEvaluation | undefined>(undefined);
-  selectedPlanCorrelationEvaluation = signal<CorrelationEvaluation | undefined>(undefined);
+  selectedPlanFidelityPlusEvaluaiton = signal<FidelityEvaluation | undefined>(
+    undefined,
+  );
+  selectedPlanFidelityMinusEvaluaiton = signal<FidelityEvaluation | undefined>(
+    undefined,
+  );
+  selectedPlanCorrelationEvaluation = signal<CorrelationEvaluation | undefined>(
+    undefined,
+  );
 
   isLoading = computed(() => {
-    return this.selectedPlan() && !(this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation());
+    return (
+      this.selectedPlan() &&
+      !(
+        this.selectedFullPlan() &&
+        this.selectedPlanPrediction() &&
+        this.selectedPlanExplanation()
+      )
+    );
   });
 
   fullCost = computed(() => {
@@ -70,7 +95,9 @@ export class MainPageComponent implements OnInit {
     if (!prediction) {
       return undefined;
     }
-    return this.selectedExplainer() == ExplainerType.actual ? prediction.label : prediction.prediction;
+    return this.selectedExplainer() == ExplainerType.actual
+      ? prediction.label
+      : prediction.prediction;
   });
 
   allExplanationNodes = computed(() => {
@@ -82,19 +109,34 @@ export class MainPageComponent implements OnInit {
     const minExplanation = 0.001;
     const nodes = Object.keys(actualExplanation.nodeImportance)
       .concat(Object.keys(explanation.nodeImportance))
-      .map(value => Number.parseInt(value))
+      .map((value) => Number.parseInt(value))
       .filter((value, index, arr) => arr.indexOf(value) == index)
-      .filter(value => actualExplanation.nodeImportance[value] > minExplanation || explanation.nodeImportance[value] > minExplanation);
+      .filter(
+        (value) =>
+          actualExplanation.nodeImportance[value] > minExplanation ||
+          explanation.nodeImportance[value] > minExplanation,
+      );
     nodes
       .sort((x, y) => {
-        if (actualExplanation.nodeImportance[x] == undefined || actualExplanation.nodeImportance[y] == undefined) {
-          if (actualExplanation.nodeImportance[x] == undefined && actualExplanation.nodeImportance[y] == undefined) {
-            return explanation.nodeImportance[x] - explanation.nodeImportance[y];
+        if (
+          actualExplanation.nodeImportance[x] == undefined ||
+          actualExplanation.nodeImportance[y] == undefined
+        ) {
+          if (
+            actualExplanation.nodeImportance[x] == undefined &&
+            actualExplanation.nodeImportance[y] == undefined
+          ) {
+            return (
+              explanation.nodeImportance[x] - explanation.nodeImportance[y]
+            );
           } else {
             return actualExplanation.nodeImportance[x] == undefined ? -1 : 1;
           }
         }
-        return actualExplanation.nodeImportance[x] - actualExplanation.nodeImportance[y];
+        return (
+          actualExplanation.nodeImportance[x] -
+          actualExplanation.nodeImportance[y]
+        );
       })
       .reverse();
     return nodes;
@@ -103,7 +145,7 @@ export class MainPageComponent implements OnInit {
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
-    this.apiService.getPlans().subscribe(value => this.plans.set(value));
+    this.apiService.getPlans().subscribe((value) => this.plans.set(value));
 
     this.selectedPlan$.subscribe(() => {
       this.selectedFullPlan.set(undefined);
@@ -114,10 +156,20 @@ export class MainPageComponent implements OnInit {
       this.selectedPlanFidelityMinusEvaluaiton.set(undefined);
       this.actualExplanation.set(undefined);
     });
-    this.selectedPlan$.pipe(switchMap(plan => (plan ? this.apiService.getPlan(plan.id) : of(undefined)))).subscribe(value => this.selectedFullPlan.set(value));
     this.selectedPlan$
-      .pipe(switchMap(plan => (plan ? this.apiService.getPrediction(plan.id) : of(undefined))))
-      .subscribe(value => this.selectedPlanPrediction.set(value));
+      .pipe(
+        switchMap((plan) =>
+          plan ? this.apiService.getPlan(plan.id) : of(undefined),
+        ),
+      )
+      .subscribe((value) => this.selectedFullPlan.set(value));
+    this.selectedPlan$
+      .pipe(
+        switchMap((plan) =>
+          plan ? this.apiService.getPrediction(plan.id) : of(undefined),
+        ),
+      )
+      .subscribe((value) => this.selectedPlanPrediction.set(value));
     combineLatest([this.selectedPlan$, this.selectedExplainer$])
       .pipe(
         map(([plan, explainerType]) => ({ plan, explainerType })),
@@ -125,33 +177,47 @@ export class MainPageComponent implements OnInit {
         map(({ plan, explainerType }) => ({ plan: plan!, explainerType })),
         switchMap(({ plan, explainerType }) =>
           this.apiService.getExplanation(plan.id, explainerType).pipe(
-            tap(value => this.selectedPlanExplanation.set(value)),
-            map(() => ({ plan, explainerType }))
-          )
+            tap((value) => this.selectedPlanExplanation.set(value)),
+            map(() => ({ plan, explainerType })),
+          ),
         ),
         switchMap(({ plan, explainerType }) =>
-          this.apiService.getFidelityPlusEvaluation(plan.id, explainerType).pipe(
-            tap(value => this.selectedPlanFidelityPlusEvaluaiton.set(value)),
-            map(() => ({ plan, explainerType }))
-          )
+          this.apiService
+            .getFidelityPlusEvaluation(plan.id, explainerType)
+            .pipe(
+              tap((value) =>
+                this.selectedPlanFidelityPlusEvaluaiton.set(value),
+              ),
+              map(() => ({ plan, explainerType })),
+            ),
         ),
         switchMap(({ plan, explainerType }) =>
-          this.apiService.getFidelityMinusEvaluation(plan.id, explainerType).pipe(
-            tap(value => this.selectedPlanFidelityMinusEvaluaiton.set(value)),
-            map(() => ({ plan, explainerType }))
-          )
+          this.apiService
+            .getFidelityMinusEvaluation(plan.id, explainerType)
+            .pipe(
+              tap((value) =>
+                this.selectedPlanFidelityMinusEvaluaiton.set(value),
+              ),
+              map(() => ({ plan, explainerType })),
+            ),
         ),
         switchMap(({ plan, explainerType }) =>
           this.apiService.getCorrelationEvaluation(plan.id, explainerType).pipe(
-            tap(value => this.selectedPlanCorrelationEvaluation.set(value)),
-            map(() => ({ plan, explainerType }))
-          )
-        )
+            tap((value) => this.selectedPlanCorrelationEvaluation.set(value)),
+            map(() => ({ plan, explainerType })),
+          ),
+        ),
       )
       .subscribe();
     this.selectedPlan$
-      .pipe(switchMap(plan => (plan ? this.apiService.getExplanation(plan.id, ExplainerType.actual) : of(undefined))))
-      .subscribe(value => this.actualExplanation.set(value));
+      .pipe(
+        switchMap((plan) =>
+          plan
+            ? this.apiService.getExplanation(plan.id, ExplainerType.actual)
+            : of(undefined),
+        ),
+      )
+      .subscribe((value) => this.actualExplanation.set(value));
   }
 
   onNodeSelected(node: GraphNode) {
@@ -162,22 +228,30 @@ export class MainPageComponent implements OnInit {
     this.selectedExplainer.set(explainerType);
     const plan = this.selectedPlan();
     if (plan) {
-      this.apiService.getExplanation(plan.id, explainerType).subscribe(value => this.selectedPlanExplanation.set(value));
+      this.apiService
+        .getExplanation(plan.id, explainerType)
+        .subscribe((value) => this.selectedPlanExplanation.set(value));
     }
   }
 
   onPredictClick() {
     const plan = this.selectedPlan();
     if (plan) {
-      this.apiService.getPrediction(plan.id).subscribe(value => this.selectedPlanPrediction.set(value));
+      this.apiService
+        .getPrediction(plan.id)
+        .subscribe((value) => this.selectedPlanPrediction.set(value));
     }
   }
 
   onExplainClick() {
     const plan = this.selectedPlan();
     if (plan) {
-      this.apiService.getPrediction(plan.id).subscribe(value => this.selectedPlanPrediction.set(value));
-      this.apiService.getExplanation(plan.id, this.selectedExplainer()).subscribe(value => this.selectedPlanExplanation.set(value));
+      this.apiService
+        .getPrediction(plan.id)
+        .subscribe((value) => this.selectedPlanPrediction.set(value));
+      this.apiService
+        .getExplanation(plan.id, this.selectedExplainer())
+        .subscribe((value) => this.selectedPlanExplanation.set(value));
     }
   }
 }

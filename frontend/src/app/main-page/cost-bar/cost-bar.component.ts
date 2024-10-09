@@ -1,4 +1,13 @@
-import { Component, ElementRef, ViewChild, input, model, signal, AfterViewInit, effect } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  input,
+  model,
+  signal,
+  AfterViewInit,
+  effect,
+} from '@angular/core';
 import GraphNode from '../../services/data/graph-node';
 import Explanation from '../../services/data/explanation';
 
@@ -85,10 +94,18 @@ export class CostBarComponent implements AfterViewInit {
       .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-    svg.append('rect').attr('width', width).attr('height', height).attr('fill', '#FFFFFF');
+    svg
+      .append('rect')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('fill', '#FFFFFF');
 
     const recordList = recordToList(this.explanation().nodeImportance);
-    recordList.sort((x, y) => this.nodesToShow().indexOf(Number.parseInt(x.key)) - this.nodesToShow().indexOf(Number.parseInt(y.key)));
+    recordList.sort(
+      (x, y) =>
+        this.nodesToShow().indexOf(Number.parseInt(x.key)) -
+        this.nodesToShow().indexOf(Number.parseInt(y.key)),
+    );
     let x = 0;
     let i = 0;
     for (const item of recordList) {
@@ -131,7 +148,11 @@ export class CostBarComponent implements AfterViewInit {
 
     d3.select(graphDiv)
       .selectAll('[clickNode]')
-      .on('click', (_e, d) => this.selectedNode.set(this.fullPlan().graphNodes.find(node => node.nodeId == d)));
+      .on('click', (_e, d) =>
+        this.selectedNode.set(
+          this.fullPlan().graphNodes.find((node) => node.nodeId == d),
+        ),
+      );
   }
 
   selectNode() {

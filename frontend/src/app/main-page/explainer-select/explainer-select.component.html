@@ -1,9 +1,14 @@
 <mat-radio-group
   class="flex flex-col gap-2"
   [value]="selectedExplainer()"
-  (change)="selectedExplainer.set($event.value)">
+  (change)="selectedExplainer.set($event.value)"
+>
   <mat-radio-button [value]="explainerType.actual">Actual</mat-radio-button>
   <mat-radio-button [value]="explainerType.gradient">Gradient</mat-radio-button>
-  <mat-radio-button [value]="explainerType.guidedBackpropagation">Guided Backpropagation</mat-radio-button>
-  <mat-radio-button [value]="explainerType.gnnExplainer">GNNExplainer</mat-radio-button>
+  <mat-radio-button [value]="explainerType.guidedBackpropagation"
+    >Guided Backpropagation</mat-radio-button
+  >
+  <mat-radio-button [value]="explainerType.gnnExplainer"
+    >GNNExplainer</mat-radio-button
+  >
 </mat-radio-group>

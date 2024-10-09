@@ -29,11 +29,15 @@ export class ApiService {
   }
 
   getPrediction(planId: number) {
-    return this.httpClient.get<Prediction>(this.baseURL + 'plans/' + planId + '/prediction');
+    return this.httpClient.get<Prediction>(
+      this.baseURL + 'plans/' + planId + '/prediction',
+    );
   }
 
   getExplanation(planId: number, explainerType: ExplainerType) {
-    return this.httpClient.get<Explanation>(this.baseURL + 'plans/' + planId + '/explanation' + '/' + explainerType);
+    return this.httpClient.get<Explanation>(
+      this.baseURL + 'plans/' + planId + '/explanation' + '/' + explainerType,
+    );
   }
 
   private importantFeaturesCache: ImportantFeatures | undefined;
@@ -41,30 +45,59 @@ export class ApiService {
     if (this.importantFeaturesCache) {
       return of(this.importantFeaturesCache);
     }
-    return this.httpClient.get<ImportantFeatures>(this.baseURL + 'important-features').pipe(tap(value => (this.importantFeaturesCache = value)));
+    return this.httpClient
+      .get<ImportantFeatures>(this.baseURL + 'important-features')
+      .pipe(tap((value) => (this.importantFeaturesCache = value)));
   }
 
   getFidelityPlusEvaluation(planId: number, explainerType: ExplainerType) {
-    return this.httpClient.get<FidelityEvaluation>(this.baseURL + 'plans/' + planId + '/evaluation/' + explainerType + '/fidelity_plus');
+    return this.httpClient.get<FidelityEvaluation>(
+      this.baseURL +
+        'plans/' +
+        planId +
+        '/evaluation/' +
+        explainerType +
+        '/fidelity_plus',
+    );
   }
 
   getFidelityMinusEvaluation(planId: number, explainerType: ExplainerType) {
-    return this.httpClient.get<FidelityEvaluation>(this.baseURL + 'plans/' + planId + '/evaluation/' + explainerType + '/fidelity_minus');
+    return this.httpClient.get<FidelityEvaluation>(
+      this.baseURL +
+        'plans/' +
+        planId +
+        '/evaluation/' +
+        explainerType +
+        '/fidelity_minus',
+    );
   }
 
   getCorrelationEvaluation(planId: number, explainerType: ExplainerType) {
-    return this.httpClient.get<CorrelationEvaluation>(this.baseURL + 'plans/' + planId + '/evaluation/' + explainerType + '/correlation-node-importance');
+    return this.httpClient.get<CorrelationEvaluation>(
+      this.baseURL +
+        'plans/' +
+        planId +
+        '/evaluation/' +
+        explainerType +
+        '/correlation-node-importance',
+    );
   }
 
   getMostImportantNodeEvaluationAll(explainerType: ExplainerType) {
-    return this.httpClient.get<MostImportantNodeEvaluation>(this.baseURL + 'evaluation/' + explainerType + '/most-important-node');
+    return this.httpClient.get<MostImportantNodeEvaluation>(
+      this.baseURL + 'evaluation/' + explainerType + '/most-important-node',
+    );
   }
 
   getFidelityEvaluationAll(explainerType: ExplainerType) {
-    return this.httpClient.get<TableToScoreEvaluation>(this.baseURL + 'evaluation/' + explainerType + '/fidelity');
+    return this.httpClient.get<TableToScoreEvaluation>(
+      this.baseURL + 'evaluation/' + explainerType + '/fidelity',
+    );
   }
 
   getCostEvaluationAll(explainerType: ExplainerType) {
-    return this.httpClient.get<TableToScoreEvaluation>(this.baseURL + 'evaluation/' + explainerType + '/cost');
+    return this.httpClient.get<TableToScoreEvaluation>(
+      this.baseURL + 'evaluation/' + explainerType + '/cost',
+    );
   }
 }

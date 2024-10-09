@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { MainPageComponent } from './main-page/main-page.component';
+import { MainComponent } from './main/main.component';
 
 @Component({
   selector: 'expl-zs-root',
   standalone: true,
-  imports: [RouterOutlet, MainPageComponent],
-  template: '<router-outlet />',
+  imports: [MainComponent],
+  template: '<expl-zs-main />',
   host: { class: 'h-full' },
 })
 export class AppComponent {}

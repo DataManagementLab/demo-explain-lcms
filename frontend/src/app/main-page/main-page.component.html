@@ -1,40 +1,52 @@
 <div class="grid h-full grid-rows-60-40 gap-4">
   <div class="max-h-full overflow-auto border border-solid border-black">
-    <expl-zs-plan-list
-      [plans]="plans()"
-      [(selectedPlan)]="selectedPlan" />
+    <expl-zs-plan-list [plans]="plans()" [(selectedPlan)]="selectedPlan" />
   </div>
   <div class="grid grid-cols-2 grid-rows-full gap-4">
     <div class="flex flex-col gap-2">
       @if (this.selectedPlan()) {
         <expl-zs-explainer-select
           @enter
-          [(selectedExplainer)]="selectedExplainer" />
-        @if (this.selectedPlanCorrelationEvaluation() && this.selectedPlanFidelityPlusEvaluaiton() && this.selectedPlanFidelityMinusEvaluaiton()) {
+          [(selectedExplainer)]="selectedExplainer"
+        />
+        @if (
+          this.selectedPlanCorrelationEvaluation() &&
+          this.selectedPlanFidelityPlusEvaluaiton() &&
+          this.selectedPlanFidelityMinusEvaluaiton()
+        ) {
           <mat-divider @enter />
           <expl-zs-explainer-evaluation-block
             @enter
             [correlationEvaluation]="this.selectedPlanCorrelationEvaluation()!"
-            [fidelityPlusEvaluation]="this.selectedPlanFidelityPlusEvaluaiton()!"
-            [fidelityMinusEvaluation]="this.selectedPlanFidelityMinusEvaluaiton()!" />
+            [fidelityPlusEvaluation]="
+              this.selectedPlanFidelityPlusEvaluaiton()!
+            "
+            [fidelityMinusEvaluation]="
+              this.selectedPlanFidelityMinusEvaluaiton()!
+            "
+          />
         }
       }
     </div>
 
     <div class="flex max-h-full flex-col gap-2">
       @if (this.selectedPlanPrediction(); as prediction) {
-        <expl-zs-prediction-block
-          [prediction]="prediction"
-          @enter />
+        <expl-zs-prediction-block [prediction]="prediction" @enter />
         <mat-divider @enter />
       }
-      @if (this.selectedFullPlan() && this.selectedPlanPrediction() && this.selectedPlanExplanation() && this.fullCost()) {
+      @if (
+        this.selectedFullPlan() &&
+        this.selectedPlanPrediction() &&
+        this.selectedPlanExplanation() &&
+        this.fullCost()
+      ) {
         <expl-zs-node-importance-list
           @enter
           [fullPlan]="this.selectedFullPlan()!"
           [fullCost]="this.fullCost()!"
           [explanation]="this.selectedPlanExplanation()!"
-          [(selectedNode)]="this.selectedNode" />
+          [(selectedNode)]="this.selectedNode"
+        />
       }
     </div>
   </div>
@@ -46,22 +58,29 @@
         @enter
         [fullPlan]="fullPlan"
         [explanation]="this.selectedPlanExplanation()"
-        [(selectedNode)]="selectedNode"></expl-zs-plan-graph>
-      @if (this.allExplanationNodes() && this.actualExplanation() && this.selectedPlanExplanation()) {
+        [(selectedNode)]="selectedNode"
+      ></expl-zs-plan-graph>
+      @if (
+        this.allExplanationNodes() &&
+        this.actualExplanation() &&
+        this.selectedPlanExplanation()
+      ) {
         <expl-zs-cost-bar
           @enter
           class="absolute right-4 top-8 w-64"
           [(selectedNode)]="selectedNode"
           [explanation]="this.actualExplanation()!"
           [nodesToShow]="this.allExplanationNodes()!"
-          [fullPlan]="selectedFullPlan()!" />
+          [fullPlan]="selectedFullPlan()!"
+        />
         <expl-zs-cost-bar
           @enter
           class="absolute right-4 top-16 w-64"
           [(selectedNode)]="selectedNode"
           [explanation]="this.selectedPlanExplanation()!"
           [nodesToShow]="this.allExplanationNodes()!"
-          [fullPlan]="selectedFullPlan()!" />
+          [fullPlan]="selectedFullPlan()!"
+        />
       }
     }
   </div>
@@ -70,7 +89,8 @@
       @enter
       [selectedNode]="selectedNode"
       [fullCost]="this.fullCost()"
-      [explanation]="this.selectedPlanExplanation()" />
+      [explanation]="this.selectedPlanExplanation()"
+    />
   }
 </div>
 @if (isLoading()) {

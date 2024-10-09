@@ -12,12 +12,24 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 })
 export class PlanListComponent {
   plans = input<Plan[]>([]);
-  columns = signal<string[]>(['id', 'plans', 'tables', 'columns', 'filters', 'preds']);
+  columns = signal<string[]>([
+    'id',
+    'plans',
+    'tables',
+    'columns',
+    'filters',
+    'preds',
+  ]);
   selectedPlan = model<Plan | undefined>();
 
   currentPage = signal<number>(0);
   pageSize = signal<number>(50);
-  paginatedPlans = computed(() => this.plans().slice(this.pageSize() * this.currentPage(), this.pageSize() * (this.currentPage() + 1)));
+  paginatedPlans = computed(() =>
+    this.plans().slice(
+      this.pageSize() * this.currentPage(),
+      this.pageSize() * (this.currentPage() + 1),
+    ),
+  );
   itemsCount = computed(() => this.plans().length);
 
   onPage(event: PageEvent) {

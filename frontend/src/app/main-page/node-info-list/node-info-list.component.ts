@@ -25,7 +25,9 @@ export class NodeInfoListComponent implements OnInit {
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
-    this.apiService.getImportantFeatures().subscribe(value => this.importantFeatures.set(value));
+    this.apiService
+      .getImportantFeatures()
+      .subscribe((value) => this.importantFeatures.set(value));
   }
 
   displayedColumns = computed(() => {
@@ -58,7 +60,10 @@ export class NodeInfoListComponent implements OnInit {
       return [];
     }
     if ('planParameters' in nodeInfo) {
-      nodeInfo = Object.assign(nodeInfo, nodeInfo['planParameters']) as NodeInfo;
+      nodeInfo = Object.assign(
+        nodeInfo,
+        nodeInfo['planParameters'],
+      ) as NodeInfo;
       delete nodeInfo['planParameters'];
     }
     if ('columnStats' in nodeInfo) {
@@ -68,25 +73,34 @@ export class NodeInfoListComponent implements OnInit {
       delete nodeInfo['columnStats'];
     }
     for (const prop in nodeInfo) {
-      if (nodeInfo[prop] == null || nodeInfo[prop] === '' || (nodeInfo[prop] instanceof Array && nodeInfo[prop].length == 0)) {
+      if (
+        nodeInfo[prop] == null ||
+        nodeInfo[prop] === '' ||
+        (nodeInfo[prop] instanceof Array && nodeInfo[prop].length == 0)
+      ) {
         delete nodeInfo[prop];
       }
     }
 
     const features = importantFeatures.features[nodeInfo.nodeType as NodeType];
-    const values = Object.keys(nodeInfo).map(k => ({
+    const values = Object.keys(nodeInfo).map((k) => ({
       name: k,
       value: nodeInfo[k],
       isFeature: features.includes(k),
     }));
 
     const explanation = this.explanation();
-    if (!explanation || !(selectedNode.nodeId in explanation.featureImportance)) {
-      values.sort((x, y) => (x.isFeature == y.isFeature ? 0 : x.isFeature ? 1 : -1));
+    if (
+      !explanation ||
+      !(selectedNode.nodeId in explanation.featureImportance)
+    ) {
+      values.sort((x, y) =>
+        x.isFeature == y.isFeature ? 0 : x.isFeature ? 1 : -1,
+      );
       return values;
     }
     const importance = explanation.featureImportance[selectedNode.nodeId];
-    const valuesWithImportance = values.map(v => ({
+    const valuesWithImportance = values.map((v) => ({
       name: v.name,
       value: v.value,
       isFeature: v.isFeature,
