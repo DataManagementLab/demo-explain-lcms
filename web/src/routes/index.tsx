@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
@@ -7,14 +5,11 @@ export const Route = createFileRoute('/')({
 });
 
 function Index() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div className="p-2">
-      <h3>Welcome Home!</h3>
-      <Button onClick={() => setCount((count) => count + 1)}>
-        count is {count}
-      </Button>
+    <div className="mt-60 flex justify-center">
+      <h3>
+        Welcome to Explainability Demo of Zero-Shot Cost Models for Databases
+      </h3>
     </div>
   );
 }
