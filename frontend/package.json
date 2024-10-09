@@ -21,9 +21,16 @@
     "@angular/platform-browser": "^18.1.2",
     "@angular/platform-browser-dynamic": "^18.1.2",
     "@angular/router": "^18.1.2",
+    "@ng-icons/core": "^25.6.1",
+    "@ng-icons/lucide": "^29.5.1",
     "@spartan-ng/ui-core": "^0.0.1-alpha.356",
+    "@spartan-ng/ui-formfield-brain": "0.0.1-alpha.356",
+    "@spartan-ng/ui-forms-brain": "0.0.1-alpha.356",
+    "@spartan-ng/ui-select-brain": "0.0.1-alpha.356",
+    "@spartan-ng/ui-table-brain": "0.0.1-alpha.356",
     "@types/d3": "^7.4.3",
     "@types/d3-graphviz": "^2.6.10",
+    "class-variance-authority": "^0.6.0",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
     "d3-graphviz": "^5.4.0",
@@ -58,6 +65,7 @@
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^3.4.7",
+    "tailwindcss-animate": "^1.0.6",
     "typescript": "~5.5.4"
   }
 }

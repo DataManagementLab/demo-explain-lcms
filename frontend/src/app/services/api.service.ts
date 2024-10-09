@@ -11,6 +11,8 @@ import TableToScoreEvaluation from './data/table-to-score-evaluation';
 import { of, tap } from 'rxjs';
 import FidelityEvaluation from './data/fidelity-evaluation';
 import CorrelationEvaluation from './data/correlation-evaluation';
+import Dataset from './data/datset';
+import Workload from './data/workload';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +21,16 @@ export class ApiService {
   private baseURL = 'http://127.0.0.1:8000/';
 
   constructor(private httpClient: HttpClient) {}
+
+  getDatasets() {
+    return this.httpClient.get<Dataset[]>(this.baseURL + 'datasets');
+  }
+
+  getWorkloads(datasetId: number) {
+    return this.httpClient.get<Workload[]>(
+      this.baseURL + 'datasets' + datasetId + '/workloads',
+    );
+  }
 
   getPlans() {
     return this.httpClient.get<Plan[]>(this.baseURL + 'plans');

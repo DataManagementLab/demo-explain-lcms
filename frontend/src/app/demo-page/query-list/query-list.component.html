@@ -1,0 +1,50 @@
+<div class="flex space-x-1">
+  @if (datasets()) {
+    <brn-select class="inline-block" placeholder="Select workload">
+      <hlm-select-trigger>
+        <hlm-select-value />
+      </hlm-select-trigger>
+      <hlm-select-content class="w-56">
+        @for (dataset of datasets(); track dataset.id) {
+          <hlm-option [value]="dataset.id">{{ dataset.name }}</hlm-option>
+        }
+        <!-- <hlm-option value="Settings">Settings</hlm-option>
+        <hlm-option value="Help">Help</hlm-option>
+        <hlm-option value="Signout">Sign out</hlm-option> -->
+      </hlm-select-content>
+    </brn-select>
+  }
+  @if (workloads()) {
+    <brn-select class="inline-block" placeholder="Select dataset">
+      <hlm-select-trigger>
+        <hlm-select-value />
+      </hlm-select-trigger>
+      <hlm-select-content class="w-56">
+        <hlm-option value="Refresh">Refresh</hlm-option>
+        <hlm-option value="Settings">Settings</hlm-option>
+        <hlm-option value="Help">Help</hlm-option>
+        <hlm-option value="Signout">Sign out</hlm-option>
+      </hlm-select-content>
+    </brn-select>
+  }
+</div>
+
+<hlm-table>
+  <hlm-trow>
+    <hlm-th class="font-semibold text-foreground">Id</hlm-th>
+    <hlm-th class="font-semibold text-foreground">Plans</hlm-th>
+    <hlm-th class="font-semibold text-foreground">Predicates</hlm-th>
+    <hlm-th class="font-semibold text-foreground">Tables</hlm-th>
+    <hlm-th class="font-semibold text-foreground">Columns</hlm-th>
+  </hlm-trow>
+  <hlm-trow>
+    <hlm-th>INV001</hlm-th>
+    <hlm-th>Paid</hlm-th>
+    <hlm-th>Credit Card</hlm-th>
+    <hlm-th>$250.00</hlm-th>
+  </hlm-trow>
+</hlm-table>
+<div class="flex space-x-1">
+  <button size="sm" variant="outline" hlmBtn>Previous</button>
+  <button size="sm" variant="outline" hlmBtn>Next</button>
+</div>
