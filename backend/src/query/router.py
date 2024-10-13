@@ -37,7 +37,7 @@ def get_workloads(dataset_id: int, db: db_depends):
 
 
 @router.get("/workloads/{workload_id}/queries", response_model=list[QueryResponse])
-def get_workload_by_id(workload_id: int, db: db_depends, offset: int = 0, limit: int = 20):
+def get_workload_queries(workload_id: int, db: db_depends, offset: int = 0, limit: int = 20):
     workload_run = db.query(WorkloadRun).filter(WorkloadRun.id == workload_id).first()
     if workload_run is None:
         raise HTTPException(422, f"Workload with id == {workload_id} was not found")

@@ -5,6 +5,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from query.db import Base
 from zero_shot_learned_db.explanations.data_models import nodes
 from zero_shot_learned_db.explanations.data_models import workload_run
+from zero_shot_learned_db.explanations.load import ParsedPlanStats
 
 
 def get_kwargs(db_model: Base, data_fields: list[InstrumentedAttribute]):
@@ -205,6 +206,32 @@ class PlanOutputColumn(Base):
     output_column_id: Mapped[int] = mapped_column(ForeignKey(OutputColumn.id), primary_key=True)
 
 
+class PlanStats(Base):
+    __tablename__ = "plan_stats"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    tables: Mapped[int]
+    columns: Mapped[int]
+    plans: Mapped[int]
+    joins: Mapped[int]
+    predicates: Mapped[int]
+    order_by: Mapped[bool]
+
+    def to_pydantic(self):
+        kwargs = get_kwargs(
+            self,
+            [
+                PlanStats.tables,
+                PlanStats.columns,
+                PlanStats.plans,
+                PlanStats.joins,
+                PlanStats.predicates,
+                PlanStats.order_by,
+            ],
+        )
+        return ParsedPlanStats(**kwargs)
+
+
 class Plan(Base):
     __tablename__ = "plans"
 
@@ -223,6 +250,8 @@ class Plan(Base):
     sql: Mapped[str | None]
     top_plan_id: Mapped[int | None] = mapped_column(ForeignKey(id))
     top_plan: Mapped[Optional["Plan"]] = relationship(foreign_keys=[top_plan_id], remote_side=[id])
+    plan_stats_id: Mapped[int | None] = mapped_column(ForeignKey(PlanStats.id))
+    plan_stats: Mapped[PlanStats | None] = relationship()
 
     # plain_content: list
     # join_conds: list[str]

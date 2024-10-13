@@ -160,8 +160,8 @@ class MLHelperOld:
         if plan_id < 0 or plan_id >= len(self.parsed_plans):
             raise HTTPException(status_code=422, detail="Invalid plan id")
         plan = self.parsed_plans[plan_id]
-        plan.prepare_plan_for_inference()
         plan.prepare_plan_for_view()
+        plan.prepare_plan_for_inference()
         return plan
 
     def _validate_graphs_from_nodes(self):

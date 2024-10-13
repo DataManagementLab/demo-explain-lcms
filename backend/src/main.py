@@ -2,6 +2,7 @@ import sys
 
 sys.path.append("./zero_shot_learned_db")
 
+from logger import log_request_middleware
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,6 +46,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+app.middleware("http")(log_request_middleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,

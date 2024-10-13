@@ -1,6 +1,5 @@
 from custom_model import CustomModel
 from demo.schemas import GraphNodeResponse
-from zero_shot_learned_db.explanations.load import ParsedPlanStats
 
 
 class WorkloadRunResponse(CustomModel):
@@ -9,11 +8,20 @@ class WorkloadRunResponse(CustomModel):
     queries_count: int
 
 
+class ParsedPlanStatsResponse(CustomModel):
+    tables: int
+    columns: int
+    plans: int
+    joins: int
+    predicates: int
+    order_by: bool
+
+
 class QueryResponse(CustomModel):
     id: int
     plan_runtime: float
     sql: str
-    query_stats: ParsedPlanStats
+    query_stats: ParsedPlanStatsResponse
 
 
 class FullQueryResponse(QueryResponse):

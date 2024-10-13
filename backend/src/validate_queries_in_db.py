@@ -41,8 +41,8 @@ def validate_queries_in_db(ml_helper: MLHelper, db: Session, settings: Settings)
                 ml_helper.feature_statistics,
             )
             plan_old = ml_helper_old.get_plan(plan_id)
-            plan.prepare_plan_for_inference()
             plan.prepare_plan_for_view()
+            plan.prepare_plan_for_inference()
             assert len(plan.graph_nodes) == len(plan_old.graph_nodes)
             assert nx.is_isomorphic(plan_old.nx_graph, plan.nx_graph)
             plan_old_strs = [str(node) for node in plan_old.graph_nodes]
