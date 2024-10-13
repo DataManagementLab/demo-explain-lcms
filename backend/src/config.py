@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     db_host: str = "localhost"
     db_port: str = "5432"
     db_user: str = "postgres"
-    db_password: str
+    db_password: str = ""
 
     ml: MLSettings = MLSettings()
     demo: DemoSettings = DemoSettings()

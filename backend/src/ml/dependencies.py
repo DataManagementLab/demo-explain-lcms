@@ -102,7 +102,7 @@ class MLHelperOld:
     parsed_plans: list[ParsedPlan]
     settings: Settings
 
-    def load(self, settings: Settings, dataset_file):
+    def load(self, settings: Settings, dataset_file: str):
         self.settings = settings
         dataset_file = os.path.join(settings.ml.base_data_dir, dataset_file)
         statistics_file = os.path.join(settings.ml.base_data_dir, settings.ml.statistics_file)

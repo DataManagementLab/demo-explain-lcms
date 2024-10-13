@@ -1,11 +1,11 @@
 import torch
-from ml.dependencies import MLHelper
+from ml.dependencies import MLHelperOld
 from ml.service import ExplainerType
 
 masked_node = 27
 
 
-def test_masked_prediction_different(ml: MLHelper):
+def test_masked_prediction_different(ml: MLHelperOld):
     plan = ml.get_plan(0)
     base_explainer = ml.get_explainer(ExplainerType.BASE)
     prediction = base_explainer.predict(plan)
@@ -19,7 +19,7 @@ def test_masked_prediction_different(ml: MLHelper):
     assert prediction.prediction == prediction_reset.prediction
 
 
-def test_masked_prediction_equal_different_features(ml: MLHelper):
+def test_masked_prediction_equal_different_features(ml: MLHelperOld):
     plan = ml.get_plan(0)
     base_explainer = ml.get_explainer(ExplainerType.BASE)
     node = plan.get_node(masked_node)
@@ -51,7 +51,7 @@ def test_masked_prediction_equal_different_features(ml: MLHelper):
     assert prediction.prediction == prediction_reset.prediction
 
 
-def test_soft_masked_prediction_different(ml: MLHelper):
+def test_soft_masked_prediction_different(ml: MLHelperOld):
     plan = ml.get_plan(0)
     base_explainer = ml.get_explainer(ExplainerType.BASE)
     prediction = base_explainer.predict(plan)

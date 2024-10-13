@@ -2,7 +2,7 @@ import pytest
 import os.path
 
 from config import Settings
-from ml.dependencies import MLHelper
+from ml.dependencies import MLHelperOld
 
 
 @pytest.fixture(scope="session")
@@ -21,6 +21,6 @@ def settings(request: pytest.FixtureRequest):
 
 @pytest.fixture(scope="session")
 def ml(settings):
-    ml = MLHelper()
-    ml.load(settings)
+    ml = MLHelperOld()
+    ml.load(settings, settings.ml.dataset_file)
     return ml
