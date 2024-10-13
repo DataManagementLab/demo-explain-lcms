@@ -69,7 +69,7 @@ class OutputColumn(Base):
     __tablename__ = "output_columns"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    aggregation: Mapped[str]
+    aggregation: Mapped[str | None]
     columns: Mapped[list[ColumnStats]] = relationship(secondary="output_columns_columns")
     node_type: Mapped[str]
     top_plan_id: Mapped[int] = mapped_column(ForeignKey("plans.id"))
