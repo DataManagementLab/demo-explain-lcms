@@ -17,8 +17,6 @@ function Demo() {
     enabled: datasetId != undefined,
   });
 
-  console.log('Render Demo');
-
   return (
     <div className="flex">
       <div className="flex w-[600px] flex-col gap-2">

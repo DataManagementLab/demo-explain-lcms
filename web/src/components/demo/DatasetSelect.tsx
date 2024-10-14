@@ -24,7 +24,6 @@ export default function DatasetSelect({ className }: Props) {
     ]),
   );
   const datasets = useQuery({ queryKey: ['datasets'], queryFn: getDatasets });
-  console.log('Render DatasetSelect');
 
   return (
     datasets.isSuccess && (

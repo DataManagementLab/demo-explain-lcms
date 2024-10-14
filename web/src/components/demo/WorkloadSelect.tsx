@@ -29,8 +29,6 @@ export default function WorkloadSelect({ className }: Props) {
     enabled: datasetId != undefined,
   });
 
-  console.log('Render WorkloadSelect');
-
   return (
     workloads.isSuccess && (
       <Select

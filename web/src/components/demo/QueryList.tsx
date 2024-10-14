@@ -21,8 +21,6 @@ export default function QueryList() {
     enabled: workloadId != undefined,
   });
 
-  console.log('Render QueryList');
-
   return (
     queries.isSuccess && (
       <div>
