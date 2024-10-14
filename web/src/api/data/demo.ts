@@ -11,18 +11,19 @@ export interface Workload {
   queriesCount: number;
 }
 
-export interface GraphNodesStats {
-  column: number;
-  filter_column: number;
-  logical_pred_: number;
-  output_column: number;
-  plan: number;
-  table: number;
+export interface QueryStats {
+  tables: number;
+  columns: number;
+  plans: number;
+  joins: number;
+  predicates: number;
+  orderBy: boolean;
 }
 
 export interface Plan {
   id: number;
-  graphNodesStats: GraphNodesStats;
+  planRuntime: number;
+  queryStats: QueryStats;
   sql: string;
 }
 
