@@ -6,7 +6,7 @@ from ml.dependencies import get_base_explainer, get_explainer
 from query.db import db_depends
 from query.dependecies import get_parsed_plan, get_parsed_plan_for_inference
 from query.models import Dataset, Plan, WorkloadRun
-from query.schemas import DatasetResponse, FullQueryResponse, QueryResponse, WorkloadRunResponse
+from query.schemas import DatasetResponse, FullQueryResponse, QueriesPageResponse, QueryResponse, WorkloadRunResponse
 from query.service import get_query_stats, get_workload_run_queries_count
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
@@ -36,21 +36,26 @@ def get_workloads(dataset_id: int, db: db_depends):
     ]
 
 
-@router.get("/workloads/{workload_id}/queries", response_model=list[QueryResponse])
+@router.get("/workloads/{workload_id}/queries", response_model=QueriesPageResponse)
 def get_workload_queries(workload_id: int, db: db_depends, offset: int = 0, limit: int = 20):
     workload_run = db.query(WorkloadRun).filter(WorkloadRun.id == workload_id).first()
     if workload_run is None:
         raise HTTPException(422, f"Workload with id == {workload_id} was not found")
-    plans = db.query(Plan).filter(Plan.workload_run_id == workload_id).offset(offset).limit(limit).all()
-    return [
-        QueryResponse(
-            id=plan.id,
-            plan_runtime=plan.plan_runtime,
-            sql=plan.sql,
-            query_stats=get_query_stats(plan.id, db),
-        )
-        for plan in plans
-    ]
+    plans = db.query(Plan).filter(Plan.workload_run_id == workload_id, Plan.id_in_run.is_not(None)).order_by(Plan.id_in_run).offset(offset).limit(limit).all()
+    return QueriesPageResponse(
+        queries=[
+            QueryResponse(
+                id=plan.id_in_run,
+                plan_runtime=plan.plan_runtime,
+                sql=plan.sql,
+                query_stats=get_query_stats(plan.id, db),
+            )
+            for plan in plans
+        ],
+        offset=offset,
+        limit=limit,
+        total_count=get_workload_run_queries_count(workload_run.id, db),
+    )
 
 
 @router.get("/query/{query_id}", response_model=FullQueryResponse)

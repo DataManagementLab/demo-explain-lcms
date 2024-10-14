@@ -24,6 +24,13 @@ class QueryResponse(CustomModel):
     query_stats: ParsedPlanStatsResponse
 
 
+class QueriesPageResponse(CustomModel):
+    queries: list[QueryResponse]
+    limit: int
+    offset: int
+    total_count: int
+
+
 class FullQueryResponse(QueryResponse):
     dot_graph: str
     graph_nodes: list[GraphNodeResponse]

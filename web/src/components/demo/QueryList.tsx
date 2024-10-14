@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { getQueries } from '@/api/demo';
 import { useDemoStore } from '@/stores/demoStore';
 import { useQuery } from '@tanstack/react-query';
 import { useShallow } from 'zustand/react/shallow';
 
 import { Button } from '../ui/button';
+import { ScrollArea } from '../ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -13,63 +15,91 @@ import {
   TableRow,
 } from '../ui/table';
 
+const pageSize = 50;
+
 export default function QueryList() {
+  const [page, setPage] = useState<number>(0);
+
   const workloadId = useDemoStore(useShallow((state) => state.workloadId));
   const queries = useQuery({
-    queryKey: ['queries', workloadId],
-    queryFn: () => getQueries(workloadId!),
-    enabled: workloadId != undefined,
+    queryKey: ['queries', workloadId, page],
+    queryFn: () =>
+      workloadId == undefined
+        ? undefined
+        : getQueries(workloadId, page * pageSize, pageSize),
+    placeholderData: (prev) => prev,
   });
+  const pageLimit =
+    queries.data != undefined
+      ? Math.ceil(queries.data.totalCount / pageSize) - 1
+      : 0;
+
+  console.log(queries.data);
 
   return (
-    queries.isSuccess && (
-      <div>
-        <div className="rounded-md border">
+    queries.data != undefined && (
+      <div className="flex flex-col gap-4">
+        <ScrollArea className="h-[700px] rounded-md border">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 bg-secondary">
               <TableRow>
-                <TableHead className="">ID</TableHead>
-                <TableHead className="">Plan Nodes</TableHead>
-                <TableHead className="">Data Nodes</TableHead>
-                <TableHead className="">Other Nodes</TableHead>
+                <TableHead className="border-r text-center">ID</TableHead>
+                <TableHead className="border-l text-center">Plans</TableHead>
+                <TableHead className="border-r text-center">Joins</TableHead>
+                <TableHead className="border-l text-center">Tables</TableHead>
+                <TableHead className="border-r text-center">Columns</TableHead>
+                <TableHead className="border-l border-r text-center">
+                  Predicates
+                </TableHead>
+                <TableHead className="border-l text-center">Sort</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {queries.data.map((query) => (
+            <TableBody className="max-h-[200px] overflow-y-auto">
+              {queries.data.queries.map((query) => (
                 <TableRow key={query.id}>
-                  <TableCell className="">{query.id}</TableCell>
-                  <TableCell className="">
-                    Total: {query.queryStats.plans}; Joins:{' '}
+                  <TableCell className="border-r text-center">
+                    {query.id}
+                  </TableCell>
+                  <TableCell className="border-l text-center">
+                    {query.queryStats.plans}
+                  </TableCell>
+                  <TableCell className="border-r text-center">
                     {query.queryStats.joins}
                   </TableCell>
-                  <TableCell className="">
-                    Tables: {query.queryStats.tables}; Columns{' '}
+                  <TableCell className="border-l text-center">
+                    {query.queryStats.tables}
+                  </TableCell>
+                  <TableCell className="border-r text-center">
                     {query.queryStats.columns}
                   </TableCell>
-                  <TableCell className="">
-                    Predicates: {query.queryStats.predicates}; Order By:{' '}
+                  <TableCell className="border-l border-r text-center">
+                    {query.queryStats.predicates}
+                  </TableCell>
+                  <TableCell className="border-l text-center">
                     {query.queryStats.orderBy ? 'Yes' : 'No'}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
-        <div className="flex items-center justify-end gap-2 py-4">
-          <div className="pr-3 text-sm text-muted-foreground">Page 1 of 20</div>
+        </ScrollArea>
+        <div className="flex items-center justify-end gap-2">
+          <div className="pr-3 text-sm text-muted-foreground">
+            Page {page + 1} of {pageLimit + 1}
+          </div>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => console.log('Prev')}
-            disabled={false}
+            onClick={() => setPage(page - 1)}
+            disabled={page <= 0}
           >
             Previous
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => console.log('Next')}
-            disabled={false}
+            onClick={() => setPage(page + 1)}
+            disabled={page >= pageLimit}
           >
             Next
           </Button>

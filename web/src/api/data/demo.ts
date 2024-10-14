@@ -27,6 +27,13 @@ export interface Plan {
   sql: string;
 }
 
+export interface QueriesPage {
+  queries: Plan[];
+  limit: number;
+  offset: number;
+  totalCount: number;
+}
+
 export interface FullPlan extends Plan {
   dotGraph: string;
   graphNodes: GraphNode[];

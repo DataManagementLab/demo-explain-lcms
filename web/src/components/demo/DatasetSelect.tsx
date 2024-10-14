@@ -16,12 +16,8 @@ interface Props {
 }
 
 export default function DatasetSelect({ className }: Props) {
-  const [datasetId, setDatasetId, resetWorkloadId] = useDemoStore(
-    useShallow((state) => [
-      state.datasetId,
-      state.setDatasetId,
-      state.resetWorkloadId,
-    ]),
+  const [datasetId, setDatasetId] = useDemoStore(
+    useShallow((state) => [state.datasetId, state.setDatasetId]),
   );
   const datasets = useQuery({ queryKey: ['datasets'], queryFn: getDatasets });
 
@@ -29,10 +25,7 @@ export default function DatasetSelect({ className }: Props) {
     datasets.isSuccess && (
       <Select
         value={datasetId?.toString()}
-        onValueChange={(value) => {
-          setDatasetId(parseInt(value));
-          resetWorkloadId();
-        }}
+        onValueChange={(value) => setDatasetId(parseInt(value))}
       >
         <SelectTrigger className={className}>
           <SelectValue placeholder="Select Dataset" />
