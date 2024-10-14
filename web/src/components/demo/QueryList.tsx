@@ -25,7 +25,7 @@ export default function QueryList() {
     queryKey: ['queries', workloadId, page],
     queryFn: () =>
       workloadId == undefined
-        ? undefined
+        ? Promise.resolve(null)
         : getQueries(workloadId, page * pageSize, pageSize),
     placeholderData: (prev) => prev,
   });
@@ -38,10 +38,8 @@ export default function QueryList() {
     useShallow((state) => [state.queryId, state.setQueryId]),
   );
 
-  console.log(queries.data);
-
   return (
-    queries.data != undefined && (
+    queries.data && (
       <div className="flex flex-col gap-4">
         <ScrollArea className="h-[700px] rounded-md border">
           <Table>

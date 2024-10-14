@@ -58,7 +58,7 @@ def get_workload_queries(workload_id: int, db: db_depends, offset: int = 0, limi
     )
 
 
-@router.get("/query/{query_id}", response_model=FullQueryResponse)
+@router.get("/queries/{query_id}", response_model=FullQueryResponse)
 def get_query(parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan)]):
     response = FullQueryResponse(
         id=parsed_plan.id,
@@ -79,7 +79,7 @@ def get_query(parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan)]):
     return response
 
 
-@router.get("/query/{query_id}/prediction", response_model=PredictionResponse)
+@router.get("/queries/{query_id}/prediction", response_model=PredictionResponse)
 def get_prediction(
     parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
     base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
@@ -87,7 +87,7 @@ def get_prediction(
     return base_explainer.predict(parsed_plan)
 
 
-@router.get("/query/{query_id}/explanation/{explainer_type}", response_model=ExplanationResponse)
+@router.get("/queries/{query_id}/explanation/{explainer_type}", response_model=ExplanationResponse)
 def get_explanation(
     parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
