@@ -34,6 +34,10 @@ export default function QueryList() {
       ? Math.ceil(queries.data.totalCount / pageSize) - 1
       : 0;
 
+  const [queryId, setQueryId] = useDemoStore(
+    useShallow((state) => [state.queryId, state.setQueryId]),
+  );
+
   console.log(queries.data);
 
   return (
@@ -56,7 +60,11 @@ export default function QueryList() {
             </TableHeader>
             <TableBody className="max-h-[200px] overflow-y-auto">
               {queries.data.queries.map((query) => (
-                <TableRow key={query.id}>
+                <TableRow
+                  key={query.id}
+                  onClick={() => setQueryId(query.id)}
+                  data-state={queryId == query.id ? 'selected' : ''}
+                >
                   <TableCell className="border-r text-center">
                     {query.id}
                   </TableCell>
