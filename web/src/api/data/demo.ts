@@ -39,3 +39,13 @@ export interface FullPlan extends Plan {
   dotGraph: string;
   graphNodes: GraphNode[];
 }
+
+export interface Prediction {
+  label: number;
+  prediction: number;
+  qerror: number;
+}
+
+export interface Explanation {
+  featureImportance: Record<number, Record<string, number>>;
+}

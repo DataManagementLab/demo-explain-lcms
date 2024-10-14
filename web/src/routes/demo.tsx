@@ -1,5 +1,6 @@
 import { getQuery } from '@/api/demo';
 import DatasetSelect from '@/components/demo/DatasetSelect';
+import PredictionCard from '@/components/demo/PredictionCard';
 import QueryGraph from '@/components/demo/QueryGraph';
 import QueryList from '@/components/demo/QueryList';
 import WorkloadSelect from '@/components/demo/WorkloadSelect';
@@ -44,6 +45,9 @@ function Demo() {
             <QueryGraph fullPlan={query.data} />
           </Card>
         )}
+      </div>
+      <div className="col-start-10 col-end-13 flex-col gap-8">
+        <PredictionCard />
       </div>
     </div>
   );
