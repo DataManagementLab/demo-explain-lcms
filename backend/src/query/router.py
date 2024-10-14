@@ -45,7 +45,8 @@ def get_workload_queries(workload_id: int, db: db_depends, offset: int = 0, limi
     return QueriesPageResponse(
         queries=[
             QueryResponse(
-                id=plan.id_in_run,
+                id=plan.id,
+                id_in_run=plan.id_in_run,
                 plan_runtime=plan.plan_runtime,
                 sql=plan.sql,
                 query_stats=get_query_stats(plan.id, db),
@@ -62,6 +63,7 @@ def get_workload_queries(workload_id: int, db: db_depends, offset: int = 0, limi
 def get_query(parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan)]):
     response = FullQueryResponse(
         id=parsed_plan.id,
+        id_in_run=parsed_plan.id_in_run,
         plan_runtime=parsed_plan.plan.plan_runtime,
         query_stats=parsed_plan.graph_nodes_stats,
         dot_graph=parsed_plan.get_dot(),

@@ -22,7 +22,8 @@ def get_parsed_plan(query_id: int, db: db_depends, ml: Annotated[MLHelper, Depen
         ml.hyperparameters,
         ml.feature_statistics,
     )
-    parsed_plan.id = query_id
+    parsed_plan.id = query.id
+    parsed_plan.id_in_run = query.id_in_run
     parsed_plan.prepare_plan_for_view()
 
     ml.cache_store_plan(parsed_plan)

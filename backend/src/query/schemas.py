@@ -19,6 +19,7 @@ class ParsedPlanStatsResponse(CustomModel):
 
 class QueryResponse(CustomModel):
     id: int
+    id_in_run: int
     plan_runtime: float
     sql: str
     query_stats: ParsedPlanStatsResponse

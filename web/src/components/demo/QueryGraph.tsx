@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react';
 import { FullPlan } from '@/api/data/demo';
-import { GraphNode } from '@/api/data/nodeInfo';
+import { useDemoStore } from '@/stores/demoStore';
 import { useWindowSize } from '@uidotdev/usehooks';
 import * as d3 from 'd3';
 import * as d3Graphviz from 'd3-graphviz';
+import { useShallow } from 'zustand/react/shallow';
 
 interface Props {
   fullPlan: FullPlan;
@@ -15,7 +16,9 @@ export default function QueryGraph({ fullPlan }: Props) {
   const [graphviz, setGraphviz] = useState<
     d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined
   >();
-  const [node, setNode] = useState<GraphNode | undefined>(undefined);
+  const setSelectedNode = useDemoStore(
+    useShallow((store) => store.setSelectedNode),
+  );
   const windowSize = useWindowSize();
 
   const drawGraph = () => {
@@ -52,29 +55,38 @@ export default function QueryGraph({ fullPlan }: Props) {
     const graphElement = d3.selectAll('#graph0');
     const nodes = graphElement.selectAll('.node');
 
-    nodes.selectAll('ellipse').attr('fill', '#FFFFFF');
+    nodes
+      .selectAll('ellipse')
+      .classed(
+        'transition-stroke fill-white stroke-black/60 stroke-[2px]',
+        true,
+      );
 
     const setNodeHover = (enter: boolean, nodeId: string) => {
       nodes
         .filter('#' + nodeId)
         .selectAll('ellipse')
-        .classed('hover', enter);
+        .classed('stroke-black/60', !enter)
+        .classed('stroke-black', enter);
     };
 
     const setNodeClick = (nodeId: string, nodeKey: string) => {
       nodes //
         .selectAll('ellipse')
-        .classed('selected', false);
+        .classed(' stroke-[2px]', true)
+        .classed('stroke-[5px]', false);
       nodes
         .filter('#' + nodeId)
         .selectAll('ellipse')
-        .classed('selected', true);
+        .classed(' stroke-[2px]', false)
+        .classed('stroke-[5px]', true);
 
       if (fullPlan) {
         const graphNode = fullPlan.graphNodes.find(
           (n) => n.nodeId == parseInt(nodeKey),
         );
-        setNode(graphNode);
+        setSelectedNode(graphNode);
+        console.log('Selected', graphNode);
       }
     };
 

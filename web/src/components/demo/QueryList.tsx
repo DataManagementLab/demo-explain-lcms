@@ -64,7 +64,7 @@ export default function QueryList() {
                   data-state={queryId == query.id ? 'selected' : ''}
                 >
                   <TableCell className="border-r text-center">
-                    {query.id}
+                    {query.idInRun}
                   </TableCell>
                   <TableCell className="border-l text-center">
                     {query.queryStats.plans}

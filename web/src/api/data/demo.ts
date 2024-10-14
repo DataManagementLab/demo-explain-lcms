@@ -22,6 +22,7 @@ export interface QueryStats {
 
 export interface Plan {
   id: number;
+  idInRun: number;
   planRuntime: number;
   queryStats: QueryStats;
   sql: string;
