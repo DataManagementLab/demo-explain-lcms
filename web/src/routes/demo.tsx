@@ -5,6 +5,8 @@ import QueryGraph from '@/components/demo/QueryGraph';
 import QueryList from '@/components/demo/QueryList';
 import WorkloadSelect from '@/components/demo/WorkloadSelect';
 import { Card } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useDemoStore } from '@/stores/demoStore';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
@@ -40,15 +42,15 @@ function Demo() {
         <QueryList></QueryList>
       </div>
       <div className="col-start-5 col-end-10 flex">
-        {query.data && (
-          <Card className="h-[600px] w-full shadow-none">
-            <QueryGraph fullPlan={query.data} />
+        {queryId != undefined && (
+          <Card className="h-[600px] w-full">
+            {query.data && <QueryGraph fullPlan={query.data} />}
           </Card>
         )}
       </div>
-      <div className="col-start-10 col-end-13 flex-col gap-8">
+      <ScrollArea className="col-start-10 col-end-13 flex-col gap-8">
         <PredictionCard />
-      </div>
+      </ScrollArea>
     </div>
   );
 }
