@@ -36,7 +36,7 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
           <CardDescription>Explanation</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col">
-          {explanation.data && query.data ? (
+          {explanation.isSuccess && query.isSuccess ? (
             explanation.data.nodeImportance
               .toSorted((a, b) => b.importance - a.importance)
               .slice(0, 5)

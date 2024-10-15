@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useGetQueries } from '@/api/queries';
 import { useDemoStore } from '@/stores/demoStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -17,25 +16,28 @@ import {
 const pageSize = 50;
 
 export default function QueryList() {
-  const [page, setPage] = useState<number>(0);
-
-  const workloadId = useDemoStore(useShallow((state) => state.workloadId));
+  const [workloadId, page, setPage] = useDemoStore(
+    useShallow((state) => [
+      state.workloadId,
+      state.queriesPage,
+      state.setQueriesPage,
+    ]),
+  );
   const queries = useGetQueries({
     workloadId: workloadId,
     offset: page * pageSize,
     limit: pageSize,
   });
-  const pageLimit =
-    queries.data != undefined
-      ? Math.ceil(queries.data.totalCount / pageSize) - 1
-      : 0;
+  const pageLimit = queries.isSuccess
+    ? Math.ceil(queries.data.totalCount / pageSize) - 1
+    : 0;
 
   const [queryId, setQueryId] = useDemoStore(
     useShallow((state) => [state.queryId, state.setQueryId]),
   );
 
   return (
-    queries.data && (
+    queries.isSuccess && (
       <div className="flex flex-col gap-4">
         <ScrollArea className="h-[700px] rounded-md border">
           <Table>

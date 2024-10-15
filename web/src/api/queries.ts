@@ -1,5 +1,5 @@
 import { PickPartial } from '@/lib/pickPartial';
-import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
+import { skipToken, useQuery } from '@tanstack/react-query';
 
 import api from '../lib/api';
 import { Dataset, FullPlan, QueriesPage, Workload } from './data/queries';
@@ -56,7 +56,8 @@ export function useGetQueries({
       workloadId != undefined
         ? () => getQueries({ workloadId, offset, limit })
         : skipToken,
-    placeholderData: keepPreviousData,
+    placeholderData: (prevData, prevQuery) =>
+      prevQuery && prevQuery.queryKey[1] == workloadId ? prevData : undefined,
   });
 }
 

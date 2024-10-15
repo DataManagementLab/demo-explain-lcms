@@ -18,7 +18,7 @@ export default function PredictionCard() {
           <CardTitle>Prediction</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col">
-          {prediction.data ? (
+          {prediction.isSuccess ? (
             <div className="flex items-center gap-1">
               <Label>Label:</Label>
               <p>{round(prediction.data.label)}</p>
@@ -26,7 +26,7 @@ export default function PredictionCard() {
           ) : (
             <Skeleton className="my-1 h-4" />
           )}
-          {prediction.data ? (
+          {prediction.isSuccess ? (
             <div className="flex items-center gap-1">
               <Label>Prediction:</Label>
               <p>{round(prediction.data.prediction)}</p>
@@ -34,7 +34,7 @@ export default function PredictionCard() {
           ) : (
             <Skeleton className="my-1 h-4" />
           )}
-          {prediction.data ? (
+          {prediction.isSuccess ? (
             <div className="flex items-center gap-1">
               <Label>QError:</Label>
               <p>{round(prediction.data.qerror)}</p>

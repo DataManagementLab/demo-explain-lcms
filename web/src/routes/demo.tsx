@@ -37,7 +37,7 @@ function Demo() {
       <div className="col-start-5 col-end-10 flex">
         {queryId != undefined && (
           <Card className="h-[600px] w-full">
-            {query.data && <QueryGraph fullPlan={query.data} />}
+            {query.isSuccess && <QueryGraph fullPlan={query.data} />}
           </Card>
         )}
       </div>
