@@ -1,6 +1,5 @@
-import { getWorkloads } from '@/api/demo';
+import { useGetWorkloads } from '@/api/queries';
 import { useDemoStore } from '@/stores/demoStore';
-import { useQuery } from '@tanstack/react-query';
 import { useShallow } from 'zustand/react/shallow';
 
 import {
@@ -23,11 +22,7 @@ export default function WorkloadSelect({ className }: Props) {
       state.setWorkloadId,
     ]),
   );
-  const workloads = useQuery({
-    queryKey: ['workloads', datasetId],
-    queryFn: () => getWorkloads(datasetId!),
-    enabled: datasetId != undefined,
-  });
+  const workloads = useGetWorkloads({ datasetId: datasetId });
 
   return (
     workloads.isSuccess && (

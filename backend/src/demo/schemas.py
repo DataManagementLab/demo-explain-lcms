@@ -67,8 +67,13 @@ class PredictionResponse(CustomModel):
     qerror: float
 
 
+class NodeImportance(CustomModel):
+    node_id: int
+    importance: float
+
+
 class ExplanationResponse(CustomModel):
-    node_importance: dict[int, float]
+    node_importance: list[NodeImportance]
 
 
 class ImportantFeaturesResponse(CustomModel):

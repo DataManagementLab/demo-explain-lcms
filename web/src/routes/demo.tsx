@@ -1,14 +1,15 @@
-import { getQuery } from '@/api/demo';
+import { ExplainerType } from '@/api/data/inference';
+import { useGetQuery, useGetWorkloads } from '@/api/queries';
 import DatasetSelect from '@/components/demo/DatasetSelect';
+import { ExplanationCard } from '@/components/demo/ExplanationCard';
 import PredictionCard from '@/components/demo/PredictionCard';
 import QueryGraph from '@/components/demo/QueryGraph';
 import QueryList from '@/components/demo/QueryList';
 import WorkloadSelect from '@/components/demo/WorkloadSelect';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { useDemoStore } from '@/stores/demoStore';
-import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -20,16 +21,8 @@ function Demo() {
   const [datasetId, queryId] = useDemoStore(
     useShallow((state) => [state.datasetId, state.queryId]),
   );
-  const workloads = useQuery({
-    queryKey: ['workloads', datasetId],
-    enabled: datasetId != undefined,
-  });
-
-  const query = useQuery({
-    queryKey: ['query', queryId],
-    queryFn: () =>
-      queryId == undefined ? Promise.resolve(null) : getQuery(queryId),
-  });
+  const workloads = useGetWorkloads({ datasetId: datasetId });
+  const query = useGetQuery({ queryId: queryId });
 
   return (
     <div className="grid grid-cols-12 gap-x-4">
@@ -48,9 +41,33 @@ function Demo() {
           </Card>
         )}
       </div>
-      <ScrollArea className="col-start-10 col-end-13 flex-col gap-8">
-        <PredictionCard />
-      </ScrollArea>
+      {queryId != undefined && (
+        <ScrollArea className="col-start-10 col-end-13 h-[800px] rounded-md border">
+          <div className="flex flex-col gap-1">
+            <PredictionCard />
+            <Separator />
+            <ExplanationCard
+              explainerName={'Base Explainer'}
+              explainerType={ExplainerType.actual}
+            />
+            <Separator />
+            <ExplanationCard
+              explainerName={'Gradient'}
+              explainerType={ExplainerType.gradient}
+            />
+            <Separator />
+            <ExplanationCard
+              explainerName={'Guided Backpropagation'}
+              explainerType={ExplainerType.guidedBackpropagation}
+            />
+            <Separator />
+            <ExplanationCard
+              explainerName={'GNNExplainer'}
+              explainerType={ExplainerType.gnnExplainer}
+            />
+          </div>
+        </ScrollArea>
+      )}
     </div>
   );
 }

@@ -1,6 +1,5 @@
-import { getDatasets } from '@/api/demo';
+import { useGetDatasets } from '@/api/queries';
 import { useDemoStore } from '@/stores/demoStore';
-import { useQuery } from '@tanstack/react-query';
 import { useShallow } from 'zustand/react/shallow';
 
 import {
@@ -19,7 +18,7 @@ export default function DatasetSelect({ className }: Props) {
   const [datasetId, setDatasetId] = useDemoStore(
     useShallow((state) => [state.datasetId, state.setDatasetId]),
   );
-  const datasets = useQuery({ queryKey: ['datasets'], queryFn: getDatasets });
+  const datasets = useGetDatasets();
 
   return (
     datasets.isSuccess && (

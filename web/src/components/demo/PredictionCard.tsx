@@ -1,7 +1,6 @@
-import { getPrediction } from '@/api/demo';
+import { useGetPrediction } from '@/api/inference';
 import { round } from '@/lib/round';
 import { useDemoStore } from '@/stores/demoStore';
-import { useQuery } from '@tanstack/react-query';
 import { useShallow } from 'zustand/react/shallow';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -10,17 +9,11 @@ import { Skeleton } from '../ui/skeleton';
 
 export default function PredictionCard() {
   const queryId = useDemoStore(useShallow((store) => store.queryId));
-  const prediction = useQuery({
-    queryKey: ['prediction', queryId],
-    queryFn: () =>
-      queryId == undefined ? Promise.resolve(null) : getPrediction(queryId),
-    staleTime: Infinity,
-    gcTime: 0,
-  });
+  const prediction = useGetPrediction({ queryId: queryId });
 
   return (
     queryId != undefined && (
-      <Card>
+      <Card className="border-none">
         <CardHeader>
           <CardTitle>Prediction</CardTitle>
         </CardHeader>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { getQueries } from '@/api/demo';
+import { useGetQueries } from '@/api/queries';
 import { useDemoStore } from '@/stores/demoStore';
-import { useQuery } from '@tanstack/react-query';
 import { useShallow } from 'zustand/react/shallow';
 
 import { Button } from '../ui/button';
@@ -21,13 +20,10 @@ export default function QueryList() {
   const [page, setPage] = useState<number>(0);
 
   const workloadId = useDemoStore(useShallow((state) => state.workloadId));
-  const queries = useQuery({
-    queryKey: ['queries', workloadId, page],
-    queryFn: () =>
-      workloadId == undefined
-        ? Promise.resolve(null)
-        : getQueries(workloadId, page * pageSize, pageSize),
-    placeholderData: (prev) => prev,
+  const queries = useGetQueries({
+    workloadId: workloadId,
+    offset: page * pageSize,
+    limit: pageSize,
   });
   const pageLimit =
     queries.data != undefined
