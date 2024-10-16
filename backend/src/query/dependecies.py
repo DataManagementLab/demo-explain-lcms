@@ -1,3 +1,4 @@
+import threading
 from typing import Annotated
 from fastapi import Depends, HTTPException
 from ml.dependencies import MLHelper
@@ -34,3 +35,14 @@ def get_parsed_plan(query_id: int, db: db_depends, ml: Annotated[MLHelper, Depen
 def get_parsed_plan_for_inference(parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan)]):
     parsed_plan.prepare_plan_for_inference()
     return parsed_plan
+
+
+_inference_mutex = threading.Lock()
+
+
+def inference_mutex():
+    try:
+        _inference_mutex.acquire()
+        yield
+    finally:
+        _inference_mutex.release()

@@ -15,13 +15,14 @@ from zero_shot_learned_db.explanations.data_models.hyperparameters import HyperP
 from zero_shot_learned_db.explanations.data_models.statistics import FeatureStatistics, load_statistics
 from zero_shot_learned_db.explanations.data_models.workload_run import DatabaseStats as PydanticDatabaseStats, load_workload_run
 from zero_shot_learned_db.explanations.load import ParsedPlan, get_label_norm, get_label_norm_runtimes
-from zero_shot_learned_db.explanations.model import ZeroShotModelStorage, prepare_model
+from zero_shot_learned_db.explanations.model import prepare_model
+from zero_shot_learned_db.models.zero_shot_models.zero_shot_model import ZeroShotModel
 
 
 class MLHelper:
     hyperparameters: HyperParameters
     feature_statistics: FeatureStatistics
-    model_storage: ZeroShotModelStorage
+    model: ZeroShotModel
     settings: Settings
     database_stats: dict[int, PydanticDatabaseStats]
     plans_cache: dict[int, tuple[ParsedPlan, float]]
@@ -43,14 +44,13 @@ class MLHelper:
 
         self.feature_statistics = load_statistics(statistics_file)
         label_norm = get_label_norm_runtimes([i[0] for i in db.query(Plan.plan_runtime).filter(Plan.sql.is_not(None)).all()], self.hyperparameters.final_mlp_kwargs.loss_class_name)
-        model = prepare_model(
+        self.model = prepare_model(
             self.hyperparameters,
             self.feature_statistics,
             label_norm,
             model_dir,
             settings.ml.zs_model_file_name,
         )
-        self.model_storage = ZeroShotModelStorage(model)
 
         self.database_stats = {}
         for db_stats in db.query(DatabaseStats).all():
@@ -59,12 +59,12 @@ class MLHelper:
         self.plans_cache = {}
 
     def _assert_loaded(self):
-        assert self.model_storage is not None
+        assert self.model is not None
 
     def get_explainer(self, explainer_type: ExplainerType):
         self._assert_loaded()
 
-        return explainers[explainer_type](self.model_storage, log=self.settings.ml.explainers_log)
+        return explainers[explainer_type](self.model, log=self.settings.ml.explainers_log)
 
     def cache_store_plan(self, plan: ParsedPlan):
         self.plans_cache[plan.id] = (plan, time.time())
@@ -98,7 +98,7 @@ class MLHelperOld:
     hyperparameters: HyperParameters
     feature_statistics: FeatureStatistics
     workload_run: WorkloadRun
-    model_storage: ZeroShotModelStorage
+    model: ZeroShotModel
     parsed_plans: list[ParsedPlan]
     settings: Settings
 
@@ -123,14 +123,13 @@ class MLHelperOld:
         if settings.ml.limit_plans is not None:
             self.workload_run.parsed_plans = self.workload_run.parsed_plans[: settings.ml.limit_plans]
         label_norm = get_label_norm(self.workload_run.parsed_plans, self.hyperparameters.final_mlp_kwargs.loss_class_name)
-        model = prepare_model(
+        self.model = prepare_model(
             self.hyperparameters,
             self.feature_statistics,
             label_norm,
             model_dir,
             settings.ml.zs_model_file_name,
         )
-        self.model_storage = ZeroShotModelStorage(model)
 
         self.parsed_plans = [
             ParsedPlan(
@@ -149,12 +148,12 @@ class MLHelperOld:
             self._validate_graphs_from_nodes()
 
     def _assert_loaded(self):
-        assert self.model_storage is not None
+        assert self.model is not None
 
     def get_explainer(self, explainer_type: ExplainerType):
         self._assert_loaded()
 
-        return explainers[explainer_type](self.model_storage, log=self.settings.ml.explainers_log)
+        return explainers[explainer_type](self.model, log=self.settings.ml.explainers_log)
 
     def get_plan(self, plan_id: int):
         if plan_id < 0 or plan_id >= len(self.parsed_plans):

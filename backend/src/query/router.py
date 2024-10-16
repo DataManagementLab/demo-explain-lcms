@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from demo.schemas import ExplanationResponse, GraphNodeResponse, PredictionResponse
 from ml.dependencies import get_base_explainer, get_explainer
 from query.db import db_depends
-from query.dependecies import get_parsed_plan, get_parsed_plan_for_inference
+from query.dependecies import get_parsed_plan, get_parsed_plan_for_inference, inference_mutex
 from query.models import Dataset, Plan, WorkloadRun
 from query.schemas import DatasetResponse, FullQueryResponse, QueriesPageResponse, QueryResponse, WorkloadRunResponse
 from query.service import get_query_stats, get_workload_run_queries_count
@@ -85,6 +85,7 @@ def get_query(parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan)]):
 def get_prediction(
     parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
     base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
+    inference_mutex: Annotated[None, Depends(inference_mutex)],
 ):
     return base_explainer.predict(parsed_plan)
 
@@ -93,5 +94,6 @@ def get_prediction(
 def get_explanation(
     parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+    inference_mutex: Annotated[None, Depends(inference_mutex)],
 ):
     return explainer.explain(parsed_plan)

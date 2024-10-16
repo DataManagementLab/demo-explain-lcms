@@ -6,7 +6,7 @@ from zero_shot_learned_db.explanations.data_models.nodes import NodeType
 
 
 def test_ml_loaded(ml: MLHelperOld):
-    assert ml.model_storage is not None
+    assert ml.model is not None
     assert ml.feature_statistics is not None
     assert ml.hyperparameters is not None
     assert len(ml.parsed_plans) == 50
@@ -26,12 +26,16 @@ def test_explain(ml: MLHelperOld):
     plan = ml.get_plan(0)
     base_explainer = ml.get_explainer(ExplainerType.GRADIENT)
     explanation = base_explainer.explain(plan)
-    print([i for i in explanation.node_importance.items() if i[1] > 0.1])
-    assert get_test_value(explanation.node_importance[34]) == 0.2411
-    assert get_test_value(explanation.node_importance[26]) == 0.2330
-    assert get_test_value(explanation.node_importance[27]) == 0.1047
-    assert get_test_value(explanation.node_importance[36]) == 0.2022
-    assert sum(explanation.node_importance.values()) == pytest.approx(1.0, rel=approx_rel)
+    print([i for i in explanation.node_importance if i.importance > 0.1])
+
+    def get_importance(node_id: int):
+        return next(filter(lambda x: x.node_id == node_id, explanation.node_importance)).importance
+
+    assert get_test_value(get_importance(34)) == 0.2411
+    assert get_test_value(get_importance(26)) == 0.2330
+    assert get_test_value(get_importance(27)) == 0.1047
+    assert get_test_value(get_importance(36)) == 0.2022
+    assert sum(map(lambda x: x.importance, explanation.node_importance)) == pytest.approx(1.0, rel=approx_rel)
 
 
 def test_actual_importance(ml: MLHelperOld):
