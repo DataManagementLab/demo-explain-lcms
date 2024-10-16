@@ -17,7 +17,7 @@ export default function QueryGraph({ fullPlan }: Props) {
     d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined
   >();
   const [selectedNodeId, setSelectedNodeId] = useDemoStore(
-    useShallow((store) => [store.selectedNodeId, store.setSelectedNodeId]),
+    useShallow((state) => [state.selectedNodeId, state.setSelectedNodeId]),
   );
   const windowSize = useWindowSize();
 
@@ -47,7 +47,6 @@ export default function QueryGraph({ fullPlan }: Props) {
   };
 
   const drawSelectedNode = () => {
-    console.log('drawSelectedNode');
     if (!graphviz) {
       return;
     }
@@ -58,14 +57,12 @@ export default function QueryGraph({ fullPlan }: Props) {
       .classed('stroke-[2px]', true)
       .classed('stroke-[5px]', false);
 
-    console.log(selectedNodeId);
     if (selectedNodeId == undefined) {
       return;
     }
     const nodeToSelect = nodes
       .filter((e) => (e as any).key == selectedNodeId)
       .selectAll('ellipse');
-    console.log(nodeToSelect);
     nodeToSelect //
       .classed('stroke-[2px]', false)
       .classed('stroke-[5px]', true);
@@ -83,7 +80,7 @@ export default function QueryGraph({ fullPlan }: Props) {
     nodes
       .selectAll('ellipse')
       .classed(
-        'transition-stroke fill-white stroke-black/60 stroke-[2px]',
+        'transition-stroke fill-background stroke-black/60 stroke-[2px]',
         true,
       );
 
@@ -107,8 +104,9 @@ export default function QueryGraph({ fullPlan }: Props) {
       setNodeHover(false, d.attributes.id);
     });
 
-    nodes.on('click', (_e, d: any) => {
+    nodes.on('click', (e: any, d: any) => {
       setNodeClick(d.attributes.id, d.key);
+      e.stopPropagation();
     });
   };
 
@@ -127,10 +125,6 @@ export default function QueryGraph({ fullPlan }: Props) {
   useEffect(() => {
     drawSelectedNode();
   }, [selectedNodeId, graphviz]);
-
-  // useEffect(() => {
-  //   setGraphInteractions();
-  // }, [graphDiv, fullPlan, graphviz]);
 
   return <div className="h-full" ref={graphDiv}></div>;
 }

@@ -24,9 +24,9 @@ interface Props {
 
 export function ExplanationCard({ explainerName, explainerType }: Props) {
   const [showMore, setShowMore] = useState(false);
-  const queryId = useDemoStore(useShallow((store) => store.queryId));
+  const queryId = useDemoStore(useShallow((state) => state.queryId));
   const [selectedNodeId, setSelectedNodeId] = useDemoStore(
-    useShallow((store) => [store.selectedNodeId, store.setSelectedNodeId]),
+    useShallow((state) => [state.selectedNodeId, state.setSelectedNodeId]),
   );
   const explanation = useGetExplanation({
     queryId: queryId,
@@ -46,6 +46,7 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
             <Table>
               <TableBody className="overflow-y-auto">
                 {explanation.data.nodeImportance
+                  .filter((a) => round(a.importance) > 0)
                   .toSorted((a, b) => b.importance - a.importance)
                   .slice(
                     0,
@@ -59,7 +60,7 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
                         importance.nodeId == selectedNodeId ? 'selected' : ''
                       }
                     >
-                      <TableCell className="max-w-12 font-medium">
+                      <TableCell className="font-medium">
                         {query.data.graphNodes[importance.nodeId].label}
                       </TableCell>
                       <TableCell>{round(importance.importance)}</TableCell>

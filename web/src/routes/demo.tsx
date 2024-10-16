@@ -2,6 +2,7 @@ import { ExplainerType } from '@/api/data/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
 import DatasetSelect from '@/components/demo/DatasetSelect';
 import { ExplanationCard } from '@/components/demo/ExplanationCard';
+import NodeInfoCard from '@/components/demo/NodeInfoCard';
 import PredictionCard from '@/components/demo/PredictionCard';
 import QueryGraph from '@/components/demo/QueryGraph';
 import QueryList from '@/components/demo/QueryList';
@@ -18,8 +19,12 @@ export const Route = createFileRoute('/demo')({
 });
 
 function Demo() {
-  const [datasetId, queryId] = useDemoStore(
-    useShallow((state) => [state.datasetId, state.queryId]),
+  const [datasetId, queryId, setSelectedNodeId] = useDemoStore(
+    useShallow((state) => [
+      state.datasetId,
+      state.queryId,
+      state.setSelectedNodeId,
+    ]),
   );
   const workloads = useGetWorkloads({ datasetId: datasetId });
   const query = useGetQuery({ queryId: queryId });
@@ -34,12 +39,16 @@ function Demo() {
         </div>
         <QueryList></QueryList>
       </div>
-      <div className="col-start-5 col-end-10 flex">
+      <div className="col-start-5 col-end-10 flex flex-col gap-4">
         {queryId != undefined && (
-          <Card className="h-[600px] w-full">
+          <Card
+            className="h-[600px] w-full"
+            onClick={() => setSelectedNodeId(undefined)}
+          >
             {query.isSuccess && <QueryGraph fullPlan={query.data} />}
           </Card>
         )}
+        <NodeInfoCard />
       </div>
       {queryId != undefined && (
         <ScrollArea className="col-start-10 col-end-13 h-[800px] rounded-md border">

@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
 from demo.schemas import ExplanationResponse, GraphNodeResponse, PredictionResponse
-from ml.dependencies import get_base_explainer, get_explainer
+from ml.dependencies import MLHelper, get_base_explainer, get_explainer
 from query.db import db_depends
 from query.dependecies import get_parsed_plan, get_parsed_plan_for_inference, inference_mutex
 from query.models import Dataset, Plan, WorkloadRun
@@ -10,6 +10,7 @@ from query.schemas import DatasetResponse, FullQueryResponse, QueriesPageRespons
 from query.service import get_query_stats, get_workload_run_queries_count
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
+from pydantic.alias_generators import to_camel
 
 
 router = APIRouter(tags=["query"])
@@ -97,3 +98,9 @@ def get_explanation(
     inference_mutex: Annotated[None, Depends(inference_mutex)],
 ):
     return explainer.explain(parsed_plan)
+
+
+@router.get("/general/features", response_model=list[str])
+def get_features(ml: Annotated[MLHelper, Depends()]):
+    features = [to_camel(feature) for feature_list in ml.hyperparameters.node_type_featurization.values() for feature in feature_list]
+    return features
