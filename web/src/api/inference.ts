@@ -8,15 +8,19 @@ interface GetPredictionParams {
   queryId: number;
 }
 
-function getPrediction({ queryId }: GetPredictionParams) {
-  return api.get<Prediction>(`queries/${queryId}/prediction`).json();
+function getPrediction({ queryId }: GetPredictionParams, signal: AbortSignal) {
+  return api
+    .get<Prediction>(`queries/${queryId}/prediction`, { signal: signal })
+    .json();
 }
 
 export function useGetPrediction({ queryId }: Partial<GetPredictionParams>) {
   return useQuery({
     queryKey: ['prediction', queryId],
     queryFn:
-      queryId != undefined ? () => getPrediction({ queryId }) : skipToken,
+      queryId != undefined
+        ? ({ signal }) => getPrediction({ queryId }, signal)
+        : skipToken,
     gcTime: 0,
   });
 }
@@ -26,9 +30,14 @@ interface GetExplanationParams {
   explainerType: ExplainerType;
 }
 
-function getExplanation({ queryId, explainerType }: GetExplanationParams) {
+function getExplanation(
+  { queryId, explainerType }: GetExplanationParams,
+  signal: AbortSignal,
+) {
   return api
-    .get<Explanation>(`queries/${queryId}/explanation/${explainerType}`)
+    .get<Explanation>(`queries/${queryId}/explanation/${explainerType}`, {
+      signal: signal,
+    })
     .json();
 }
 
@@ -40,7 +49,7 @@ export function useGetExplanation({
     queryKey: ['explanation', explainerType, queryId],
     queryFn:
       queryId != undefined
-        ? () => getExplanation({ queryId, explainerType })
+        ? ({ signal }) => getExplanation({ queryId, explainerType }, signal)
         : skipToken,
     gcTime: 0,
   });

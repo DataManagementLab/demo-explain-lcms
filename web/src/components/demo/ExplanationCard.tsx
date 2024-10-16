@@ -37,9 +37,13 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
   return (
     queryId != undefined && (
       <Card className="border-none">
-        <CardHeader>
-          <CardTitle>{explainerName}</CardTitle>
-          <CardDescription>Explanation</CardDescription>
+        <CardHeader className="p-0 px-6 pb-2 pt-6">
+          <CardTitle>Explainer: {explainerName}</CardTitle>
+          <CardDescription>
+            {explanation.isSuccess
+              ? `${round(explanation.data.executionTime)} s`
+              : ''}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {explanation.isSuccess && query.isSuccess ? (

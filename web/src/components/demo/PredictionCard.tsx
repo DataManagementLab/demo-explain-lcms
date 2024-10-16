@@ -3,7 +3,13 @@ import { round } from '@/lib/round';
 import { useDemoStore } from '@/stores/demoStore';
 import { useShallow } from 'zustand/react/shallow';
 
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
@@ -14,8 +20,13 @@ export default function PredictionCard() {
   return (
     queryId != undefined && (
       <Card className="border-none">
-        <CardHeader>
+        <CardHeader className="p-0 px-6 pb-2 pt-6">
           <CardTitle>Prediction</CardTitle>
+          <CardDescription>
+            {prediction.isSuccess
+              ? `${round(prediction.data.executionTime)} s`
+              : ''}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col">
           {prediction.isSuccess ? (

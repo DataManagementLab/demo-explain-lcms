@@ -56,7 +56,7 @@ function Demo() {
             <PredictionCard />
             <Separator />
             <ExplanationCard
-              explainerName={'Base Explainer'}
+              explainerName={'Base'}
               explainerType={ExplainerType.actual}
             />
             <Separator />

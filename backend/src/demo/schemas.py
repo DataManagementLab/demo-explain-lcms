@@ -65,6 +65,7 @@ class PredictionResponse(CustomModel):
     prediction: float
     label: float
     qerror: float
+    execution_time: float
 
 
 class NodeImportance(CustomModel):
@@ -74,6 +75,7 @@ class NodeImportance(CustomModel):
 
 class ExplanationResponse(CustomModel):
     node_importance: list[NodeImportance]
+    execution_time: float
 
 
 class ImportantFeaturesResponse(CustomModel):

@@ -33,25 +33,25 @@ export const useDemoStore = create<State & Action>((set) => ({
       workloadId: undefined,
       queriesPage: 0,
       queryId: undefined,
-      nodeId: undefined,
+      selectedNodeId: undefined,
     })),
   setWorkloadId: (workloadId: number) =>
     set(() => ({
       workloadId: workloadId,
       queriesPage: 0,
       queryId: undefined,
-      nodeId: undefined,
+      selectedNodeId: undefined,
     })),
   setQueriesPage: (queriesPage: number) =>
     set(() => ({
       queriesPage: queriesPage,
       queryId: undefined,
-      nodeId: undefined,
+      selectedNodeId: undefined,
     })),
   setQueryId: (queryId: number) =>
     set(() => ({
       queryId: queryId,
-      nodeId: undefined,
+      selectedNodeId: undefined,
     })),
   setSelectedNodeId: (selectedNodeId: number | undefined) => {
     set(() => ({

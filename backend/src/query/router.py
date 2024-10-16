@@ -1,3 +1,4 @@
+import time
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -88,7 +89,12 @@ def get_prediction(
     base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
     inference_mutex: Annotated[None, Depends(inference_mutex)],
 ):
-    return base_explainer.predict(parsed_plan)
+    start = time.time()
+    prediction = base_explainer.predict(parsed_plan)
+    return PredictionResponse(
+        **prediction.model_dump(),
+        execution_time=time.time() - start,
+    )
 
 
 @router.get("/queries/{query_id}/explanation/{explainer_type}", response_model=ExplanationResponse)
@@ -97,7 +103,12 @@ def get_explanation(
     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
     inference_mutex: Annotated[None, Depends(inference_mutex)],
 ):
-    return explainer.explain(parsed_plan)
+    start = time.time()
+    explanation = explainer.explain(parsed_plan)
+    return ExplanationResponse(
+        node_importance=explanation.node_importance,
+        execution_time=time.time() - start,
+    )
 
 
 @router.get("/general/features", response_model=list[str])

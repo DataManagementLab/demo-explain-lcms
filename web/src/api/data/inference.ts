@@ -2,6 +2,7 @@ export interface Prediction {
   label: number;
   prediction: number;
   qerror: number;
+  executionTime: number;
 }
 
 export interface NodeImportance {
@@ -11,6 +12,7 @@ export interface NodeImportance {
 
 export interface Explanation {
   nodeImportance: NodeImportance[];
+  executionTime: number;
 }
 
 export enum ExplainerType {

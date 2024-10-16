@@ -5,13 +5,7 @@ import { round } from '@/lib/round';
 import { useDemoStore } from '@/stores/demoStore';
 import { useShallow } from 'zustand/react/shallow';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { ScrollArea } from '../ui/scroll-area';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
@@ -79,7 +73,6 @@ export default function NodeInfoCard() {
       <Card>
         <CardHeader>
           <CardTitle>{selectedNode.label}</CardTitle>
-          <CardDescription>Selected Node</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-x-2">
           {nodeFeatures && nodeOtherAttributes && (
