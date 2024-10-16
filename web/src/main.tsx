@@ -9,7 +9,13 @@ import ReactDOM from 'react-dom/client';
 import { routeTree } from './routeTree.gen';
 
 // Create query client instance
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Create a new router instance
 const router = createRouter({

@@ -17,6 +17,7 @@ export function useGetPrediction({ queryId }: Partial<GetPredictionParams>) {
     queryKey: ['prediction', queryId],
     queryFn:
       queryId != undefined ? () => getPrediction({ queryId }) : skipToken,
+    gcTime: 0,
   });
 }
 
@@ -41,5 +42,6 @@ export function useGetExplanation({
       queryId != undefined
         ? () => getExplanation({ queryId, explainerType })
         : skipToken,
+    gcTime: 0,
   });
 }
