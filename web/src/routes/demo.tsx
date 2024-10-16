@@ -51,7 +51,7 @@ function Demo() {
         <NodeInfoCard />
       </div>
       {queryId != undefined && (
-        <ScrollArea className="col-start-10 col-end-13 h-[800px] rounded-md border">
+        <ScrollArea className="col-start-10 col-end-13 h-[calc(100vh-56px-8px-16px)] rounded-md border">
           <div className="flex flex-col gap-1">
             <PredictionCard />
             <Separator />

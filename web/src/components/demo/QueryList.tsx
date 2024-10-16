@@ -39,7 +39,7 @@ export default function QueryList() {
   return (
     queries.isSuccess && (
       <div className="flex flex-col gap-4">
-        <ScrollArea className="h-[700px] rounded-md border">
+        <ScrollArea className="h-[calc(100vh-56px-36px-8px-8px-16px-32px-16px)] rounded-md border">
           <Table>
             <TableHeader className="sticky top-0 bg-secondary">
               <TableRow>
@@ -54,7 +54,7 @@ export default function QueryList() {
                 <TableHead className="border-l text-center">Sort</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="max-h-[200px] overflow-y-auto">
+            <TableBody className="overflow-y-auto">
               {queries.data.queries.map((query) => (
                 <TableRow
                   key={query.id}
