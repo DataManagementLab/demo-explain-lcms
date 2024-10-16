@@ -25,6 +25,9 @@ interface Props {
 export function ExplanationCard({ explainerName, explainerType }: Props) {
   const [showMore, setShowMore] = useState(false);
   const queryId = useDemoStore(useShallow((store) => store.queryId));
+  const [selectedNodeId, setSelectedNodeId] = useDemoStore(
+    useShallow((store) => [store.selectedNodeId, store.setSelectedNodeId]),
+  );
   const explanation = useGetExplanation({
     queryId: queryId,
     explainerType: explainerType,
@@ -38,37 +41,44 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
           <CardTitle>{explainerName}</CardTitle>
           <CardDescription>Explanation</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col">
-          <Table className="">
-            <TableBody className="overflow-y-auto">
-              {explanation.isSuccess && query.isSuccess ? (
-                explanation.data.nodeImportance
+        <CardContent className="flex flex-col gap-2">
+          {explanation.isSuccess && query.isSuccess ? (
+            <Table>
+              <TableBody className="overflow-y-auto">
+                {explanation.data.nodeImportance
                   .toSorted((a, b) => b.importance - a.importance)
                   .slice(
                     0,
                     showMore ? explanation.data.nodeImportance.length : 5,
                   )
                   .map((importance) => (
-                    <TableRow key={importance.nodeId}>
+                    <TableRow
+                      key={importance.nodeId}
+                      onClick={() => setSelectedNodeId(importance.nodeId)}
+                      data-state={
+                        importance.nodeId == selectedNodeId ? 'selected' : ''
+                      }
+                    >
                       <TableCell className="max-w-12 font-medium">
                         {query.data.graphNodes[importance.nodeId].label}
                       </TableCell>
                       <TableCell>{round(importance.importance)}</TableCell>
                     </TableRow>
-                  ))
-              ) : (
-                <>
-                  <Skeleton className="my-2 h-6" />
-                  <Skeleton className="my-2 h-6" />
-                  <Skeleton className="my-2 h-6" />
-                  <Skeleton className="my-2 h-6" />
-                  <Skeleton className="my-2 h-6" />
-                </>
-              )}
-            </TableBody>
-          </Table>
+                  ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <>
+              <Skeleton className="h-6" />
+              <Skeleton className="h-6" />
+              <Skeleton className="h-6" />
+              <Skeleton className="h-6" />
+              <Skeleton className="h-6" />
+            </>
+          )}
+
           <Button
-            className="mt-2 items-start"
+            className="items-start"
             variant="link"
             size="sm"
             onClick={() => setShowMore(!showMore)}

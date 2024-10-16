@@ -72,6 +72,6 @@ function getQuery({ queryId }: GetQueryParams) {
 export function useGetQuery({ queryId }: Partial<GetQueryParams>) {
   return useQuery({
     queryKey: ['query', queryId],
-    queryFn: queryId ? () => getQuery({ queryId }) : skipToken,
+    queryFn: queryId != undefined ? () => getQuery({ queryId }) : skipToken,
   });
 }

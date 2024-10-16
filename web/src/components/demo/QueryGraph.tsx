@@ -16,13 +16,13 @@ export default function QueryGraph({ fullPlan }: Props) {
   const [graphviz, setGraphviz] = useState<
     d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined
   >();
-  const setSelectedNode = useDemoStore(
-    useShallow((store) => store.setSelectedNode),
+  const [selectedNodeId, setSelectedNodeId] = useDemoStore(
+    useShallow((store) => [store.selectedNodeId, store.setSelectedNodeId]),
   );
   const windowSize = useWindowSize();
 
   const drawGraph = () => {
-    if (!graphDiv.current || !fullPlan || !graphviz) {
+    if (!graphDiv.current || !graphviz) {
       return;
     }
 
@@ -44,6 +44,31 @@ export default function QueryGraph({ fullPlan }: Props) {
         setGraphInteractions();
         // this.drawImportance();
       });
+  };
+
+  const drawSelectedNode = () => {
+    console.log('drawSelectedNode');
+    if (!graphviz) {
+      return;
+    }
+    const graphElement = d3.selectAll('#graph0');
+    const nodes = graphElement.selectAll('.node');
+    nodes
+      .selectAll('ellipse')
+      .classed('stroke-[2px]', true)
+      .classed('stroke-[5px]', false);
+
+    console.log(selectedNodeId);
+    if (selectedNodeId == undefined) {
+      return;
+    }
+    const nodeToSelect = nodes
+      .filter((e) => (e as any).key == selectedNodeId)
+      .selectAll('ellipse');
+    console.log(nodeToSelect);
+    nodeToSelect //
+      .classed('stroke-[2px]', false)
+      .classed('stroke-[5px]', true);
   };
 
   const setGraphInteractions = () => {
@@ -70,24 +95,8 @@ export default function QueryGraph({ fullPlan }: Props) {
         .classed('stroke-black', enter);
     };
 
-    const setNodeClick = (nodeId: string, nodeKey: string) => {
-      nodes //
-        .selectAll('ellipse')
-        .classed(' stroke-[2px]', true)
-        .classed('stroke-[5px]', false);
-      nodes
-        .filter('#' + nodeId)
-        .selectAll('ellipse')
-        .classed(' stroke-[2px]', false)
-        .classed('stroke-[5px]', true);
-
-      if (fullPlan) {
-        const graphNode = fullPlan.graphNodes.find(
-          (n) => n.nodeId == parseInt(nodeKey),
-        );
-        setSelectedNode(graphNode);
-        console.log('Selected', graphNode);
-      }
+    const setNodeClick = (_: string, nodeKey: string) => {
+      setSelectedNodeId(parseInt(nodeKey));
     };
 
     nodes.on('mouseover', (_e, d: any) => {
@@ -104,18 +113,20 @@ export default function QueryGraph({ fullPlan }: Props) {
   };
 
   useEffect(() => {
-    if (graphDiv) {
-      setGraphviz(
-        d3Graphviz.graphviz(graphDiv.current, {
-          useWorker: false,
-        }),
-      );
-    }
+    setGraphviz(
+      d3Graphviz.graphviz(graphDiv.current, {
+        useWorker: false,
+      }),
+    );
   }, []);
 
   useEffect(() => {
     drawGraph();
   }, [graphDiv, fullPlan, graphviz, windowSize]);
+
+  useEffect(() => {
+    drawSelectedNode();
+  }, [selectedNodeId, graphviz]);
 
   // useEffect(() => {
   //   setGraphInteractions();

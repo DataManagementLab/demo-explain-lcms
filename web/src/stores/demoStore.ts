@@ -1,4 +1,3 @@
-import { GraphNode } from '@/api/data/nodeInfo';
 import { create } from 'zustand';
 
 interface State {
@@ -6,7 +5,7 @@ interface State {
   workloadId: number | undefined;
   queriesPage: number;
   queryId: number | undefined;
-  selectedNode: GraphNode | undefined;
+  selectedNodeId: number | undefined;
 }
 
 interface Action {
@@ -14,7 +13,7 @@ interface Action {
   setWorkloadId: (workloadId: number) => void;
   setQueriesPage: (queriesPage: number) => void;
   setQueryId: (datasetId: number) => void;
-  setSelectedNode: (node: GraphNode | undefined) => void;
+  setSelectedNodeId: (selectedNodeId: number | undefined) => void;
 }
 
 const initialState: State = {
@@ -22,7 +21,7 @@ const initialState: State = {
   workloadId: undefined,
   queriesPage: 0,
   queryId: undefined,
-  selectedNode: undefined,
+  selectedNodeId: undefined,
 };
 
 export const useDemoStore = create<State & Action>((set) => ({
@@ -54,9 +53,9 @@ export const useDemoStore = create<State & Action>((set) => ({
       queryId: queryId,
       nodeId: undefined,
     })),
-  setSelectedNode: (selectedNode: GraphNode | undefined) => {
+  setSelectedNodeId: (selectedNodeId: number | undefined) => {
     set(() => ({
-      selectedNode: selectedNode,
+      selectedNodeId: selectedNodeId,
     }));
   },
 }));
