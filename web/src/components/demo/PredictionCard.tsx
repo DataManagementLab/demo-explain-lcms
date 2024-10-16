@@ -4,8 +4,8 @@ import { useDemoStore } from '@/stores/demoStore';
 import { useShallow } from 'zustand/react/shallow';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Label } from '../ui/label';
 import { Skeleton } from '../ui/skeleton';
+import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
 export default function PredictionCard() {
   const queryId = useDemoStore(useShallow((store) => store.queryId));
@@ -19,28 +19,28 @@ export default function PredictionCard() {
         </CardHeader>
         <CardContent className="flex flex-col">
           {prediction.isSuccess ? (
-            <div className="flex items-center gap-1">
-              <Label>Label:</Label>
-              <p>{round(prediction.data.label)}</p>
-            </div>
+            <Table>
+              <TableBody>
+                <TableRow className="hover:bg-background">
+                  <TableCell className="font-medium">Label:</TableCell>
+                  <TableCell>{round(prediction.data.label)}</TableCell>
+                </TableRow>
+                <TableRow className="hover:bg-background">
+                  <TableCell className="font-medium">Prediction:</TableCell>
+                  <TableCell>{round(prediction.data.prediction)}</TableCell>
+                </TableRow>
+                <TableRow className="hover:bg-background">
+                  <TableCell className="font-medium">QError:</TableCell>
+                  <TableCell>{round(prediction.data.prediction)}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           ) : (
-            <Skeleton className="my-1 h-4" />
-          )}
-          {prediction.isSuccess ? (
-            <div className="flex items-center gap-1">
-              <Label>Prediction:</Label>
-              <p>{round(prediction.data.prediction)}</p>
-            </div>
-          ) : (
-            <Skeleton className="my-1 h-4" />
-          )}
-          {prediction.isSuccess ? (
-            <div className="flex items-center gap-1">
-              <Label>QError:</Label>
-              <p>{round(prediction.data.qerror)}</p>
-            </div>
-          ) : (
-            <Skeleton className="my-1 h-4" />
+            <>
+              <Skeleton className="my-2 h-6" />
+              <Skeleton className="my-2 h-6" />
+              <Skeleton className="my-2 h-6" />
+            </>
           )}
         </CardContent>
       </Card>
