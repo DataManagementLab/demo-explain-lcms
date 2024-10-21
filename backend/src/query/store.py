@@ -121,7 +121,10 @@ def create_logical_node(json_node: PydanticLogicalPredicate | PydanticFilterColu
         filter_column = create_db_model(FilterColumn, json_node)
         filter_column.top_plan = top_plan
         filter_column.column_stats = db_stats.column_stats[json_node.column]
-        filter_column.literal = str(json_node.literal)
+        literal = str(json_node.literal)
+        if literal.endswith(".0"):
+            literal = literal[:-2]
+        filter_column.literal = literal
         return filter_column
     else:
         raise Exception("Node should be either LogicalPredicate or FilterColumn")
