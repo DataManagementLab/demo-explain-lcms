@@ -1,5 +1,5 @@
 from custom_model import CustomModel
-from demo.schemas import GraphNodeResponse
+from query.schemas_nodes import ColumnStats, FilterColumn, LogicalPredicate, OutputColumn, Plan, TableStats
 
 
 class WorkloadRunResponse(CustomModel):
@@ -32,6 +32,12 @@ class QueriesPageResponse(CustomModel):
     total_count: int
 
 
+class GraphNodeResponse(CustomModel):
+    node_id: int
+    label: str
+    node_info: Plan | FilterColumn | LogicalPredicate | TableStats | ColumnStats | OutputColumn
+
+
 class FullQueryResponse(QueryResponse):
     dot_graph: str
     graph_nodes: list[GraphNodeResponse]
@@ -40,3 +46,20 @@ class FullQueryResponse(QueryResponse):
 class DatasetResponse(CustomModel):
     id: int
     name: str
+
+
+class PredictionResponse(CustomModel):
+    prediction: float
+    label: float
+    qerror: float
+    execution_time: float
+
+
+class NodeImportance(CustomModel):
+    node_id: int
+    importance: float
+
+
+class ExplanationResponse(CustomModel):
+    node_importance: list[NodeImportance]
+    execution_time: float

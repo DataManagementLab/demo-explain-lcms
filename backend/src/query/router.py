@@ -2,12 +2,11 @@ import time
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
-from demo.schemas import ExplanationResponse, GraphNodeResponse, PredictionResponse
 from ml.dependencies import MLHelper, get_base_explainer, get_explainer
 from query.db import db_depends
 from query.dependecies import get_parsed_plan, get_parsed_plan_for_inference, inference_mutex
 from query.models import Dataset, Plan, WorkloadRun
-from query.schemas import DatasetResponse, FullQueryResponse, QueriesPageResponse, QueryResponse, WorkloadRunResponse
+from query.schemas import DatasetResponse, ExplanationResponse, FullQueryResponse, GraphNodeResponse, PredictionResponse, QueriesPageResponse, QueryResponse, WorkloadRunResponse
 from query.service import get_query_stats, get_workload_run_queries_count
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
