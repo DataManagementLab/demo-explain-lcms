@@ -6,6 +6,7 @@ import NodeInfoCard from '@/components/demo/NodeInfoCard';
 import PredictionCard from '@/components/demo/PredictionCard';
 import QueryGraph from '@/components/demo/QueryGraph';
 import QueryList from '@/components/demo/QueryList';
+import SqlCard from '@/components/demo/SqlCard';
 import WorkloadSelect from '@/components/demo/WorkloadSelect';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -53,6 +54,8 @@ function Demo() {
       {queryId != undefined && (
         <ScrollArea className="col-start-10 col-end-13 h-[calc(100vh-56px-8px-16px)] rounded-md border">
           <div className="flex flex-col gap-1">
+            <SqlCard />
+            <Separator />
             <PredictionCard />
             <Separator />
             <ExplanationCard

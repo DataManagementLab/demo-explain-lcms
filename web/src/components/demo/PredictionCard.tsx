@@ -33,15 +33,15 @@ export default function PredictionCard() {
             <Table>
               <TableBody>
                 <TableRow className="hover:bg-background">
-                  <TableCell className="font-medium">Label:</TableCell>
+                  <TableCell className="font-medium">Actual Runtime</TableCell>
                   <TableCell>{round(prediction.data.label)}</TableCell>
                 </TableRow>
                 <TableRow className="hover:bg-background">
-                  <TableCell className="font-medium">Prediction:</TableCell>
+                  <TableCell className="font-medium">Prediction</TableCell>
                   <TableCell>{round(prediction.data.prediction)}</TableCell>
                 </TableRow>
                 <TableRow className="hover:bg-background">
-                  <TableCell className="font-medium">QError:</TableCell>
+                  <TableCell className="font-medium">QError</TableCell>
                   <TableCell>{round(prediction.data.prediction)}</TableCell>
                 </TableRow>
               </TableBody>

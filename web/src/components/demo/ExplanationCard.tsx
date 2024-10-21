@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ExplainerType } from '@/api/data/inference';
+import { nodeTypeToDisplay } from '@/api/data/nodeInfo';
 import { useGetExplanation } from '@/api/inference';
 import { useGetQuery } from '@/api/queries';
 import { round } from '@/lib/round';
@@ -65,7 +66,12 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
                       }
                     >
                       <TableCell className="font-medium">
-                        {query.data.graphNodes[importance.nodeId].label}
+                        {query.data.graphNodes[importance.nodeId].label} (
+                        {nodeTypeToDisplay.get(
+                          query.data.graphNodes[importance.nodeId].nodeInfo
+                            .nodeType,
+                        )}
+                        )
                       </TableCell>
                       <TableCell>{round(importance.importance)}</TableCell>
                     </TableRow>
