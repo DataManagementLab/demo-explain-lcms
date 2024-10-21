@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useGetQueries } from '@/api/queries';
 import { useDemoStore } from '@/stores/demoStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -35,11 +36,20 @@ export default function QueryList() {
   const [queryId, setQueryId] = useDemoStore(
     useShallow((state) => [state.queryId, state.setQueryId]),
   );
+  const scrollArea = useRef<HTMLDivElement>(null);
+  const scrollToTop = () => {
+    if (scrollArea.current) {
+      scrollArea.current.scrollTo({ top: 0 });
+    }
+  };
 
   return (
     queries.isSuccess && (
       <div className="flex flex-col gap-4">
-        <ScrollArea className="h-[calc(100vh-56px-36px-8px-8px-16px-32px-16px)] rounded-md border">
+        <ScrollArea
+          ref={scrollArea}
+          className="h-[calc(100vh-56px-36px-8px-8px-16px-32px-16px)] rounded-md border"
+        >
           <Table>
             <TableHeader className="sticky top-0 bg-secondary">
               <TableRow>
@@ -94,7 +104,10 @@ export default function QueryList() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setPage(page - 1)}
+            onClick={() => {
+              scrollToTop();
+              setPage(page - 1);
+            }}
             disabled={page <= 0}
           >
             Previous
@@ -102,7 +115,10 @@ export default function QueryList() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setPage(page + 1)}
+            onClick={() => {
+              scrollToTop();
+              setPage(page + 1);
+            }}
             disabled={page >= pageLimit}
           >
             Next
