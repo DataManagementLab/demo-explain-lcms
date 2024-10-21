@@ -8,6 +8,7 @@ import QueryGraph from '@/components/demo/QueryGraph';
 import QueryList from '@/components/demo/QueryList';
 import SqlCard from '@/components/demo/SqlCard';
 import WorkloadSelect from '@/components/demo/WorkloadSelect';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -20,11 +21,19 @@ export const Route = createFileRoute('/demo')({
 });
 
 function Demo() {
-  const [datasetId, queryId, setSelectedNodeId] = useDemoStore(
+  const [
+    datasetId,
+    queryId,
+    showExplanations,
+    setSelectedNodeId,
+    toggleExplanaitons,
+  ] = useDemoStore(
     useShallow((state) => [
       state.datasetId,
       state.queryId,
+      state.showExplanations,
       state.setSelectedNodeId,
+      state.toggleExplanaitons,
     ]),
   );
   const workloads = useGetWorkloads({ datasetId: datasetId });
@@ -57,26 +66,39 @@ function Demo() {
             <SqlCard />
             <Separator />
             <PredictionCard />
-            <Separator />
-            <ExplanationCard
-              explainerName={'Base'}
-              explainerType={ExplainerType.actual}
-            />
-            <Separator />
-            <ExplanationCard
-              explainerName={'Gradient'}
-              explainerType={ExplainerType.gradient}
-            />
-            <Separator />
-            <ExplanationCard
-              explainerName={'Guided Backpropagation'}
-              explainerType={ExplainerType.guidedBackpropagation}
-            />
-            <Separator />
-            <ExplanationCard
-              explainerName={'GNNExplainer'}
-              explainerType={ExplainerType.gnnExplainer}
-            />
+            {!showExplanations ? (
+              <Button
+                variant="outline"
+                size="lg"
+                className="self-center"
+                onClick={() => toggleExplanaitons()}
+              >
+                Run Explanations
+              </Button>
+            ) : (
+              <>
+                <Separator />
+                <ExplanationCard
+                  explainerName={'Base'}
+                  explainerType={ExplainerType.actual}
+                />
+                <Separator />
+                <ExplanationCard
+                  explainerName={'Gradient'}
+                  explainerType={ExplainerType.gradient}
+                />
+                <Separator />
+                <ExplanationCard
+                  explainerName={'Guided Backpropagation'}
+                  explainerType={ExplainerType.guidedBackpropagation}
+                />
+                <Separator />
+                <ExplanationCard
+                  explainerName={'GNNExplainer'}
+                  explainerType={ExplainerType.gnnExplainer}
+                />
+              </>
+            )}
           </div>
         </ScrollArea>
       )}
