@@ -7,7 +7,7 @@ from query.db import get_db
 from sqlalchemy.orm import class_mapper
 from pydantic import BaseModel as PydanticBaseModel
 from query.models import ColumnStats, DatabaseStats, Dataset, OutputColumn, Plan, PlanParameters, PlanStats, TableStats, RunKwargs, LogicalPredicate, FilterColumn, WorkloadRun
-from zero_shot_learned_db.explanations.data_models.nodes import FilterColumn as PydanticFilterColumn, LogicalPredicate as PydanticLogicalPredicate, NodeType, Plan as PydanticPlan
+from zero_shot_learned_db.explanations.data_models.nodes import FilterColumn as PydanticFilterColumn, LogicalPredicate as PydanticLogicalPredicate, NodeType, Plan as PydanticPlan, TableStats as PydanticTableStats
 from zero_shot_learned_db.explanations.data_models.workload_run import WorkloadRun as PydanticWorkloadRun, load_workload_run
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -21,6 +21,7 @@ def create_db_model(model_type: Type[T], data: PydanticBaseModel, **kwargs):
 
 
 class RawPlan(PydanticBaseModel):
+    analyze_plans: list[list[list[str]]] | None
     sql: str
 
 
@@ -36,6 +37,39 @@ class SavedRun(PydanticBaseModel):
 
 class SavedRunsConfig(PydanticBaseModel):
     runs: list[SavedRun]
+
+
+class SQLSearchFeatures:
+    filter_literals: list[str]
+    tables: list[str]
+    columns: list[str]
+    runtimes: list[float]
+
+    def __init__(self, plan: ParsedPlan):
+        self.filter_literals = []
+        self.tables = []
+        self.runtimes = []
+
+        for node in plan.graph_nodes:
+            if node.node.node_type == NodeType.PLAN:
+                plan: PydanticPlan = node.node
+                self.runtimes.append(str(plan.plan_parameters.act_time))
+            elif node.node.node_type == NodeType.TABLE:
+                table: PydanticTableStats = node.node
+                self.tables.append(table.relname)
+            elif node.node.node_type == NodeType.FILTER_COLUMN:
+                filter: PydanticFilterColumn = node.node
+                if filter.literal != "::text":
+                    literal = str(filter.literal)
+                    if literal.endswith(".0"):
+                        literal = literal[:-2]
+                    self.filter_literals.append(literal)
+
+    def check_sql(self, raw_plan: RawPlan):
+        sql = raw_plan.sql.replace('"', "")
+        analyze_plans = "".join([i[0] for i in raw_plan.analyze_plans[0]])
+
+        return all([i in sql for i in self.filter_literals]) and all([i in sql for i in self.tables]) and all([i in analyze_plans for i in self.runtimes])
 
 
 def store_all_workload_queries_in_db(settings: Settings):
@@ -77,12 +111,19 @@ def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_r
         db_stats.column_stats.append(create_db_model(ColumnStats, stat, id_in_run=i, table=next(filter(lambda t: t.relname == stat.tablename, db_stats.table_stats))))
     db_workload_run.database_stats = db_stats
 
-    for i, (plan, raw_plan) in enumerate(zip(json_workload_run.parsed_plans, raw_run.query_list)):
+    raw_plans = [raw_plan for raw_plan in raw_run.query_list if raw_plan.analyze_plans is not None and len(raw_plan.analyze_plans) > 0]
+    for i, plan in enumerate(json_workload_run.parsed_plans):
         db_plan = create_plan_db_model(plan, db_stats)
-        db_plan.sql = raw_plan.sql
+
         db_plan.id_in_run = i
         parsed_plan = ParsedPlan(plan, json_workload_run.database_stats)
         db_plan.plan_stats = create_db_model(PlanStats, parsed_plan.graph_nodes_stats)
+
+        sql_search = SQLSearchFeatures(parsed_plan)
+        sql = next((i.sql for i in raw_plans if sql_search.check_sql(i)), None)
+        assert sql is not None
+        db_plan.sql = sql
+
         db_workload_run.parsed_plans.append(db_plan)
 
     with next(get_db()) as db:
