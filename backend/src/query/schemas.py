@@ -48,10 +48,13 @@ class DatasetResponse(CustomModel):
     name: str
 
 
-class PredictionResponse(CustomModel):
+class PredictionResponseBase(CustomModel):
     prediction: float
     label: float
     qerror: float
+
+
+class PredictionResponse(PredictionResponseBase):
     execution_time: float
 
 
@@ -60,7 +63,10 @@ class NodeScore(CustomModel):
     score: float
 
 
-class ExplanationResponse(CustomModel):
+class ExplanationResponseBase(CustomModel):
     base_scores: list[NodeScore]
     scaled_importance: list[NodeScore]
+
+
+class ExplanationResponse(ExplanationResponseBase):
     execution_time: float

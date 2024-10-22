@@ -5,12 +5,13 @@ from tqdm import tqdm
 
 from evaluation.dependencies import EvaluationPlansLoader, evaluation_plans, get_evaluation_results_dir
 from evaluation.schemas import CorrelationEvaluation, EvaluationPlansStats, MostImportantNodeEvaluationAllRespose, NodeImportanceEvaluation, NodeStat, TablesToScore, TablesToScoreEvaluationResponse
-from evaluation.service import FidelityType, compute_fidelity, draw_correlation_evaluations, draw_cost_score, draw_fidelity_score, draw_scatter_node_importance, get_correlation_evaluation
+from evaluation.service import FidelityType, compute_fidelity, draw_correlation_evaluations, draw_cost_score, draw_fidelity_score, draw_scatter_node_importance
 from utils import load_model_from_file, save_model_to_file
-from ml.dependencies import get_base_explainer, get_explainer
+from ml.dependencies import get_explainer
 from ml.service import ExplainerType
-from zero_shot_learned_db.explanations.data_models.nodes import NodeType
-from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_minus, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation_internal, spearman_correlation_inernal
+
+# from zero_shot_learned_db.explanations.data_models.nodes import NodeType
+from zero_shot_learned_db.explanations.evaluation import evaluation_fidelity_minus, evaluation_fidelity_plus
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -43,59 +44,59 @@ def get_fidelity_minus_evaluation_all(
     return compute_fidelity(explainer_type, explainer, evaluation_plans, output_dir, evaluation_fidelity_minus, FidelityType.MINUS)
 
 
-@router.get("/{explainer_type}/most-important-node", response_model=MostImportantNodeEvaluationAllRespose)
-def get_most_important_node_evaluation_all(
-    explainer_type: ExplainerType,
-    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
-    evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
-    output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
-):
-    file_name = f"{output_dir}/most_important_node_{explainer_type}.json"
-    response = load_model_from_file(MostImportantNodeEvaluationAllRespose, file_name)
-    if response is not None:
-        return response
+# @router.get("/{explainer_type}/most-important-node", response_model=MostImportantNodeEvaluationAllRespose)
+# def get_most_important_node_evaluation_all(
+#     explainer_type: ExplainerType,
+#     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+#     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
+#     output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
+# ):
+#     file_name = f"{output_dir}/most_important_node_{explainer_type}.json"
+#     response = load_model_from_file(MostImportantNodeEvaluationAllRespose, file_name)
+#     if response is not None:
+#         return response
 
-    count = len(evaluation_plans)
-    evaluations = [most_important_node_evaluation(explainer, plan) for plan in tqdm(evaluation_plans)]
-    explained_nodes = [e.explained_node for e in evaluations]
-    explained_nodes_stat = [
-        NodeStat(
-            node_name=node_name,
-            fraction=len([n for n in explained_nodes if n == node_name]) / count,
-        )
-        for node_name in set(explained_nodes)
-    ]
-    explained_nodes_stat.sort(key=lambda n: n.fraction, reverse=True)
-    response = MostImportantNodeEvaluationAllRespose(nodes=explained_nodes_stat)
-    save_model_to_file(response, file_name)
-    return response
+#     count = len(evaluation_plans)
+#     evaluations = [most_important_node_evaluation(explainer, plan) for plan in tqdm(evaluation_plans)]
+#     explained_nodes = [e.explained_node for e in evaluations]
+#     explained_nodes_stat = [
+#         NodeStat(
+#             node_name=node_name,
+#             fraction=len([n for n in explained_nodes if n == node_name]) / count,
+#         )
+#         for node_name in set(explained_nodes)
+#     ]
+#     explained_nodes_stat.sort(key=lambda n: n.fraction, reverse=True)
+#     response = MostImportantNodeEvaluationAllRespose(nodes=explained_nodes_stat)
+#     save_model_to_file(response, file_name)
+#     return response
 
 
-@router.get("/{explainer_type}/cost", response_model=TablesToScoreEvaluationResponse)
-def get_cost_evaluation_all(
-    explainer_type: ExplainerType,
-    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
-    evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
-    output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
-):
-    file_name = f"{output_dir}/cost_{explainer_type}.json"
-    response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
-    if response is not None:
-        return response
+# @router.get("/{explainer_type}/cost", response_model=TablesToScoreEvaluationResponse)
+# def get_cost_evaluation_all(
+#     explainer_type: ExplainerType,
+#     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+#     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
+#     output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
+# ):
+#     file_name = f"{output_dir}/cost_{explainer_type}.json"
+#     response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
+#     if response is not None:
+#         return response
 
-    evaluations = [cost_accuracy_evaluation(explainer, plan) for plan in tqdm(evaluation_plans)]
-    table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
-    table_counts.sort()
-    scores: list[TablesToScore] = []
-    for table_count in table_counts:
-        table_count_evaluations = [e for e in evaluations if e._parsed_plan.graph_nodes_stats[NodeType.TABLE] == table_count]
-        hits = sum([e.hits for e in table_count_evaluations])
-        total = sum([e.compare_count for e in table_count_evaluations])
-        scores.append(TablesToScore(table_count=table_count, score=hits / total))
+#     evaluations = [cost_accuracy_evaluation(explainer, plan) for plan in tqdm(evaluation_plans)]
+#     table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
+#     table_counts.sort()
+#     scores: list[TablesToScore] = []
+#     for table_count in table_counts:
+#         table_count_evaluations = [e for e in evaluations if e._parsed_plan.graph_nodes_stats[NodeType.TABLE] == table_count]
+#         hits = sum([e.hits for e in table_count_evaluations])
+#         total = sum([e.compare_count for e in table_count_evaluations])
+#         scores.append(TablesToScore(table_count=table_count, score=hits / total))
 
-    response = TablesToScoreEvaluationResponse(scores=scores)
-    save_model_to_file(response, file_name)
-    return response
+#     response = TablesToScoreEvaluationResponse(scores=scores)
+#     save_model_to_file(response, file_name)
+#     return response
 
 
 # @router.get("/{explainer_type}/node-importance", response_model=NodeImportanceEvaluation)

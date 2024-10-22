@@ -90,6 +90,10 @@ def get_explainer(explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends
     return ml.get_explainer(explainer_type)
 
 
+def get_explainer_optional(ml: Annotated[MLHelper, Depends()], explainer_type: ExplainerType | None = None):
+    return ml.get_explainer(explainer_type) if explainer_type is not None else None
+
+
 def get_base_explainer(ml: Annotated[MLHelper, Depends()]):
     return ml.get_explainer(ExplainerType.BASE)
 
