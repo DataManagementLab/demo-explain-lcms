@@ -1,7 +1,9 @@
+import React from 'react';
 import { ExplainerType } from '@/api/data/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
 import DatasetSelect from '@/components/demo/DatasetSelect';
 import { ExplanationCard } from '@/components/demo/ExplanationCard';
+import FidelityEvaluationCard from '@/components/demo/FidelityEvaluationCard';
 import NodeInfoCard from '@/components/demo/NodeInfoCard';
 import PredictionCard from '@/components/demo/PredictionCard';
 import QueryGraph from '@/components/demo/QueryGraph';
@@ -19,6 +21,13 @@ import { useShallow } from 'zustand/react/shallow';
 export const Route = createFileRoute('/demo')({
   component: Demo,
 });
+
+const explanainerTypes = [
+  ExplainerType.actual,
+  ExplainerType.gradient,
+  ExplainerType.guidedBackpropagation,
+  ExplainerType.gnnExplainer,
+];
 
 function Demo() {
   const [
@@ -78,25 +87,22 @@ function Demo() {
             ) : (
               <>
                 <Separator />
-                <ExplanationCard
-                  explainerName={'Base'}
-                  explainerType={ExplainerType.actual}
+                {explanainerTypes.map((explainerType) => (
+                  <React.Fragment key={explainerType}>
+                    <ExplanationCard explainerType={explainerType} />
+                    <Separator />
+                  </React.Fragment>
+                ))}
+                <FidelityEvaluationCard
+                  fidelityType="plus"
+                  explainerTypes={explanainerTypes}
                 />
                 <Separator />
-                <ExplanationCard
-                  explainerName={'Gradient'}
-                  explainerType={ExplainerType.gradient}
+                <FidelityEvaluationCard
+                  fidelityType="minus"
+                  explainerTypes={explanainerTypes}
                 />
                 <Separator />
-                <ExplanationCard
-                  explainerName={'Guided Backpropagation'}
-                  explainerType={ExplainerType.guidedBackpropagation}
-                />
-                <Separator />
-                <ExplanationCard
-                  explainerName={'GNNExplainer'}
-                  explainerType={ExplainerType.gnnExplainer}
-                />
               </>
             )}
           </div>

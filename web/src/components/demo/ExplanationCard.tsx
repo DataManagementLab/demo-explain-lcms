@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExplainerType } from '@/api/data/inference';
+import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { nodeTypeToDisplay } from '@/api/data/nodeInfo';
 import { useGetExplanation } from '@/api/inference';
 import { useGetQuery } from '@/api/queries';
@@ -19,11 +19,12 @@ import { Skeleton } from '../ui/skeleton';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
 interface Props {
-  explainerName: string;
   explainerType: ExplainerType;
 }
 
-export function ExplanationCard({ explainerName, explainerType }: Props) {
+const collapsedTableLength = 5;
+
+export function ExplanationCard({ explainerType }: Props) {
   const [showMore, setShowMore] = useState(false);
   const queryId = useDemoStore(useShallow((state) => state.queryId));
   const [selectedNodeId, setSelectedNodeId] = useDemoStore(
@@ -39,7 +40,9 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
     queryId != undefined && (
       <Card className="border-none">
         <CardHeader className="p-0 px-6 pb-2 pt-6">
-          <CardTitle>Explainer: {explainerName}</CardTitle>
+          <CardTitle>
+            Explainer: {explainerTypeToDisplay.get(explainerType)}
+          </CardTitle>
           <CardDescription>
             {explanation.isSuccess
               ? `${round(explanation.data.executionTime)} s`
@@ -55,7 +58,9 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
                   .toSorted((a, b) => b.score - a.score)
                   .slice(
                     0,
-                    showMore ? explanation.data.scaledImportance.length : 5,
+                    showMore
+                      ? explanation.data.scaledImportance.length
+                      : collapsedTableLength,
                   )
                   .map((importance) => (
                     <TableRow
@@ -80,11 +85,9 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
             </Table>
           ) : (
             <>
-              <Skeleton className="h-6" />
-              <Skeleton className="h-6" />
-              <Skeleton className="h-6" />
-              <Skeleton className="h-6" />
-              <Skeleton className="h-6" />
+              {[...Array(collapsedTableLength).keys()].map((i) => (
+                <Skeleton className="h-6" key={i} />
+              ))}
             </>
           )}
 

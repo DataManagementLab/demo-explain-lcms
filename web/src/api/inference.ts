@@ -1,5 +1,6 @@
+import combineUseQueries from '@/lib/combineUseQueries';
 import { PickPartial } from '@/lib/pickPartial';
-import { skipToken, useQuery } from '@tanstack/react-query';
+import { skipToken, useQueries, useQuery } from '@tanstack/react-query';
 
 import api from '../lib/api';
 import { ExplainerType, Explanation, Prediction } from './data/inference';
@@ -21,7 +22,6 @@ export function useGetPrediction({ queryId }: Partial<GetPredictionParams>) {
       queryId != undefined
         ? ({ signal }) => getPrediction({ queryId }, signal)
         : skipToken,
-    gcTime: 0,
   });
 }
 
@@ -32,7 +32,7 @@ interface GetExplanationParams {
 
 function getExplanation(
   { queryId, explainerType }: GetExplanationParams,
-  signal: AbortSignal,
+  signal?: AbortSignal,
 ) {
   return api
     .get<Explanation>(`queries/${queryId}/explanation/${explainerType}`, {
@@ -51,6 +51,27 @@ export function useGetExplanation({
       queryId != undefined
         ? ({ signal }) => getExplanation({ queryId, explainerType }, signal)
         : skipToken,
-    gcTime: 0,
+  });
+}
+
+export function useGetExplanations({
+  queryId,
+  explainerTypes,
+}: {
+  queryId: number | undefined;
+  explainerTypes: ExplainerType[];
+}) {
+  return useQueries({
+    queries: explainerTypes.map(
+      (explainerType) =>
+        ({
+          queryKey: ['explanation', explainerType, queryId],
+          queryFn:
+            queryId != undefined
+              ? () => getExplanation({ queryId, explainerType })
+              : skipToken,
+        }) as const,
+    ),
+    combine: combineUseQueries,
   });
 }

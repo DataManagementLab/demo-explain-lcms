@@ -4,6 +4,8 @@ from fastapi import Depends, HTTPException
 from ml.dependencies import get_base_explainer, get_explainer_optional
 from query.dependecies import get_parsed_plan_for_inference, inference_mutex
 from query.schemas import ExplanationResponseBase
+
+# from zero_shot_learned_db.explanations.data_models.explanation import Explanation
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -30,5 +32,7 @@ def evaluation_base_params(
         raise HTTPException(422, "Either explainer or explanation should be specified")
     if explanation is None:
         explanation = explainer.explain(parsed_plan)
+    # explanation = Explanation(**explanation.model_dump())
+    # print(explanation.__class__.__name__)
 
     yield EvaluationBaseParams(parsed_plan=parsed_plan, base_explainer=base_explainer, explanation=explanation)
