@@ -46,10 +46,10 @@ export default function FidelityEvaluationCard({
                     {explainerTypeToDisplay.get(explainerType)}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {`${round(evaluations.data[i]!.relativeChange * 100)}%`}
+                    {`${round(evaluations.data[i].relativeChange * 100)}%`}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {evaluations.data[i]!.score}
+                    {evaluations.data[i].score}
                   </TableCell>
                 </TableRow>
               ))}

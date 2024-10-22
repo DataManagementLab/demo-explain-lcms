@@ -1,6 +1,7 @@
 import React from 'react';
 import { ExplainerType } from '@/api/data/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
+import CorrelationBars from '@/components/demo/CorrelationBars';
 import DatasetSelect from '@/components/demo/DatasetSelect';
 import { ExplanationCard } from '@/components/demo/ExplanationCard';
 import FidelityEvaluationCard from '@/components/demo/FidelityEvaluationCard';
@@ -11,7 +12,7 @@ import QueryList from '@/components/demo/QueryList';
 import SqlCard from '@/components/demo/SqlCard';
 import WorkloadSelect from '@/components/demo/WorkloadSelect';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useDemoStore } from '@/stores/demoStore';
@@ -103,6 +104,18 @@ function Demo() {
                   explainerTypes={explanainerTypes}
                 />
                 <Separator />
+                <Card className="h-w-full">
+                  <CardHeader>
+                    <CardTitle>
+                      Correlation between Base Explainer and other Explainers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CorrelationBars
+                      explainerTypes={explanainerTypes}
+                    ></CorrelationBars>
+                  </CardContent>
+                </Card>
               </>
             )}
           </div>
