@@ -55,11 +55,12 @@ class PredictionResponse(CustomModel):
     execution_time: float
 
 
-class NodeImportance(CustomModel):
+class NodeScore(CustomModel):
     node_id: int
-    importance: float
+    score: float
 
 
 class ExplanationResponse(CustomModel):
-    node_importance: list[NodeImportance]
+    base_scores: list[NodeScore]
+    scaled_importance: list[NodeScore]
     execution_time: float

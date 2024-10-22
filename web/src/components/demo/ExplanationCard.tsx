@@ -50,12 +50,12 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
           {explanation.isSuccess && query.isSuccess ? (
             <Table>
               <TableBody className="overflow-y-auto">
-                {explanation.data.nodeImportance
-                  .filter((a) => round(a.importance) > 0)
-                  .toSorted((a, b) => b.importance - a.importance)
+                {explanation.data.scaledImportance
+                  .filter((a) => round(a.score) > 0)
+                  .toSorted((a, b) => b.score - a.score)
                   .slice(
                     0,
-                    showMore ? explanation.data.nodeImportance.length : 5,
+                    showMore ? explanation.data.scaledImportance.length : 5,
                   )
                   .map((importance) => (
                     <TableRow
@@ -73,7 +73,7 @@ export function ExplanationCard({ explainerName, explainerType }: Props) {
                         )}
                         )
                       </TableCell>
-                      <TableCell>{round(importance.importance)}</TableCell>
+                      <TableCell>{round(importance.score)}</TableCell>
                     </TableRow>
                   ))}
               </TableBody>

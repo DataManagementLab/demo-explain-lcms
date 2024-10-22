@@ -10,7 +10,7 @@ from utils import load_model_from_file, save_model_to_file
 from ml.dependencies import get_base_explainer, get_explainer
 from ml.service import ExplainerType
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType
-from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_minus, evaluation_fidelity_plus, get_explanation, most_important_node_evaluation, pearson_correlation_internal, spearman_correlation_inernal
+from zero_shot_learned_db.explanations.evaluation import cost_accuracy_evaluation, evaluation_fidelity_minus, evaluation_fidelity_plus, most_important_node_evaluation, pearson_correlation_internal, spearman_correlation_inernal
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -98,43 +98,43 @@ def get_cost_evaluation_all(
     return response
 
 
-@router.get("/{explainer_type}/node-importance", response_model=NodeImportanceEvaluation)
-def get_node_importance_evaluation(
-    explainer_type: ExplainerType,
-    explainer: Annotated[BaseExplainer, Depends(get_explainer)],
-    evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
-    output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
-    base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
-):
-    file_name = f"{output_dir}/node_importance_{explainer_type}.json"
-    response = load_model_from_file(NodeImportanceEvaluation, file_name)
-    if response is not None:
-        return response
+# @router.get("/{explainer_type}/node-importance", response_model=NodeImportanceEvaluation)
+# def get_node_importance_evaluation(
+#     explainer_type: ExplainerType,
+#     explainer: Annotated[BaseExplainer, Depends(get_explainer)],
+#     evaluation_plans: Annotated[list[ParsedPlan], Depends(evaluation_plans)],
+#     output_dir: Annotated[str, Depends(get_evaluation_results_dir)],
+#     base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
+# ):
+#     file_name = f"{output_dir}/node_importance_{explainer_type}.json"
+#     response = load_model_from_file(NodeImportanceEvaluation, file_name)
+#     if response is not None:
+#         return response
 
-    actual_importances = [base_explainer.explain(plan).node_importance for plan in tqdm(evaluation_plans)]
-    node_importances = [get_explanation(plan, explainer).node_importance for plan in tqdm(evaluation_plans)]
-    table_counts = list(set([plan.graph_nodes_stats[NodeType.TABLE] for plan in evaluation_plans]))
-    table_counts.sort()
+#     actual_importances = [base_explainer.explain(plan).node_importance for plan in tqdm(evaluation_plans)]
+#     node_importances = [get_explanation(plan, explainer).node_importance for plan in tqdm(evaluation_plans)]
+#     table_counts = list(set([plan.graph_nodes_stats[NodeType.TABLE] for plan in evaluation_plans]))
+#     table_counts.sort()
 
-    response = NodeImportanceEvaluation(
-        node_importances=node_importances,
-        pearson_correlation=get_correlation_evaluation(
-            node_importances,
-            actual_importances,
-            evaluation_plans,
-            pearson_correlation_internal,
-            table_counts,
-        ),
-        spearman_correlation=get_correlation_evaluation(
-            node_importances,
-            actual_importances,
-            evaluation_plans,
-            spearman_correlation_inernal,
-            table_counts,
-        ),
-    )
-    save_model_to_file(response, file_name)
-    return response
+#     response = NodeImportanceEvaluation(
+#         node_importances=node_importances,
+#         pearson_correlation=get_correlation_evaluation(
+#             node_importances,
+#             actual_importances,
+#             evaluation_plans,
+#             pearson_correlation_internal,
+#             table_counts,
+#         ),
+#         spearman_correlation=get_correlation_evaluation(
+#             node_importances,
+#             actual_importances,
+#             evaluation_plans,
+#             spearman_correlation_inernal,
+#             table_counts,
+#         ),
+#     )
+#     save_model_to_file(response, file_name)
+#     return response
 
 
 @router.get("/plots")

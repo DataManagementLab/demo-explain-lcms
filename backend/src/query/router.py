@@ -105,7 +105,7 @@ def get_explanation(
     start = time.time()
     explanation = explainer.explain(parsed_plan)
     return ExplanationResponse(
-        node_importance=explanation.node_importance,
+        **explanation.model_dump(),
         execution_time=time.time() - start,
     )
 

@@ -5,13 +5,14 @@ export interface Prediction {
   executionTime: number;
 }
 
-export interface NodeImportance {
+export interface NodeScore {
   nodeId: number;
-  importance: number;
+  score: number;
 }
 
 export interface Explanation {
-  nodeImportance: NodeImportance[];
+  baseScores: NodeScore[];
+  scaledImportance: NodeScore[];
   executionTime: number;
 }
 
