@@ -79,7 +79,7 @@ export function NodeInfoCard() {
             <>
               <div className="flex flex-col gap-3">
                 <Label>Features</Label>
-                <ScrollArea className="h-[calc(100vh-36px-8px-8px-600px-16px-64px-14px-32px-24px-10px)] rounded-md border">
+                <ScrollArea className="h-[calc(100vh-36px-8px-8px-65vh-16px-64px-14px-32px-24px-10px)] rounded-md border">
                   <Table>
                     <TableBody>
                       {nodeFeatures.map((value) => (
@@ -99,7 +99,7 @@ export function NodeInfoCard() {
               </div>
               <div className="flex flex-col gap-3">
                 <Label>Other attributes</Label>
-                <ScrollArea className="h-[calc(100vh-36px-8px-8px-600px-16px-64px-14px-32px-24px-10px)] rounded-md border">
+                <ScrollArea className="h-[calc(100vh-36px-8px-8px-65vh-16px-64px-14px-32px-24px-10px)] rounded-md border">
                   <Table>
                     <TableBody>
                       {nodeOtherAttributes.map((value) => (

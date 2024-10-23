@@ -63,7 +63,7 @@ function Demo() {
       <div className="col-start-5 col-end-10 flex flex-col gap-4">
         {queryId != undefined && (
           <Card
-            className="h-[600px] w-full"
+            className="h-[65vh] w-full"
             onClick={() => setSelectedNodeId(undefined)}
           >
             {query.isSuccess && <QueryGraph fullPlan={query.data} />}
