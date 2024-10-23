@@ -1,19 +1,21 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetExplanations } from '@/api/inference';
+import { useGetQuery } from '@/api/queries';
 import { useDemoStore } from '@/stores/demoStore';
 import { useShallow } from 'zustand/react/shallow';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { Skeleton } from '../ui/skeleton';
+import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 import CorrelationBarSingle from './CorrelationBarSingle';
 
 interface Props {
   explainerTypes: ExplainerType[];
 }
 
-export default function CorrelationBars({ explainerTypes }: Props) {
+export default function CorrelationBarsCard({ explainerTypes }: Props) {
   const [queryId, selectedNodeId, setSelectedNodeId] = useDemoStore(
     useShallow((state) => [
       state.queryId,
@@ -25,6 +27,7 @@ export default function CorrelationBars({ explainerTypes }: Props) {
     queryId: queryId,
     explainerTypes: explainerTypes,
   });
+  const query = useGetQuery({ queryId: queryId });
 
   const baseNodes = explanations.isSuccess
     ? explanations.data[0].scaledImportance.map((i) => i.nodeId)
@@ -71,9 +74,10 @@ export default function CorrelationBars({ explainerTypes }: Props) {
     () => new Map<number, string>(),
     [explanations],
   );
+  const [renderCount, setRenderCount] = useState(0);
 
   return (
-    <Card className="h-w-full">
+    <Card className="h-w-full border-none">
       <CardHeader>
         <CardTitle>
           Correlation between Base Explainer and other Explainers
@@ -81,8 +85,9 @@ export default function CorrelationBars({ explainerTypes }: Props) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-2">
-          {validExplanations
-            ? validExplanations.map((explanation, i) => (
+          {validExplanations && uniqueNodes && query.isSuccess ? (
+            <>
+              {validExplanations.map((explanation, i) => (
                 <div className="flex flex-col gap-1" key={explainerTypes[i]}>
                   <Label>{explainerTypeToDisplay.get(explainerTypes[i])}</Label>
                   <CorrelationBarSingle
@@ -91,10 +96,37 @@ export default function CorrelationBars({ explainerTypes }: Props) {
                     nodeIdToColor={nodeIdToColor}
                     selectedNodeId={selectedNodeId}
                     setSelectedNodeId={setSelectedNodeId}
+                    renderCount={renderCount}
+                    setRenderCount={setRenderCount}
                   />
                 </div>
-              ))
-            : explainerTypes.map((i) => <Skeleton className="h-6" key={i} />)}
+              ))}
+              <Table>
+                <TableBody>
+                  {uniqueNodes.map((nodeId) => (
+                    <TableRow
+                      key={nodeId}
+                      onClick={() => setSelectedNodeId(nodeId)}
+                      data-state={nodeId == selectedNodeId ? 'selected' : ''}
+                    >
+                      <TableCell>
+                        {query.data.graphNodes[nodeId].label}
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          key={renderCount}
+                          className="h-6 w-6"
+                          style={{ backgroundColor: nodeIdToColor.get(nodeId) }}
+                        ></div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
+          ) : (
+            explainerTypes.map((i) => <Skeleton className="h-6" key={i} />)
+          )}
         </div>
       </CardContent>
     </Card>

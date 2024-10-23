@@ -1,7 +1,7 @@
 import React from 'react';
 import { ExplainerType } from '@/api/data/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
-import CorrelationBars from '@/components/demo/CorrelationBars';
+import CorrelationBarsCard from '@/components/demo/CorrelationBarsCard';
 import DatasetSelect from '@/components/demo/DatasetSelect';
 import { ExplanationCard } from '@/components/demo/ExplanationCard';
 import FidelityEvaluationCard from '@/components/demo/FidelityEvaluationCard';
@@ -111,9 +111,9 @@ function Demo() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent> */}
-                <CorrelationBars
+                <CorrelationBarsCard
                   explainerTypes={explanainerTypes}
-                ></CorrelationBars>
+                ></CorrelationBarsCard>
                 {/* </CardContent>
                 </Card> */}
               </>

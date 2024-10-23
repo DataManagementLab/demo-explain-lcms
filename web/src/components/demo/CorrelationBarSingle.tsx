@@ -42,6 +42,8 @@ interface Props {
   nodeIdToColor: Map<number, string>;
   selectedNodeId: number | undefined;
   setSelectedNodeId: (nodeId: number) => void;
+  renderCount: number;
+  setRenderCount: (value: number) => void;
 }
 
 export default function CorrelationBarSingle({
@@ -50,6 +52,8 @@ export default function CorrelationBarSingle({
   nodeIdToColor,
   selectedNodeId,
   setSelectedNodeId,
+  renderCount,
+  setRenderCount,
 }: Props) {
   const graphDiv = useRef<HTMLDivElement>(null);
   const windowSize = useWindowSize();
@@ -119,6 +123,8 @@ export default function CorrelationBarSingle({
     d3.select(graphDiv.current)
       .selectAll('[clickNode]')
       .on('click', (_e, d) => setSelectedNodeId(d));
+
+    setRenderCount(renderCount + 1);
   };
 
   const selectNode = () => {
