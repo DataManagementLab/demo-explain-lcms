@@ -1,5 +1,6 @@
 import React from 'react';
 import { ExplainerType } from '@/api/data/inference';
+import { useGetPrediction } from '@/api/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
 import { CorrelationBarsCard } from '@/components/demo/CorrelationBarsCard';
 import { CorrelationScoreCard } from '@/components/demo/CorrelationScoreCard';
@@ -49,6 +50,7 @@ function Demo() {
   );
   const workloads = useGetWorkloads({ datasetId: datasetId });
   const query = useGetQuery({ queryId: queryId });
+  const prediction = useGetPrediction({ queryId: queryId });
 
   return (
     <div className="grid grid-cols-12 gap-x-4">
@@ -83,6 +85,7 @@ function Demo() {
                 size="lg"
                 className="self-center"
                 onClick={() => toggleExplanaitons()}
+                disabled={!prediction.isSuccess}
               >
                 Run Explanations
               </Button>
