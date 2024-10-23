@@ -2,6 +2,7 @@ import React from 'react';
 import { ExplainerType } from '@/api/data/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
 import { CorrelationBarsCard } from '@/components/demo/CorrelationBarsCard';
+import { CorrelationScoreCard } from '@/components/demo/CorrelationScoreCard';
 import { DatasetSelect } from '@/components/demo/DatasetSelect';
 import { ExplanationCard } from '@/components/demo/ExplanationCard';
 import { FidelityEvaluationCard } from '@/components/demo/FidelityEvaluationCard';
@@ -104,18 +105,19 @@ function Demo() {
                   explainerTypes={explanainerTypes}
                 />
                 <Separator />
-                {/* <Card className="h-w-full">
-                  <CardHeader>
-                    <CardTitle>
-                      Correlation between Base Explainer and other Explainers
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent> */}
                 <CorrelationBarsCard
                   explainerTypes={explanainerTypes}
                 ></CorrelationBarsCard>
-                {/* </CardContent>
-                </Card> */}
+                <Separator />
+                <CorrelationScoreCard
+                  correlationType="pearson"
+                  explainerTypes={explanainerTypes}
+                />
+                <Separator />
+                <CorrelationScoreCard
+                  correlationType="spearman"
+                  explainerTypes={explanainerTypes}
+                />
               </>
             )}
           </div>

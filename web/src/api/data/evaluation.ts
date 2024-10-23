@@ -8,3 +8,9 @@ export interface FidelityEvaluation {
   outputsEqual: boolean;
   score: number;
 }
+
+export interface CorrelationEvaluation {
+  score: number;
+  baseline: ExplanationBase;
+  explanation: ExplanationBase;
+}
