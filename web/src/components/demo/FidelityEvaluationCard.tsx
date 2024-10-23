@@ -14,7 +14,7 @@ interface Props {
   explainerTypes: ExplainerType[];
 }
 
-export default function FidelityEvaluationCard({
+export function FidelityEvaluationCard({
   fidelityType,
   explainerTypes,
 }: Props) {

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-exports */
 import path from 'path';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';

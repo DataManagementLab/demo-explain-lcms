@@ -14,7 +14,7 @@ interface Props {
   className?: string | undefined;
 }
 
-export default function WorkloadSelect({ className }: Props) {
+export function WorkloadSelect({ className }: Props) {
   const [datasetId, workloadId, setWorkloadId] = useDemoStore(
     useShallow((state) => [
       state.datasetId,

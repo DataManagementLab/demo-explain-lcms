@@ -51,6 +51,18 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-empty-function': 'off',
+      'no-restricted-exports': [
+        'error',
+        {
+          restrictDefaultExports: {
+            direct: true,
+            named: true,
+            defaultFrom: true,
+            namedFrom: true,
+            namespaceFrom: true,
+          },
+        },
+      ],
     },
     languageOptions: {
       parserOptions: {

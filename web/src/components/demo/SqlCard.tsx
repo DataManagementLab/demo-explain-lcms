@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 
 SyntaxHighlighter.registerLanguage('pgsql', pgsql);
 
-export default function SqlCard() {
+export function SqlCard() {
   const queryId = useDemoStore(useShallow((state) => state.queryId));
   const query = useGetQuery({ queryId: queryId });
 

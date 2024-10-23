@@ -34,7 +34,7 @@ function filterFeatures(keys: string[], selectedNode: GraphNode) {
     .filter((value) => value != undefined);
 }
 
-export default function NodeInfoCard() {
+export function NodeInfoCard() {
   const [queryId, selectedNodeId] = useDemoStore(
     useShallow((state) => [state.queryId, state.selectedNodeId]),
   );

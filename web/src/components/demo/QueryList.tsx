@@ -16,7 +16,7 @@ import {
 
 const pageSize = 50;
 
-export default function QueryList() {
+export function QueryList() {
   const [workloadId, page, setPage] = useDemoStore(
     useShallow((state) => [
       state.workloadId,

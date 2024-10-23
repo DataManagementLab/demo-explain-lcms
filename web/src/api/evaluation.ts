@@ -1,5 +1,5 @@
-import api from '@/lib/api';
-import combineUseQueries from '@/lib/combineUseQueries';
+import { api } from '@/lib/api';
+import { combineUseQueries } from '@/lib/combineUseQueries';
 import { skipToken, useQueries } from '@tanstack/react-query';
 
 import { FidelityEvaluation } from './data/evaluation';

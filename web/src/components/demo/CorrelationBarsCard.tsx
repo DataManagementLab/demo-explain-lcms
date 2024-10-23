@@ -9,13 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { Skeleton } from '../ui/skeleton';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
-import CorrelationBarSingle from './CorrelationBarSingle';
+import { CorrelationBarSingle } from './CorrelationBarSingle';
 
 interface Props {
   explainerTypes: ExplainerType[];
 }
 
-export default function CorrelationBarsCard({ explainerTypes }: Props) {
+export function CorrelationBarsCard({ explainerTypes }: Props) {
   const [queryId, selectedNodeId, setSelectedNodeId] = useDemoStore(
     useShallow((state) => [
       state.queryId,

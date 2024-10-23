@@ -1,8 +1,8 @@
-import combineUseQueries from '@/lib/combineUseQueries';
+import { combineUseQueries } from '@/lib/combineUseQueries';
 import { PickPartial } from '@/lib/pickPartial';
 import { skipToken, useQueries, useQuery } from '@tanstack/react-query';
 
-import api from '../lib/api';
+import { api } from '../lib/api';
 import { ExplainerType, Explanation, Prediction } from './data/inference';
 
 interface GetPredictionParams {

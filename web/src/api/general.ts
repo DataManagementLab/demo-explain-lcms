@@ -1,4 +1,4 @@
-import api from '@/lib/api';
+import { api } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 
 function getFeatures() {

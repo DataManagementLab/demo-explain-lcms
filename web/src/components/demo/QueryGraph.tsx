@@ -11,7 +11,7 @@ interface Props {
   fullPlan: FullPlan;
 }
 
-export default function QueryGraph({ fullPlan }: Props) {
+export function QueryGraph({ fullPlan }: Props) {
   const graphDiv = useRef<HTMLDivElement>(null);
   const [graphviz, setGraphviz] = useState<
     d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined

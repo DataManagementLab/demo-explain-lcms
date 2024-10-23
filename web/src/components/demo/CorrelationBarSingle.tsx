@@ -46,7 +46,7 @@ interface Props {
   setRenderCount: (value: number) => void;
 }
 
-export default function CorrelationBarSingle({
+export function CorrelationBarSingle({
   explanation,
   uniqueNodes,
   nodeIdToColor,

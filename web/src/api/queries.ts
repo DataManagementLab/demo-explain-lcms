@@ -1,7 +1,7 @@
 import { PickPartial } from '@/lib/pickPartial';
 import { skipToken, useQuery } from '@tanstack/react-query';
 
-import api from '../lib/api';
+import { api } from '../lib/api';
 import { Dataset, FullPlan, QueriesPage, Workload } from './data/queries';
 
 function getDatasets() {

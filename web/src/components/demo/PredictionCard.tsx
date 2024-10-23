@@ -13,7 +13,7 @@ import {
 import { Skeleton } from '../ui/skeleton';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
-export default function PredictionCard() {
+export function PredictionCard() {
   const queryId = useDemoStore(useShallow((state) => state.queryId));
   const prediction = useGetPrediction({ queryId: queryId });
 

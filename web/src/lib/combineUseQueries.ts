@@ -1,6 +1,6 @@
 import { UseQueryResult } from '@tanstack/react-query';
 
-export default function combineUseQueries<T>(
+export function combineUseQueries<T>(
   results: UseQueryResult<T | undefined, Error>[],
 ):
   | { data: T[]; isSuccess: true }
