@@ -15,6 +15,7 @@ class ParsedPlanStatsResponse(CustomModel):
     joins: int
     predicates: int
     order_by: bool
+    nodes: int
 
 
 class QueryResponse(CustomModel):

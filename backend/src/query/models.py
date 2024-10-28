@@ -215,6 +215,7 @@ class PlanStats(Base):
     plans: Mapped[int]
     joins: Mapped[int]
     predicates: Mapped[int]
+    nodes: Mapped[int]
     order_by: Mapped[bool]
 
     def to_pydantic(self):

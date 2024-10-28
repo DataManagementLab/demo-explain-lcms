@@ -6,6 +6,7 @@ from query.dependecies import get_parsed_plan_for_inference, inference_mutex
 from query.schemas import ExplanationResponseBase
 
 # from zero_shot_learned_db.explanations.data_models.explanation import Explanation
+from zero_shot_learned_db.explanations.data_models.explanation import Explanation
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
@@ -13,9 +14,9 @@ from zero_shot_learned_db.explanations.load import ParsedPlan
 class EvaluationBaseParams:
     parsed_plan: ParsedPlan
     base_explainer: BaseExplainer
-    explanation: ExplanationResponseBase
+    explanation: Explanation
 
-    def __init__(self, parsed_plan: ParsedPlan, base_explainer: BaseExplainer, explanation: ExplanationResponseBase):
+    def __init__(self, parsed_plan: ParsedPlan, base_explainer: BaseExplainer, explanation: Explanation):
         self.parsed_plan = parsed_plan
         self.base_explainer = base_explainer
         self.explanation = explanation
@@ -32,7 +33,6 @@ def evaluation_base_params(
         raise HTTPException(422, "Either explainer or explanation should be specified")
     if explanation is None:
         explanation = explainer.explain(parsed_plan)
-    # explanation = Explanation(**explanation.model_dump())
-    # print(explanation.__class__.__name__)
+    explanation = Explanation(node_count=len(parsed_plan.graph_nodes), **explanation.model_dump())
 
     yield EvaluationBaseParams(parsed_plan=parsed_plan, base_explainer=base_explainer, explanation=explanation)

@@ -46,3 +46,11 @@ def inference_mutex():
         yield
     finally:
         _inference_mutex.release()
+
+
+class InferenceMutex:
+    def __enter__(self):
+        _inference_mutex.acquire()
+
+    def __exit__(self, *args):
+        _inference_mutex.release()

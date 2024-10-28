@@ -1,88 +1,57 @@
-import os
-import os.path
 from typing import Annotated
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from tqdm import tqdm
 
 from config import Settings, get_settings
-from evaluation.schemas import PlanStats
-from evaluation.service import get_hash_joins_count
-from ml.dependencies import MLHelper
+from evaluation.models import EvaluationRun, NodeScore, PlanExplanation
+from ml.dependencies import MLHelper, get_explainer
 from ml.service import ExplainerType
-from zero_shot_learned_db.explanations.data_models.nodes import NodeType
-from zero_shot_learned_db.explanations.load import ParsedPlan
+from query.dependecies import InferenceMutex, get_parsed_plan
+from query.models import Plan, PlanStats
+from zero_shot_learned_db.explanations.data_models.explanation import Explanation, NodeScore as PydanticNodeScore
+from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
+from query.db import db_depends
 
 
-def get_evaluation_results_dir(config: Annotated[Settings, Depends(get_settings)]):
-    if not os.path.exists(config.demo.evaluation_results_dir):
-        os.mkdir(config.demo.evaluation_results_dir)
-    return config.demo.evaluation_results_dir
-
-
-class EvaluationPlansLoader:
-    ml: MLHelper
-    evaluation_plans: list[ParsedPlan]
-    are_plans_prepared: bool = False
-    are_plans_explained: bool = False
-
-    evaluation_plans_dict: dict[int, list[ParsedPlan]]
-    evaluation_plans_stats: dict[int, PlanStats]
-
-    def load(self, settings: Settings, ml: MLHelper):
-        self.ml = ml
-        self.evaluation_plans = []
-        self.table_count_nodes = {}
-        self.evaluation_plans_dict = {}
-        for table_count in range(1, settings.eval.max_table_count + 1):
-            current_plans = []
-            for plan in ml.parsed_plans:
-                if plan.graph_nodes_stats[NodeType.TABLE] == table_count and get_hash_joins_count(plan) == table_count - 1:
-                    current_plans.append(plan)
-                    if len(current_plans) >= settings.eval.max_plans_per_table_count:
-                        break
-            self.evaluation_plans_dict[table_count] = current_plans
-            self.evaluation_plans.extend(current_plans)
-        print(f"Loaded {len(self.evaluation_plans)} evaluation nodes. Expected: {settings.eval.max_plans_per_table_count * settings.eval.max_table_count}")
-        self.calculate_stats(settings)
-
-    def calculate_stats(self, settings: Settings):
-        self.evaluation_plans_stats = {}
-        for table_count in range(1, settings.eval.max_table_count + 1):
-            plans = self.evaluation_plans_dict[table_count]
-            count = len(plans)
-            hash_joins_count = 0
-            for plan in plans:
-                hash_joins_count += get_hash_joins_count(plan)
-            self.evaluation_plans_stats[table_count] = PlanStats(plan_count=count, hash_joins_count=hash_joins_count)
-
-    def prepare_all_plans_for_inference(self):
-        if self.are_plans_prepared:
-            return
-        if not self.evaluation_plans:
-            raise HTTPException("Evaluation plans are not loaded")
-        print("Prepare all plans for inference")
-        for plan in tqdm(self.evaluation_plans):
-            plan.prepare_plan_for_inference()
-        self.are_plans_prepared = True
-
-    def explain_all(self):
-        self.prepare_all_plans_for_inference()
-        if self.are_plans_explained:
-            return
-
-        self.explanations = {}
-        print("Explain all plans")
-        for explainer_type in ExplainerType:
-            self.explanations[explainer_type] = []
-            print(explainer_type)
-            for plan in tqdm(self.evaluation_plans):
-                plan._explanation_cache_for_evaluation[explainer_type] = self.ml.get_explainer(explainer_type).explain(plan)
-        self.are_plans_explained = True
-
-
-def evaluation_plans(evaluation_plans_loader: Annotated[EvaluationPlansLoader, Depends()]):
-    if not evaluation_plans_loader.evaluation_plans:
-        raise HTTPException("Evaluation plans are not loaded")
-
-    evaluation_plans_loader.prepare_all_plans_for_inference()
-    return evaluation_plans_loader.evaluation_plans
+def store_and_get_explanations_for_workload(
+    workload_id: int,
+    db: db_depends,
+    settings: Annotated[Settings, Depends(get_settings)],
+    ml: Annotated[MLHelper, Depends()],
+    run_new: bool = False,
+):
+    res: dict[int, dict[ExplainerType, Explanation]] = {}
+    print(f"Start store explanation for workload {workload_id}")
+    evaluation_run = db.query(EvaluationRun).filter(EvaluationRun.workload_id == workload_id).order_by(EvaluationRun.created_at.desc()).first()
+    if evaluation_run is None or run_new:
+        evaluation_run = EvaluationRun(workload_id=workload_id)
+    explainers: dict[ExplainerType, BaseExplainer] = {}
+    for explainer_type in ExplainerType:
+        explainers[explainer_type] = get_explainer(explainer_type, ml)
+    for table_count in range(1, settings.eval.max_table_count + 1):
+        q = db.query(Plan).join(Plan.plan_stats).filter(Plan.sql.is_not(None), Plan.workload_run_id == workload_id, PlanStats.tables == table_count).order_by(Plan.id_in_run).limit(settings.eval.max_plans_per_table_count)
+        print(f"Evaluating plans with {table_count} tables: {q.count()}")
+        plans = q.all()
+        for plan in tqdm(plans):
+            res[plan.id] = {}
+            existing_explanations = db.query(PlanExplanation).filter(PlanExplanation.evaluation_run_id == evaluation_run.id, PlanExplanation.plan_id == plan.id).all()
+            for explainer_type in ExplainerType:
+                existing_explanation = next(filter(lambda x: x.explainer_type == explainer_type, existing_explanations), None)
+                if existing_explanation is not None:
+                    explanation = Explanation(
+                        node_count=plan.plan_stats.nodes,
+                        base_scores=[PydanticNodeScore(node_id=score.node_id, score=score.score) for score in existing_explanation.base_scores],
+                    )
+                else:
+                    with InferenceMutex():
+                        parsed_plan = get_parsed_plan(plan.id, db, ml)
+                        parsed_plan.prepare_plan_for_inference()
+                        explanation = explainers[explainer_type].explain(parsed_plan)
+                    new_explanation = PlanExplanation(explainer_type=explainer_type, plan_id=plan.id)
+                    for i in explanation.base_scores:
+                        new_explanation.base_scores.append(NodeScore(node_id=i.node_id, score=i.score))
+                    evaluation_run.plan_explanations.append(new_explanation)
+                res[plan.id][explainer_type] = explanation
+    db.add(evaluation_run)
+    db.commit()
+    return res

@@ -1,6 +1,8 @@
 import os.path
 import time
 from typing import Type, TypeVar
+
+from tqdm import tqdm
 from config import Settings
 from utils import load_model_from_file
 from query.db import get_db
@@ -112,7 +114,7 @@ def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_r
     db_workload_run.database_stats = db_stats
 
     raw_plans = [raw_plan for raw_plan in raw_run.query_list if raw_plan.analyze_plans is not None and len(raw_plan.analyze_plans) > 0]
-    for i, plan in enumerate(json_workload_run.parsed_plans):
+    for i, plan in tqdm(enumerate(json_workload_run.parsed_plans)):
         db_plan = create_plan_db_model(plan, db_stats)
 
         db_plan.id_in_run = i
