@@ -5,6 +5,7 @@ import { useGetQuery } from '@/api/queries';
 import { useDemoStore } from '@/stores/demoStore';
 import { useShallow } from 'zustand/react/shallow';
 
+import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { Skeleton } from '../ui/skeleton';
@@ -75,6 +76,7 @@ export function CorrelationBarsCard({ explainerTypes }: Props) {
     [explanations],
   );
   const [renderCount, setRenderCount] = useState(0);
+  const [showLegend, setShowLegend] = useState(false);
 
   return (
     <Card className="h-w-full border-none">
@@ -101,28 +103,41 @@ export function CorrelationBarsCard({ explainerTypes }: Props) {
                   />
                 </div>
               ))}
-              <Table>
-                <TableBody>
-                  {uniqueNodes.map((nodeId) => (
-                    <TableRow
-                      key={nodeId}
-                      onClick={() => setSelectedNodeId(nodeId)}
-                      data-state={nodeId == selectedNodeId ? 'selected' : ''}
-                    >
-                      <TableCell>
-                        {query.data.graphNodes[nodeId].label}
-                      </TableCell>
-                      <TableCell>
-                        <div
-                          key={renderCount}
-                          className="h-6 w-6"
-                          style={{ backgroundColor: nodeIdToColor.get(nodeId) }}
-                        ></div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+
+              {showLegend && (
+                <Table>
+                  <TableBody>
+                    {uniqueNodes.map((nodeId) => (
+                      <TableRow
+                        key={nodeId}
+                        onClick={() => setSelectedNodeId(nodeId)}
+                        data-state={nodeId == selectedNodeId ? 'selected' : ''}
+                      >
+                        <TableCell>
+                          {query.data.graphNodes[nodeId].label}
+                        </TableCell>
+                        <TableCell>
+                          <div
+                            key={renderCount}
+                            className="h-6 w-6"
+                            style={{
+                              backgroundColor: nodeIdToColor.get(nodeId),
+                            }}
+                          ></div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+              <Button
+                className="items-start"
+                variant="link"
+                size="sm"
+                onClick={() => setShowLegend(!showLegend)}
+              >
+                {showLegend ? 'Hide Legend' : 'Show Legend'}
+              </Button>
             </>
           ) : (
             explainerTypes.map((i) => <Skeleton className="h-6" key={i} />)
