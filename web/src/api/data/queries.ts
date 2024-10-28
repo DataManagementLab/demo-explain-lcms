@@ -18,6 +18,7 @@ export interface QueryStats {
   joins: number;
   predicates: number;
   orderBy: boolean;
+  nodes: number;
 }
 
 export interface Plan {

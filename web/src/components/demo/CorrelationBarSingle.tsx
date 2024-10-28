@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { NodeScore } from '@/api/data/inference';
-import { useWindowSize } from '@uidotdev/usehooks';
+import { useMeasure, useThrottle } from '@uidotdev/usehooks';
 import * as d3 from 'd3';
 
 const colors = [
@@ -56,7 +56,8 @@ export function CorrelationBarSingle({
   setRenderCount,
 }: Props) {
   const graphDiv = useRef<HTMLDivElement>(null);
-  const windowSize = useWindowSize();
+  const [measureRef, _size] = useMeasure();
+  const size = useThrottle(_size, 100);
 
   const drawGraph = () => {
     if (!graphDiv.current || !explanation || !uniqueNodes) {
@@ -142,11 +143,15 @@ export function CorrelationBarSingle({
   useEffect(() => {
     drawGraph();
     selectNode();
-  }, [graphDiv, windowSize]);
+  }, [graphDiv, size]);
 
   useEffect(() => {
     selectNode();
   }, [selectedNodeId]);
 
-  return <div className="h-full" ref={graphDiv}></div>;
+  return (
+    <div className="h-full" ref={measureRef}>
+      <div className="h-full" ref={graphDiv}></div>
+    </div>
+  );
 }

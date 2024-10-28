@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { FullPlan } from '@/api/data/queries';
 import { useDemoStore } from '@/stores/demoStore';
-import { useWindowSize } from '@uidotdev/usehooks';
+import { useMeasure, useThrottle } from '@uidotdev/usehooks';
 import * as d3 from 'd3';
 import * as d3Graphviz from 'd3-graphviz';
 import { useShallow } from 'zustand/react/shallow';
@@ -19,12 +19,14 @@ export function QueryGraph({ fullPlan }: Props) {
   const [selectedNodeId, setSelectedNodeId] = useDemoStore(
     useShallow((state) => [state.selectedNodeId, state.setSelectedNodeId]),
   );
-  const windowSize = useWindowSize();
+  const [measureRef, _size] = useMeasure();
+  const size = useThrottle(_size, 100);
 
   const drawGraph = () => {
     if (!graphDiv.current || !graphviz) {
       return;
     }
+    console.log('Draw');
 
     const margin = { top: 16, right: 16, bottom: 16, left: 16 };
     const height = graphDiv.current.clientHeight - margin.left - margin.right;
@@ -120,11 +122,15 @@ export function QueryGraph({ fullPlan }: Props) {
 
   useEffect(() => {
     drawGraph();
-  }, [graphDiv, fullPlan, graphviz, windowSize]);
+  }, [graphDiv, fullPlan, graphviz, size]);
 
   useEffect(() => {
     drawSelectedNode();
   }, [selectedNodeId, graphviz]);
 
-  return <div className="h-full" ref={graphDiv}></div>;
+  return (
+    <div className="h-full" ref={measureRef}>
+      <div className="h-full" ref={graphDiv}></div>
+    </div>
+  );
 }

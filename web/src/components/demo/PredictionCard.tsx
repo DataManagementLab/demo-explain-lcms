@@ -42,7 +42,7 @@ export function PredictionCard() {
                 </TableRow>
                 <TableRow className="hover:bg-background">
                   <TableCell className="font-medium">QError</TableCell>
-                  <TableCell>{round(prediction.data.prediction)}</TableCell>
+                  <TableCell>{round(prediction.data.qerror)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

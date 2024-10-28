@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ExplainerType } from '@/api/data/inference';
 import { useGetPrediction } from '@/api/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
@@ -17,8 +17,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 import { useDemoStore } from '@/stores/demoStore';
 import { createFileRoute } from '@tanstack/react-router';
+import { ArrowLeftToLine, ArrowRightFromLine } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
 export const Route = createFileRoute('/demo')({
@@ -35,6 +37,7 @@ const explanainerTypes = [
 function Demo() {
   const [
     datasetId,
+    workloadId,
     queryId,
     showExplanations,
     setSelectedNodeId,
@@ -42,6 +45,7 @@ function Demo() {
   ] = useDemoStore(
     useShallow((state) => [
       state.datasetId,
+      state.workloadId,
       state.queryId,
       state.showExplanations,
       state.setSelectedNodeId,
@@ -51,18 +55,42 @@ function Demo() {
   const workloads = useGetWorkloads({ datasetId: datasetId });
   const query = useGetQuery({ queryId: queryId });
   const prediction = useGetPrediction({ queryId: queryId });
+  const [minimized, setMinimized] = useState(true);
 
   return (
     <div className="grid grid-cols-12 gap-x-4">
-      <div className="col-start-1 col-end-5 flex flex-col gap-2">
-        <div className="col-span-1 flex gap-2">
-          <DatasetSelect className="grow" />
-          <WorkloadSelect className="grow" />
-          {!workloads.isSuccess && <div className="w-full grow px-3"></div>}
+      <div
+        className={cn(
+          'col-start-1 col-end-5 flex flex-col gap-2',
+          minimized && 'col-end-3',
+        )}
+      >
+        <div className="flex gap-2">
+          <DatasetSelect className="w-9 grow" />
+          <WorkloadSelect className="w-9 grow" />
+          {!workloads.isSuccess && <div className="w-9 grow px-3"></div>}
+          {workloadId != undefined && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setMinimized(!minimized)}
+            >
+              {minimized ? (
+                <ArrowRightFromLine className="h-4 w-4" />
+              ) : (
+                <ArrowLeftToLine className="h-4 w-4" />
+              )}
+            </Button>
+          )}
         </div>
-        <QueryList></QueryList>
+        <QueryList minimized={minimized}></QueryList>
       </div>
-      <div className="col-start-5 col-end-10 flex flex-col gap-4">
+      <div
+        className={cn(
+          'col-start-5 col-end-10 flex flex-col gap-4',
+          minimized && 'col-start-3',
+        )}
+      >
         {queryId != undefined && (
           <Card
             className="h-[65vh] w-full"

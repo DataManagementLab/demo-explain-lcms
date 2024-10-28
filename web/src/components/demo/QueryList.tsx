@@ -1,5 +1,7 @@
 import { useRef } from 'react';
 import { useGetQueries } from '@/api/queries';
+import { round } from '@/lib/round';
+import { cn } from '@/lib/utils';
 import { useDemoStore } from '@/stores/demoStore';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -16,7 +18,11 @@ import {
 
 const pageSize = 50;
 
-export function QueryList() {
+interface Props {
+  minimized: boolean;
+}
+
+export function QueryList({ minimized }: Props) {
   const [workloadId, page, setPage] = useDemoStore(
     useShallow((state) => [
       state.workloadId,
@@ -54,14 +60,34 @@ export function QueryList() {
             <TableHeader className="sticky top-0 bg-secondary">
               <TableRow>
                 <TableHead className="border-r text-center">ID</TableHead>
-                <TableHead className="border-l text-center">Plans</TableHead>
-                <TableHead className="border-r text-center">Joins</TableHead>
-                <TableHead className="border-l text-center">Tables</TableHead>
-                <TableHead className="border-r text-center">Columns</TableHead>
-                <TableHead className="border-l border-r text-center">
-                  Predicates
+                <TableHead className="border-r text-center">Nodes</TableHead>
+                {!minimized && (
+                  <TableHead className="border-l text-center">Plans</TableHead>
+                )}
+                <TableHead
+                  className={cn(
+                    'border-r text-center',
+                    minimized && 'border-l',
+                  )}
+                >
+                  Joins
                 </TableHead>
-                <TableHead className="border-l text-center">Sort</TableHead>
+                {!minimized && (
+                  <>
+                    <TableHead className="border-l text-center">
+                      Tables
+                    </TableHead>
+                    <TableHead className="border-r text-center">
+                      Columns
+                    </TableHead>
+                    <TableHead className="border-l border-r text-center">
+                      Predicates
+                    </TableHead>
+                  </>
+                )}
+                <TableHead className="border-l text-center">
+                  Runtime (s)
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="overflow-y-auto">
@@ -74,23 +100,32 @@ export function QueryList() {
                   <TableCell className="border-r text-center">
                     {query.idInRun}
                   </TableCell>
-                  <TableCell className="border-l text-center">
-                    {query.queryStats.plans}
+                  <TableCell className="border-l border-r text-center">
+                    {query.queryStats.nodes}
                   </TableCell>
+                  {!minimized && (
+                    <TableCell className="border-l text-center">
+                      {query.queryStats.plans}
+                    </TableCell>
+                  )}
                   <TableCell className="border-r text-center">
                     {query.queryStats.joins}
                   </TableCell>
+                  {!minimized && (
+                    <>
+                      <TableCell className="border-l text-center">
+                        {query.queryStats.tables}
+                      </TableCell>
+                      <TableCell className="border-r text-center">
+                        {query.queryStats.columns}
+                      </TableCell>
+                      <TableCell className="border-l border-r text-center">
+                        {query.queryStats.predicates}
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell className="border-l text-center">
-                    {query.queryStats.tables}
-                  </TableCell>
-                  <TableCell className="border-r text-center">
-                    {query.queryStats.columns}
-                  </TableCell>
-                  <TableCell className="border-l border-r text-center">
-                    {query.queryStats.predicates}
-                  </TableCell>
-                  <TableCell className="border-l text-center">
-                    {query.queryStats.orderBy ? 'Yes' : 'No'}
+                    {round(query.planRuntime / 1000)}
                   </TableCell>
                 </TableRow>
               ))}
