@@ -43,7 +43,7 @@ export function CorrelationScoreCard({
           <Table>
             <TableBody>
               {evaluations.data.map((correlation, i) => (
-                <TableRow className="hover:bg-background">
+                <TableRow className="hover:bg-background" key={i}>
                   <TableCell>
                     {explainerTypeToDisplay.get(explainerTypes[i])}
                   </TableCell>
