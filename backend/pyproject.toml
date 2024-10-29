@@ -27,7 +27,8 @@ extend-exclude = [
     "src/zero_shot_learned_db/run_benchmark.py",
     "src/zero_shot_learned_db/setup.py",
     "src/zero_shot_learned_db/train.py",
-    "src/zero_shot_learned_db/tune.py"
+    "src/zero_shot_learned_db/tune.py",
+    "alembic"
 ]
 
 [tool.ruff.format]
