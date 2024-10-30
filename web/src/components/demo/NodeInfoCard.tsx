@@ -1,4 +1,9 @@
-import { GraphNode } from '@/api/data/nodeInfo';
+import {
+  GraphNode,
+  nodeFieldSkipToken,
+  nodeFieldToDisplay,
+  nodeTypeToDisplay,
+} from '@/api/data/nodeInfo';
 import { useGetFeatures } from '@/api/general';
 import { useGetQuery } from '@/api/queries';
 import { round } from '@/lib/round';
@@ -23,9 +28,13 @@ function filterFeatures(keys: string[], selectedNode: GraphNode) {
             : undefined,
     }))
     .map((value) => {
+      if (nodeFieldToDisplay.get(value.key) == nodeFieldSkipToken) {
+        return undefined;
+      }
+
       if (typeof value.value == 'number') {
         return { key: value.key, value: round(value.value) };
-      } else if (typeof value.value == 'string' && value.value.length < 40) {
+      } else if (typeof value.value == 'string') {
         return value;
       } else {
         return undefined;
@@ -72,7 +81,9 @@ export function NodeInfoCard() {
     selectedNode && (
       <Card>
         <CardHeader>
-          <CardTitle>{selectedNode.label}</CardTitle>
+          <CardTitle>
+            {`${selectedNode.label} (${nodeTypeToDisplay.get(selectedNode.nodeInfo.nodeType)})`}
+          </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-x-2">
           {nodeFeatures && nodeOtherAttributes && (
@@ -88,7 +99,7 @@ export function NodeInfoCard() {
                           className="hover:bg-background"
                         >
                           <TableCell className="font-medium">
-                            {value.key}
+                            {nodeFieldToDisplay.get(value.key)}
                           </TableCell>
                           <TableCell>{value.value}</TableCell>
                         </TableRow>
@@ -108,7 +119,7 @@ export function NodeInfoCard() {
                           className="hover:bg-background"
                         >
                           <TableCell className="font-medium">
-                            {value.key}
+                            {nodeFieldToDisplay.get(value.key)}
                           </TableCell>
                           <TableCell>{value.value}</TableCell>
                         </TableRow>
