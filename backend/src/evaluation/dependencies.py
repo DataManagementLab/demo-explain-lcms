@@ -13,6 +13,11 @@ from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExpl
 from query.db import db_depends
 
 
+class EvaluationRunComposed:
+    evaluation_run: EvaluationRun
+    explanations: list[tuple[Plan, list[tuple[ExplainerType, Explanation]]]]
+
+
 def store_and_get_explanations_for_workload(
     workload_id: int,
     db: db_depends,
@@ -20,20 +25,21 @@ def store_and_get_explanations_for_workload(
     ml: Annotated[MLHelper, Depends()],
     run_new: bool = False,
 ):
-    res: dict[int, dict[ExplainerType, Explanation]] = {}
+    res = EvaluationRunComposed()
+    res.explanations = []
     print(f"Start store explanation for workload {workload_id}")
     evaluation_run = db.query(EvaluationRun).filter(EvaluationRun.workload_id == workload_id).order_by(EvaluationRun.created_at.desc()).first()
     if evaluation_run is None or run_new:
         evaluation_run = EvaluationRun(workload_id=workload_id)
+    res.evaluation_run = evaluation_run
     explainers: dict[ExplainerType, BaseExplainer] = {}
     for explainer_type in ExplainerType:
         explainers[explainer_type] = get_explainer(explainer_type, ml)
     for table_count in range(1, settings.eval.max_table_count + 1):
-        q = db.query(Plan).join(Plan.plan_stats).filter(Plan.sql.is_not(None), Plan.workload_run_id == workload_id, PlanStats.tables == table_count).order_by(Plan.id_in_run).limit(settings.eval.max_plans_per_table_count)
-        print(f"Evaluating plans with {table_count} tables: {q.count()}")
-        plans = q.all()
+        print(f"Explaining plans with {table_count} tables")
+        plans = db.query(Plan).join(Plan.plan_stats).filter(Plan.sql.is_not(None), Plan.workload_run_id == workload_id, PlanStats.tables == table_count).order_by(Plan.id_in_run).limit(settings.eval.max_plans_per_table_count).all()
         for plan in tqdm(plans):
-            res[plan.id] = {}
+            explanations = []
             existing_explanations = db.query(PlanExplanation).filter(PlanExplanation.evaluation_run_id == evaluation_run.id, PlanExplanation.plan_id == plan.id).all()
             for explainer_type in ExplainerType:
                 existing_explanation = next(filter(lambda x: x.explainer_type == explainer_type, existing_explanations), None)
@@ -51,7 +57,9 @@ def store_and_get_explanations_for_workload(
                     for i in explanation.base_scores:
                         new_explanation.base_scores.append(NodeScore(node_id=i.node_id, score=i.score))
                     evaluation_run.plan_explanations.append(new_explanation)
-                res[plan.id][explainer_type] = explanation
+                explanations.append((explainer_type, explanation))
+            res.explanations.append((plan, explanations))
     db.add(evaluation_run)
     db.commit()
+    db.refresh(evaluation_run)
     return res
