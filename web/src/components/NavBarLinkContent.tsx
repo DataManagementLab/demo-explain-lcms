@@ -9,8 +9,8 @@ export function NavBarLinkContent(props: Props) {
   return (
     <div
       className={cn(
-        'transition-colors hover:text-foreground/80',
-        props.isActive ? 'text-foreground' : 'text-foreground/60',
+        'text-foreground/60 transition-colors hover:text-foreground/80',
+        props.isActive && 'text-foreground hover:text-foreground',
       )}
     >
       {props.title}

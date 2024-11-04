@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { HomeIcon } from './HomeIcon';
 import { NavBarLinkContent } from './NavBarLinkContent';
 
 export function NavBar() {
@@ -8,7 +9,7 @@ export function NavBar() {
       <div className="container flex h-14 max-w-screen-2xl items-center">
         <div className="mr-4 hidden md:flex">
           <Link to="/" className="mr-4 flex items-center lg:mr-6">
-            Home
+            {({ isActive }) => <HomeIcon isActive={isActive} />}
           </Link>
           <nav className="flex items-center gap-4 text-sm lg:gap-6">
             <Link to="/demo">
