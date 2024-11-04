@@ -121,7 +121,11 @@ export function NodeInfoCard() {
                           <TableCell className="font-medium">
                             {nodeFieldToDisplay.get(value.key)}
                           </TableCell>
-                          <TableCell>{value.value}</TableCell>
+                          <TableCell>
+                            {value.key == 'nodeType'
+                              ? nodeTypeToDisplay.get(value.value)
+                              : value.value}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
