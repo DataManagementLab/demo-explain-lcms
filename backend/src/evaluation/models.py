@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import StrEnum
 from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from query.db import Base
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
@@ -22,21 +23,11 @@ class PlanExplanation(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     explainer_type: Mapped[str]
-    base_scores: Mapped[list["NodeScore"]] = relationship()
+    base_scores: Mapped[list[dict[str, int]]] = mapped_column(JSONB)
     evaluations: Mapped[list["EvaluationScore"]] = relationship()
 
     plan_id: Mapped[int] = mapped_column(ForeignKey(Plan.id))
     evaluation_run_id: Mapped[int] = mapped_column(ForeignKey(EvaluationRun.id))
-
-
-class NodeScore(Base):
-    __tablename__ = "eval_node_scores"
-    id: Mapped[int] = mapped_column(primary_key=True)
-
-    node_id: Mapped[int]
-    score: Mapped[float]
-
-    plan_id: Mapped[int] = mapped_column(ForeignKey(PlanExplanation.id))
 
 
 class EvaluationType(StrEnum):

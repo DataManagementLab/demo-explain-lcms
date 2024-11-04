@@ -45,8 +45,8 @@ def run_all_for_workload(
     existing_explanations = evaluation_run.evaluation_run.plan_explanations
     for plan, node_explanation in tqdm(evaluation_run.explanations):
         for explainer_type, explanation in node_explanation:
-            plan_explanation = next(filter(lambda x: x.explainer_type == explainer_type, existing_explanations))
-            for evaluluation_type, fn in score_evaluation_fns:
+            plan_explanation = next(filter(lambda x: x.explainer_type == explainer_type and x.plan_id == plan.id, existing_explanations))
+            for evaluation_type, fn in score_evaluation_fns:
                 res = next(filter(lambda x: x.type == evaluation_type, plan_explanation.evaluations), None)
                 if res is None:
                     parsed_plan = get_parsed_plan(plan.id, db, ml)
@@ -55,5 +55,5 @@ def run_all_for_workload(
                     res = fn(base_params)
                     score = EvaluationScore(score=res.score, type=evaluation_type)
                     plan_explanation.evaluations.append(score)
-                score_evaluations[evaluluation_type][plan.plan_stats.tables].append(res)
+                score_evaluations[evaluation_type][plan.plan_stats.tables].append(res)
     db.commit()

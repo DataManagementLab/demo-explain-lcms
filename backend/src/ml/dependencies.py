@@ -70,13 +70,13 @@ class MLHelper:
         self.plans_cache[plan.id] = (plan, time.time())
 
         if len(self.plans_cache) > self.settings.ml.plans_cache_max_size:
-            max_time = 0
-            max_id = 0
+            min_time = time.time() + 1
+            oldest_id = 0
             for id, (plan, t) in self.plans_cache.items():
-                if t > max_time:
-                    max_time = t
-                    max_id = id
-            self.plans_cache.pop(max_id)
+                if t < min_time:
+                    min_time = t
+                    oldest_id = id
+            self.plans_cache.pop(oldest_id)
 
     def cache_get_plan(self, plan_id: int):
         if plan_id not in self.plans_cache:
