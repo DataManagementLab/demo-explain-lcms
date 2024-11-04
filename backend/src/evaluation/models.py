@@ -43,4 +43,4 @@ class EvaluationScore(Base):
 
     explanation_id: Mapped[int] = mapped_column(ForeignKey(PlanExplanation.id))
     score: Mapped[float]
-    type: Mapped[str]
+    evaluation_type: Mapped[str]

@@ -3,6 +3,7 @@ from statistics import mean
 from typing import Callable
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from evaluation.models import EvaluationType
 from evaluation.schemas import CorrelationEvaluation, CorrelationScore, TablesToScore, TablesToScoreEvaluationResponse
 from utils import load_model_from_file, save_model_to_file
 from evaluation.utils import float_range
@@ -13,10 +14,17 @@ from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExpl
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
 explainer_to_string = {
-    ExplainerType.BASE: "Base Explainer",
+    ExplainerType.BASE: "Runtime Importance",
     ExplainerType.GRADIENT: "Gradient",
     ExplainerType.GUIDED_BP: "Guided Backpropagation",
     ExplainerType.GNN_EXPLAINER: "GNNExplainer",
+}
+
+evaluation_type_string = {
+    EvaluationType.FIDELITY_PLUS: "Fidelity+",
+    EvaluationType.FIDELITY_MINUS: "Fidelity-",
+    EvaluationType.PEARSON: "Person correlation with runtime",
+    EvaluationType.SPEARMAN: "Spearman correlaiton with runtime",
 }
 
 
@@ -144,3 +152,28 @@ def compute_fidelity(
     response = TablesToScoreEvaluationResponse(scores=scores)
     save_model_to_file(response, file_name)
     return response
+
+
+class EvaluationScoreToDraw:
+    score: float
+    explainer_type: ExplainerType
+    join_count: int
+
+    def __init__(self, score: float, explainer_type: ExplainerType, join_count: int):
+        self.score = score
+        self.explainer_type = explainer_type
+        self.join_count = join_count
+
+
+def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]], output_dir: str, evaluation_type: EvaluationType):
+    plt.figure()
+    for explainer_type, scores in data.items():
+        plt.plot([s.join_count for s in scores], [s.score for s in scores], label=explainer_to_string[explainer_type])
+    max_joins = max([score.join_count for scores in data.values() for score in scores])
+    plt.xticks(range(0, max_joins + 1))
+    plt.ylim(0, 1)
+    plt.xlabel("# of join operators")
+    plt.ylabel(evaluation_type_string[evaluation_type])
+    plt.title(f"{evaluation_type_string[evaluation_type]}")
+    plt.legend()
+    plt.savefig(f"{output_dir}/plot_{evaluation_type}.png")

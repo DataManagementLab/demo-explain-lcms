@@ -32,16 +32,19 @@ def store_and_get_explanations_for_workload(
     if evaluation_run is None or run_new:
         evaluation_run = EvaluationRun(workload_id=workload_id)
     res.evaluation_run = evaluation_run
-    explainers: dict[ExplainerType, BaseExplainer] = {}
+    skip_explainers = [ExplainerType.BASE]
+    explainers: list[tuple[ExplainerType, BaseExplainer]] = []
     for explainer_type in ExplainerType:
-        explainers[explainer_type] = get_explainer(explainer_type, ml)
+        if explainer_type in skip_explainers:
+            continue
+        explainers.append((explainer_type, get_explainer(explainer_type, ml)))
     existing_explanations = evaluation_run.plan_explanations
     for table_count in range(1, settings.eval.max_table_count + 1):
         print(f"Explaining plans with {table_count} tables")
         plans = db.query(Plan).join(Plan.plan_stats).filter(Plan.sql.is_not(None), Plan.workload_run_id == workload_id, PlanStats.tables == table_count).order_by(Plan.id_in_run).limit(settings.eval.max_plans_per_table_count).all()
         for plan in tqdm(plans):
             explanations = []
-            for explainer_type in ExplainerType:
+            for explainer_type, explainer in explainers:
                 existing_explanation = next(filter(lambda x: x.explainer_type == explainer_type and x.plan_id == plan.id, existing_explanations), None)
                 if existing_explanation is not None:
                     explanation = Explanation(
@@ -52,7 +55,7 @@ def store_and_get_explanations_for_workload(
                     with InferenceMutex():
                         parsed_plan = get_parsed_plan(plan.id, db, ml)
                         parsed_plan.prepare_plan_for_inference()
-                        explanation = explainers[explainer_type].explain(parsed_plan)
+                        explanation = explainer.explain(parsed_plan)
                     new_explanation = PlanExplanation(explainer_type=explainer_type, plan_id=plan.id, base_scores=[score.model_dump() for score in explanation.base_scores])
                     evaluation_run.plan_explanations.append(new_explanation)
                 explanations.append((explainer_type, explanation))
