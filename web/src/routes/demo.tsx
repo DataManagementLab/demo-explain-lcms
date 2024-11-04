@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ExplainerType } from '@/api/data/inference';
 import { useGetPrediction } from '@/api/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
@@ -55,6 +55,8 @@ const explainerTypesCardinalityCorrelaiton = [
 const explainerTypesCardinalityCorrelaitonCard =
   explainerTypesCardinalityCorrelaiton.slice(1);
 
+const nodeIdToColor = new Map<number, string>();
+
 function Demo() {
   const [
     datasetId,
@@ -77,6 +79,8 @@ function Demo() {
   const query = useGetQuery({ queryId: queryId });
   const prediction = useGetPrediction({ queryId: queryId });
   const [minimized, setMinimized] = useState(true);
+
+  useEffect(() => nodeIdToColor.clear(), [queryId]);
 
   return (
     <div className="grid grid-cols-12 gap-x-4">
@@ -160,6 +164,7 @@ function Demo() {
                 <CorrelationBarsCard
                   title="Correlation between runtime importance and explainers"
                   explainerTypes={explainerTypesRuntimeCorrelaiton}
+                  nodeIdToColor={nodeIdToColor}
                 ></CorrelationBarsCard>
                 <Separator />
                 <CorrelationScoreCard
@@ -174,6 +179,7 @@ function Demo() {
                 <CorrelationBarsCard
                   title="Correlation between cardinality importance and explainers"
                   explainerTypes={explainerTypesCardinalityCorrelaiton}
+                  nodeIdToColor={nodeIdToColor}
                 ></CorrelationBarsCard>
                 <Separator />
                 <CorrelationScoreCard

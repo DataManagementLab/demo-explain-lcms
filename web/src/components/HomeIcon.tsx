@@ -8,15 +8,6 @@ interface Props {
 export function HomeIcon({ isActive }: Props) {
   const [ref, isHovering] = useHover();
 
-  // const images = ['package_opened_small.png', 'package_small.png'].map(
-  //   (src) => {
-  //     console.log('Image created');
-  //     return <img className="h-9 w-9" src={src} />;
-  //   },
-  // );
-
-  // const icon = isHovering ? images[0] : images[1];
-
   return (
     <div ref={ref} className="flex items-center gap-1.5">
       <div className="grid">

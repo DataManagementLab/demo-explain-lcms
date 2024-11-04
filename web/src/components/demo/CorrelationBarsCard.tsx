@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetExplanations } from '@/api/inference';
 import { useGetQuery } from '@/api/queries';
@@ -15,9 +15,14 @@ import { CorrelationBarSingle } from './CorrelationBarSingle';
 interface Props {
   title: string;
   explainerTypes: ExplainerType[];
+  nodeIdToColor: Map<number, string>;
 }
 
-export function CorrelationBarsCard({ title, explainerTypes }: Props) {
+export function CorrelationBarsCard({
+  title,
+  explainerTypes,
+  nodeIdToColor,
+}: Props) {
   const [queryId, selectedNodeId, setSelectedNodeId] = useDemoStore(
     useShallow((state) => [
       state.queryId,
@@ -72,10 +77,7 @@ export function CorrelationBarsCard({ title, explainerTypes }: Props) {
           .toSorted(importanceSortFn)
           .toReversed()
       : undefined;
-  const nodeIdToColor = useMemo(
-    () => new Map<number, string>(),
-    [explanations],
-  );
+
   const [renderCount, setRenderCount] = useState(0);
   const [showLegend, setShowLegend] = useState(false);
 

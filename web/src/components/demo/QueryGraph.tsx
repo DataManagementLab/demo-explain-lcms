@@ -26,7 +26,6 @@ export function QueryGraph({ fullPlan }: Props) {
     if (!graphDiv.current || !graphviz) {
       return;
     }
-    console.log('Draw');
 
     const margin = { top: 16, right: 16, bottom: 16, left: 16 };
     const height = graphDiv.current.clientHeight - margin.left - margin.right;
