@@ -2,7 +2,11 @@ import { api } from '@/lib/api';
 import { combineUseQueries } from '@/lib/combineUseQueries';
 import { skipToken, useQueries } from '@tanstack/react-query';
 
-import { CorrelationEvaluation, FidelityEvaluation } from './data/evaluation';
+import {
+  CorrelationEvaluation,
+  CorrelationType,
+  FidelityEvaluation,
+} from './data/evaluation';
 import { Explanation, ExplanationBase } from './data/inference';
 
 interface EvaluationPrams {
@@ -50,7 +54,7 @@ export function useGetFidelityEvaluations({
 
 function get_correlation(
   { queryId, explanation }: EvaluationPrams,
-  type: 'pearson' | 'spearman',
+  type: CorrelationType,
 ) {
   return api
     .post<CorrelationEvaluation>(`evaluation-fns/${type}`, {
@@ -63,7 +67,7 @@ function get_correlation(
 interface EvaluationPramsCorrelation {
   queryId?: number;
   explanations: (Explanation | undefined)[];
-  type: 'pearson' | 'spearman';
+  type: CorrelationType;
 }
 
 export function useGetCorrelaitonEvaluations({

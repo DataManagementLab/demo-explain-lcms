@@ -32,7 +32,7 @@ def store_and_get_explanations_for_workload(
     if evaluation_run is None or run_new:
         evaluation_run = EvaluationRun(workload_id=workload_id)
     res.evaluation_run = evaluation_run
-    skip_explainers = [ExplainerType.BASE]
+    skip_explainers = [ExplainerType.BASE, ExplainerType.BASE_CARDINALITY]
     explainers: list[tuple[ExplainerType, BaseExplainer]] = []
     for explainer_type in ExplainerType:
         if explainer_type in skip_explainers:

@@ -14,3 +14,16 @@ export interface CorrelationEvaluation {
   baseline: ExplanationBase;
   explanation: ExplanationBase;
 }
+
+export type CorrelationType =
+  | 'pearson'
+  | 'spearman'
+  | 'pearson-cardinality'
+  | 'spearman-cardinality';
+
+export const correlationTypeToDisplay = new Map<CorrelationType, string>([
+  ['pearson', 'Pearson runtime'],
+  ['spearman', 'Spearman runtime'],
+  ['pearson-cardinality', 'Pearson cardinality'],
+  ['spearman-cardinality', 'Spearman cardinality'],
+]);

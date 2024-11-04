@@ -98,6 +98,10 @@ def get_base_explainer(ml: Annotated[MLHelper, Depends()]):
     return ml.get_explainer(ExplainerType.BASE)
 
 
+def get_base_cardinality_explainer(ml: Annotated[MLHelper, Depends()]):
+    return ml.get_explainer(ExplainerType.BASE_CARDINALITY)
+
+
 class MLHelperOld:
     hyperparameters: HyperParameters
     feature_statistics: FeatureStatistics

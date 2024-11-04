@@ -23,14 +23,16 @@ export interface Explanation extends ExplanationBase {
 }
 
 export enum ExplainerType {
-  actual = 'BaseExplainer',
+  baseRuntime = 'BaseExplainer',
+  baseCardinality = 'BaseExplainerCardinality',
   gradient = 'GradientExplainer',
   guidedBackpropagation = 'GuidedBPExplainer',
   gnnExplainer = 'GNNExplainer',
 }
 
 export const explainerTypeToDisplay = new Map([
-  [ExplainerType.actual, 'Base'],
+  [ExplainerType.baseRuntime, 'Runtime importance'],
+  [ExplainerType.baseCardinality, 'Cardinality importance'],
   [ExplainerType.gradient, 'Gradient'],
   [ExplainerType.guidedBackpropagation, 'Guided Backpropagation'],
   [ExplainerType.gnnExplainer, 'GNNExplainer'],

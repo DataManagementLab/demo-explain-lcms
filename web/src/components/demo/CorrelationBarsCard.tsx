@@ -13,10 +13,11 @@ import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 import { CorrelationBarSingle } from './CorrelationBarSingle';
 
 interface Props {
+  title: string;
   explainerTypes: ExplainerType[];
 }
 
-export function CorrelationBarsCard({ explainerTypes }: Props) {
+export function CorrelationBarsCard({ title, explainerTypes }: Props) {
   const [queryId, selectedNodeId, setSelectedNodeId] = useDemoStore(
     useShallow((state) => [
       state.queryId,
@@ -81,9 +82,7 @@ export function CorrelationBarsCard({ explainerTypes }: Props) {
   return (
     <Card className="h-w-full border-none">
       <CardHeader>
-        <CardTitle>
-          Correlation between Base Explainer and other Explainers
-        </CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-2">

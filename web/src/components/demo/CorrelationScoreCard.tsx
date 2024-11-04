@@ -1,3 +1,7 @@
+import {
+  CorrelationType,
+  correlationTypeToDisplay,
+} from '@/api/data/evaluation';
 import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetCorrelaitonEvaluations } from '@/api/evaluation';
 import { useGetExplanations } from '@/api/inference';
@@ -10,7 +14,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
 interface Props {
-  correlationType: 'pearson' | 'spearman';
+  correlationType: CorrelationType;
   explainerTypes: ExplainerType[];
 }
 
@@ -34,8 +38,7 @@ export function CorrelationScoreCard({
     <Card className="border-none">
       <CardHeader className="p-0 px-6 pb-2 pt-6">
         <CardTitle>
-          {correlationType == 'pearson' ? 'Pearson' : 'Spearman'} Correlation
-          Score With Base Explainer
+          {correlationTypeToDisplay.get(correlationType)} Correlation Score
         </CardTitle>
       </CardHeader>
       <CardContent>

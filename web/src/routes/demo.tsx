@@ -28,11 +28,32 @@ export const Route = createFileRoute('/demo')({
 });
 
 const explanainerTypes = [
-  ExplainerType.actual,
+  ExplainerType.baseRuntime,
+  ExplainerType.baseCardinality,
   ExplainerType.gradient,
   ExplainerType.guidedBackpropagation,
   ExplainerType.gnnExplainer,
 ];
+
+const explainerTypesRuntimeCorrelaiton = [
+  ExplainerType.baseRuntime,
+  ExplainerType.gradient,
+  ExplainerType.guidedBackpropagation,
+  ExplainerType.gnnExplainer,
+];
+
+const explainerTypesRuntimeCorrelaitonCard =
+  explainerTypesRuntimeCorrelaiton.slice(1);
+
+const explainerTypesCardinalityCorrelaiton = [
+  ExplainerType.baseCardinality,
+  ExplainerType.gradient,
+  ExplainerType.guidedBackpropagation,
+  ExplainerType.gnnExplainer,
+];
+
+const explainerTypesCardinalityCorrelaitonCard =
+  explainerTypesCardinalityCorrelaiton.slice(1);
 
 function Demo() {
   const [
@@ -137,17 +158,32 @@ function Demo() {
                 />
                 <Separator />
                 <CorrelationBarsCard
-                  explainerTypes={explanainerTypes}
+                  title="Correlation between runtime importance and explainers"
+                  explainerTypes={explainerTypesRuntimeCorrelaiton}
                 ></CorrelationBarsCard>
                 <Separator />
                 <CorrelationScoreCard
                   correlationType="pearson"
-                  explainerTypes={explanainerTypes}
+                  explainerTypes={explainerTypesRuntimeCorrelaitonCard}
                 />
                 <Separator />
                 <CorrelationScoreCard
                   correlationType="spearman"
-                  explainerTypes={explanainerTypes}
+                  explainerTypes={explainerTypesRuntimeCorrelaitonCard}
+                />
+                <CorrelationBarsCard
+                  title="Correlation between cardinality importance and explainers"
+                  explainerTypes={explainerTypesCardinalityCorrelaiton}
+                ></CorrelationBarsCard>
+                <Separator />
+                <CorrelationScoreCard
+                  correlationType="pearson-cardinality"
+                  explainerTypes={explainerTypesCardinalityCorrelaitonCard}
+                />
+                <Separator />
+                <CorrelationScoreCard
+                  correlationType="spearman-cardinality"
+                  explainerTypes={explainerTypesCardinalityCorrelaitonCard}
                 />
               </>
             )}
