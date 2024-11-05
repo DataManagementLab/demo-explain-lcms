@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import Depends, HTTPException
 
-from ml.dependencies import get_base_explainer, get_explainer_optional
+from ml.dependencies import get_base_cardinality_explainer, get_base_explainer, get_explainer_optional
 from query.dependecies import get_parsed_plan_for_inference, inference_mutex
 from query.schemas import ExplanationResponseBase
 
@@ -14,17 +14,20 @@ from zero_shot_learned_db.explanations.load import ParsedPlan
 class EvaluationBaseParams:
     parsed_plan: ParsedPlan
     base_explainer: BaseExplainer
+    base_cardinality_explainer: BaseExplainer
     explanation: Explanation
 
-    def __init__(self, parsed_plan: ParsedPlan, base_explainer: BaseExplainer, explanation: Explanation):
+    def __init__(self, parsed_plan: ParsedPlan, base_explainer: BaseExplainer, base_cardinality_explainer: BaseExplainer, explanation: Explanation):
         self.parsed_plan = parsed_plan
         self.base_explainer = base_explainer
+        self.base_cardinality_explainer = base_cardinality_explainer
         self.explanation = explanation
 
 
 def evaluation_base_params(
     parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
     base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
+    base_cardinality_explainer: Annotated[BaseExplainer, Depends(get_base_cardinality_explainer)],
     explainer: Annotated[BaseExplainer, Depends(get_explainer_optional)],
     inference_mutex: Annotated[None, Depends(inference_mutex)],
     explanation: ExplanationResponseBase | None = None,
@@ -35,4 +38,9 @@ def evaluation_base_params(
         explanation = explainer.explain(parsed_plan)
     explanation = Explanation(node_count=len(parsed_plan.graph_nodes), **explanation.model_dump())
 
-    yield EvaluationBaseParams(parsed_plan=parsed_plan, base_explainer=base_explainer, explanation=explanation)
+    yield EvaluationBaseParams(
+        parsed_plan=parsed_plan,
+        base_explainer=base_explainer,
+        base_cardinality_explainer=base_cardinality_explainer,
+        explanation=explanation,
+    )

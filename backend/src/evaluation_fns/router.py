@@ -3,9 +3,7 @@ from fastapi import APIRouter, Depends
 
 from evaluation_fns.dependencies import EvaluationBaseParams, evaluation_base_params
 from evaluation_fns.schemas import CorrelationEvaluationResponse, FidelityEvaluationResponse, MostImportantNodeEvaluationResponse
-from ml.dependencies import get_base_cardinality_explainer
 from zero_shot_learned_db.explanations.evaluation import evaluation_fidelity_minus, evaluation_fidelity_plus, evaluation_most_important_node, evaluation_pearson_correlation, evaluation_spearman_correlation
-from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 
 
 router = APIRouter(tags=["evaluation-fns"], prefix="/evaluation-fns")
@@ -37,18 +35,10 @@ def spearman(params: Annotated[EvaluationBaseParams, Depends(evaluation_base_par
 
 
 @router.post("/pearson-cardinality", response_model=CorrelationEvaluationResponse)
-def pearson_cardinality(
-    params: Annotated[EvaluationBaseParams, Depends(evaluation_base_params)],
-    cardinality_explainer: Annotated[BaseExplainer, Depends(get_base_cardinality_explainer)],
-):
-    params.base_explainer = cardinality_explainer
-    return evaluation_pearson_correlation(params.base_explainer, params.explanation, params.parsed_plan)
+def pearson_cardinality(params: Annotated[EvaluationBaseParams, Depends(evaluation_base_params)]):
+    return evaluation_pearson_correlation(params.base_cardinality_explainer, params.explanation, params.parsed_plan)
 
 
 @router.post("/spearman-cardinality", response_model=CorrelationEvaluationResponse)
-def spearman_cardinality(
-    params: Annotated[EvaluationBaseParams, Depends(evaluation_base_params)],
-    cardinality_explainer: Annotated[BaseExplainer, Depends(get_base_cardinality_explainer)],
-):
-    params.base_explainer = cardinality_explainer
-    return evaluation_spearman_correlation(params.base_explainer, params.explanation, params.parsed_plan)
+def spearman_cardinality(params: Annotated[EvaluationBaseParams, Depends(evaluation_base_params)]):
+    return evaluation_spearman_correlation(params.base_cardinality_explainer, params.explanation, params.parsed_plan)

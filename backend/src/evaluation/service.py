@@ -25,6 +25,8 @@ evaluation_type_string = {
     EvaluationType.FIDELITY_MINUS: "Fidelity-",
     EvaluationType.PEARSON: "Person correlation with runtime",
     EvaluationType.SPEARMAN: "Spearman correlaiton with runtime",
+    EvaluationType.PEARSON_CARDINALITY: "Person correlation with cardinality",
+    EvaluationType.SPEARMAN_CARDINALITY: "Spearman correlaiton with cardinality",
 }
 
 

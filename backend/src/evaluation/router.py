@@ -8,8 +8,8 @@ from evaluation.dependencies import EvaluationRunComposed, store_and_get_explana
 from evaluation.models import EvaluationScore, EvaluationType
 from evaluation.service import EvaluationScoreToDraw, draw_score_evaluation
 from evaluation_fns.dependencies import EvaluationBaseParams
-from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, spearman
-from ml.dependencies import MLHelper, get_base_explainer
+from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, spearman, pearson_cardinality, spearman_cardinality
+from ml.dependencies import MLHelper, get_base_cardinality_explainer, get_base_explainer
 from ml.service import ExplainerType
 from query.dependecies import get_parsed_plan
 from query.db import db_depends
@@ -27,6 +27,7 @@ def run_all_for_workload(
     settings: Annotated[Settings, Depends(get_settings)],
     ml: Annotated[MLHelper, Depends()],
     base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
+    base_cardinality_explainer: Annotated[BaseExplainer, Depends(get_base_cardinality_explainer)],
     evaluation_run: Annotated[EvaluationRunComposed, Depends(store_and_get_explanations_for_workload)],
 ):
     print(f"Running evaluation on {len(evaluation_run.explanations)} queries")
@@ -40,6 +41,8 @@ def run_all_for_workload(
         (EvaluationType.FIDELITY_MINUS, fidelity_minus),
         (EvaluationType.PEARSON, pearson),
         (EvaluationType.SPEARMAN, spearman),
+        (EvaluationType.PEARSON_CARDINALITY, pearson_cardinality),
+        (EvaluationType.SPEARMAN_CARDINALITY, spearman_cardinality),
     ]
 
     existing_explanations = evaluation_run.evaluation_run.plan_explanations
@@ -51,7 +54,12 @@ def run_all_for_workload(
                 if res is None:
                     parsed_plan = get_parsed_plan(plan.id, db, ml)
                     parsed_plan.prepare_plan_for_inference()
-                    base_params = EvaluationBaseParams(parsed_plan, base_explainer, explanation)
+                    base_params = EvaluationBaseParams(
+                        parsed_plan=parsed_plan,
+                        base_explainer=base_explainer,
+                        base_cardinality_explainer=base_cardinality_explainer,
+                        explanation=explanation,
+                    )
                     res = fn(base_params)
                     score = EvaluationScore(score=res.score, evaluation_type=evaluation_type)
                     plan_explanation.evaluations.append(score)

@@ -35,6 +35,8 @@ class EvaluationType(StrEnum):
     FIDELITY_MINUS = "fidelity_minus"
     PEARSON = "pearson"
     SPEARMAN = "spearman"
+    PEARSON_CARDINALITY = "pearson-cardinality"
+    SPEARMAN_CARDINALITY = "spearman-cardinality"
 
 
 class EvaluationScore(Base):
