@@ -28,6 +28,7 @@ export enum ExplainerType {
   gradient = 'GradientExplainer',
   guidedBackpropagation = 'GuidedBPExplainer',
   gnnExplainer = 'GNNExplainer',
+  gnnExplainerOnlyPlans = 'GNNExplainerOnlyPlans',
 }
 
 export const explainerTypeToDisplay = new Map([
@@ -36,4 +37,5 @@ export const explainerTypeToDisplay = new Map([
   [ExplainerType.gradient, 'Gradient'],
   [ExplainerType.guidedBackpropagation, 'Guided Backpropagation'],
   [ExplainerType.gnnExplainer, 'GNNExplainer'],
+  [ExplainerType.gnnExplainerOnlyPlans, 'GNNExplainer (Only Plans)'],
 ]);

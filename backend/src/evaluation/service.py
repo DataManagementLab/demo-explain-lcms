@@ -18,6 +18,7 @@ explainer_to_string = {
     ExplainerType.GRADIENT: "Gradient",
     ExplainerType.GUIDED_BP: "Guided Backpropagation",
     ExplainerType.GNN_EXPLAINER: "GNNExplainer",
+    ExplainerType.GNN_EXPLAINER_ONLY_PLANS: "GNNExplainer (Only Plans)",
 }
 
 evaluation_type_string = {

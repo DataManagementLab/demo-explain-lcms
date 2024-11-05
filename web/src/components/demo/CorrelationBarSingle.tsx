@@ -86,16 +86,15 @@ export function CorrelationBarSingle({
     let barWidth = 0;
     for (const nodeId of uniqueNodes) {
       const importance = explanation.find((i) => i.nodeId == nodeId);
-      if (
-        nodeIdToColor.size >= colors.length ||
-        barWidth >= width ||
-        !importance
-      ) {
+      if (barWidth >= width || !importance) {
         continue;
       }
       let color = nodeIdToColor.get(importance.nodeId);
       if (!color) {
-        color = colors[nodeIdToColor.size];
+        color =
+          nodeIdToColor.size < colors.length
+            ? colors[nodeIdToColor.size]
+            : '#FFFFFF';
         nodeIdToColor.set(importance.nodeId, color);
       }
       const item_width = Math.round(width * importance.score);
