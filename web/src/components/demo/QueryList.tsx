@@ -133,7 +133,7 @@ export function QueryList({ minimized }: Props) {
           </Table>
         </ScrollArea>
         <div className="flex items-center justify-end gap-2">
-          <div className="pr-3 text-sm text-muted-foreground">
+          <div className="max-h-8 overflow-hidden pr-3 text-sm leading-[1.1] text-muted-foreground">
             Page {page + 1} of {pageLimit + 1}
           </div>
           <Button
