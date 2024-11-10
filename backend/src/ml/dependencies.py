@@ -19,19 +19,22 @@ from zero_shot_learned_db.explanations.data_models.workload_run import DatabaseS
 from zero_shot_learned_db.explanations.load import ParsedPlan, get_label_norm, get_label_norm_runtimes
 from zero_shot_learned_db.explanations.model import prepare_model
 from zero_shot_learned_db.models.zero_shot_models.zero_shot_model import ZeroShotModel
-from pydantic import BaseModel as PydanticBaseModel
 
 
-class SavedDataset(PydanticBaseModel):
-    models: list[str]
+class ZSModel:
     name: str
+    model: ZeroShotModel
+
+    def __init__(self, name: str, model: ZeroShotModel):
+        self.name = name
+        self.model = model
 
 
 class MLHelper:
     hyperparameters: HyperParameters
     feature_statistics: FeatureStatistics
     model: ZeroShotModel
-    concrete_models_for_datasets: dict[str, list[ZeroShotModel]]
+    concrete_models_for_datasets: dict[str, list[ZSModel]]
     settings: Settings
     database_stats: dict[int, PydanticDatabaseStats]
     plans_cache: dict[int, tuple[ParsedPlan, float]]
@@ -70,12 +73,15 @@ class MLHelper:
             self.concrete_models_for_datasets[dataset.name] = []
             for model in dataset.zsmodels:
                 self.concrete_models_for_datasets[dataset.name].append(
-                    prepare_model(
-                        self.hyperparameters,
-                        self.feature_statistics,
-                        label_norm,
-                        model_dir,
+                    ZSModel(
                         model,
+                        prepare_model(
+                            self.hyperparameters,
+                            self.feature_statistics,
+                            label_norm,
+                            model_dir,
+                            model,
+                        ),
                     )
                 )
                 print("Loaded model:", model)
@@ -92,15 +98,13 @@ class MLHelper:
         assert self.model is not None
         assert self.concrete_models_for_datasets is not None
 
-    def get_explainer(self, explainer_type: ExplainerType, dataset_name: str | None = None, model_id: str | None = None):
+    def get_explainer(self, explainer_type: ExplainerType, dataset_name: str | None = None, model_id: int = 0):
         self._assert_loaded()
 
         if dataset_name is None:
             return explainers[explainer_type](self.model, log=self.settings.ml.explainers_log)
-        if model_id is None:
-            model_id = 0
 
-        return explainers[explainer_type](self.concrete_models_for_datasets[dataset_name][0], log=self.settings.ml.explainers_log)
+        return explainers[explainer_type](self.concrete_models_for_datasets[dataset_name][model_id].model, log=self.settings.ml.explainers_log)
 
     def cache_store_plan(self, plan: ParsedPlan):
         self.plans_cache[plan.id] = (plan, time.time())

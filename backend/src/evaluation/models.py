@@ -25,6 +25,7 @@ class PlanExplanation(Base):
     explainer_type: Mapped[str]
     base_scores: Mapped[list[dict[str, int]]] = mapped_column(JSONB)
     evaluations: Mapped[list["EvaluationScore"]] = relationship()
+    model_name: Mapped[str]
 
     plan_id: Mapped[int] = mapped_column(ForeignKey(Plan.id))
     evaluation_run_id: Mapped[int] = mapped_column(ForeignKey(EvaluationRun.id))
