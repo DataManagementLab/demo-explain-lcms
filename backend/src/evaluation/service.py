@@ -161,14 +161,16 @@ class EvaluationScoreToDraw:
     score: float
     explainer_type: ExplainerType
     join_count: int
+    model_name: str
 
-    def __init__(self, score: float, explainer_type: ExplainerType, join_count: int):
+    def __init__(self, score: float, explainer_type: ExplainerType, join_count: int, model_name: str):
         self.score = score
         self.explainer_type = explainer_type
         self.join_count = join_count
+        self.model_name = model_name
 
 
-def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]], output_dir: str, evaluation_type: EvaluationType):
+def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]], output_dir: str, evaluation_type: EvaluationType, model_name: str):
     plt.figure()
     for explainer_type, scores in data.items():
         plt.plot([s.join_count for s in scores], [s.score for s in scores], label=explainer_to_string[explainer_type])
@@ -179,4 +181,4 @@ def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]]
     plt.ylabel(evaluation_type_string[evaluation_type])
     plt.title(f"{evaluation_type_string[evaluation_type]}")
     plt.legend()
-    plt.savefig(f"{output_dir}/plot_{evaluation_type}.png")
+    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}.png")

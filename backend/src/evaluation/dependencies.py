@@ -8,13 +8,12 @@ from ml.dependencies import MLHelper
 from ml.service import ExplainerType
 from query.dependecies import InferenceMutex, get_parsed_plan
 from query.models import Dataset, Plan, PlanStats, WorkloadRun
-from zero_shot_learned_db.explanations.data_models.explanation import Explanation, NodeScore
 from query.db import db_depends
 
 
 class EvaluationRunComposed:
     evaluation_run: EvaluationRun
-    explanations: list[tuple[Plan, list[tuple[ExplainerType, Explanation]]]]
+    explanations: list[tuple[Plan, list[PlanExplanation]]]
 
 
 def store_and_get_explanations_for_workload(
@@ -44,30 +43,25 @@ def store_and_get_explanations_for_workload(
             print(f"Explaining plans with {table_count} tables with {model.name}")
             plans = db.query(Plan).join(Plan.plan_stats).filter(Plan.sql.is_not(None), Plan.workload_run_id == workload_id, PlanStats.tables == table_count).order_by(Plan.id_in_run).limit(settings.eval.max_plans_per_table_count).all()
             for plan in tqdm(plans):
-                explanations = []
+                explanations: list[PlanExplanation] = []
                 for explainer_type in ExplainerType:
                     if explainer_type in skip_explainers:
                         continue
-                    existing_explanation = next(filter(lambda x: x.explainer_type == explainer_type and x.plan_id == plan.id and x.model_name == model.name, existing_explanations), None)
-                    if existing_explanation is not None:
-                        explanation = Explanation(
-                            node_count=plan.plan_stats.nodes,
-                            base_scores=[NodeScore(**score) for score in existing_explanation.base_scores],
-                        )
-                    else:
+                    plan_explanation = next(filter(lambda x: x.explainer_type == explainer_type and x.plan_id == plan.id and x.model_name == model.name, existing_explanations), None)
+                    if plan_explanation is None:
                         with InferenceMutex():
                             explainer = ml.get_explainer(explainer_type, workload.dataset.name, model_id)
                             parsed_plan = get_parsed_plan(plan.id, db, ml)
                             parsed_plan.prepare_plan_for_inference()
                             explanation = explainer.explain(parsed_plan)
-                        new_explanation = PlanExplanation(
+                        plan_explanation = PlanExplanation(
                             explainer_type=explainer_type,
                             plan_id=plan.id,
                             base_scores=[score.model_dump() for score in explanation.base_scores],
                             model_name=model.name,
                         )
-                        evaluation_run.plan_explanations.append(new_explanation)
-                    explanations.append((explainer_type, explanation))
+                        evaluation_run.plan_explanations.append(plan_explanation)
+                    explanations.append(plan_explanation)
                 res.explanations.append((plan, explanations))
             db.commit()
     return res
