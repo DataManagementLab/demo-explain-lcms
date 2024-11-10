@@ -1,24 +1,22 @@
 {
-  "runs": [
+  "datasets": [
     {
-      "dataset": "IMDB",
+      "name": "IMDB",
       "directory": "imdb",
-      "file": "workload_100k_s1_c8220.json"
+      "zsmodels": ["imdb_0", "imdb_1", "imdb_2"],
+      "runs": ["workload_100k_s1_c8220.json", "job-light_c8220.json"]
     },
     {
-      "dataset": "Baseball",
+      "name": "Baseball",
       "directory": "baseball",
-      "file": "workload_100k_s1_c8220.json"
+      "zsmodels": ["baseball_0", "baseball_1", "baseball_2"],
+      "runs": ["workload_100k_s1_c8220.json"]
     },
     {
-      "dataset": "TPC H",
+      "name": "TPC H",
       "directory": "tpc_h",
-      "file": "workload_100k_s1_c8220.json"
-    },
-    {
-      "dataset": "IMDB",
-      "directory": "imdb",
-      "file": "job-light_c8220.json"
+      "zsmodels": ["tpc_h_0", "tpc_h_1", "tpc_h_2"],
+      "runs": ["workload_100k_s1_c8220.json"]
     }
   ]
 }

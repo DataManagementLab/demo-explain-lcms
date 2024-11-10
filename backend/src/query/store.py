@@ -4,6 +4,7 @@ from typing import Type, TypeVar
 
 from tqdm import tqdm
 from config import Settings
+from saved_runs_models import SavedDataset, SavedRunsConfig
 from utils import load_model_from_file
 from query.db import get_db
 from sqlalchemy.orm import class_mapper
@@ -29,16 +30,6 @@ class RawPlan(PydanticBaseModel):
 
 class RawRun(PydanticBaseModel):
     query_list: list[RawPlan]
-
-
-class SavedRun(PydanticBaseModel):
-    dataset: str
-    directory: str
-    file: str
-
-
-class SavedRunsConfig(PydanticBaseModel):
-    runs: list[SavedRun]
 
 
 class SQLSearchFeatures:
@@ -78,27 +69,28 @@ def store_all_workload_queries_in_db(settings: Settings):
     runs_config = load_model_from_file(SavedRunsConfig, settings.query.saved_runs_config_file)
     base_runs_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_dir)
     base_runs_raw_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_raw_dir)
-    for saved_run in runs_config.runs:
-        with next(get_db()) as db:
-            run = db.query(Dataset).join(WorkloadRun.dataset).filter(Dataset.directory == saved_run.directory, WorkloadRun.file_name == saved_run.file).first()
-            if run is not None:
-                continue
+    for saved_dataset in runs_config.datasets:
+        for run_file_name in saved_dataset.runs:
+            with next(get_db()) as db:
+                run = db.query(Dataset).join(WorkloadRun.dataset).filter(Dataset.directory == saved_dataset.directory, WorkloadRun.file_name == run_file_name).first()
+                if run is not None:
+                    continue
 
-        run_file = os.path.join(base_runs_dir, saved_run.directory, saved_run.file)
-        raw_run_file = os.path.join(base_runs_raw_dir, saved_run.directory, saved_run.file)
-        print("Store Started", saved_run.dataset, saved_run.file)
-        start_time = time.time()
-        store_workload_queries_in_db(load_workload_run(run_file), saved_run, load_model_from_file(RawRun, raw_run_file))
-        store_time = time.time() - start_time
-        print("Store Finished", saved_run.dataset, saved_run.file, "in", "{0:.2f}".format(store_time) + "s")
+            run_file = os.path.join(base_runs_dir, saved_dataset.directory, run_file_name)
+            raw_run_file = os.path.join(base_runs_raw_dir, saved_dataset.directory, run_file_name)
+            print("Store Started", saved_dataset.name, run_file_name)
+            start_time = time.time()
+            store_workload_queries_in_db(load_workload_run(run_file), saved_dataset, run_file_name, load_model_from_file(RawRun, raw_run_file))
+            store_time = time.time() - start_time
+            print("Store Finished", saved_dataset.name, run_file_name, "in", "{0:.2f}".format(store_time) + "s")
 
 
-def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_run: SavedRun, raw_run: RawRun):
+def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_dataset: SavedDataset, run_file_name: str, raw_run: RawRun):
     with next(get_db()) as db:
-        dataset = db.query(Dataset).filter(Dataset.directory == saved_run.directory).first()
+        dataset = db.query(Dataset).filter(Dataset.directory == saved_dataset.directory).first()
     if dataset is None:
-        dataset = Dataset(name=saved_run.dataset, directory=saved_run.directory)
-    db_workload_run = create_db_model(WorkloadRun, json_workload_run, file_name=saved_run.file)
+        dataset = Dataset(name=saved_dataset.name, directory=saved_dataset.directory)
+    db_workload_run = create_db_model(WorkloadRun, json_workload_run, file_name=run_file_name)
     db_workload_run.dataset = dataset
     run_kwargs = create_db_model(RunKwargs, json_workload_run.run_kwargs)
     db_workload_run.run_kwargs = run_kwargs
@@ -114,7 +106,7 @@ def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_r
     db_workload_run.database_stats = db_stats
 
     raw_plans = [raw_plan for raw_plan in raw_run.query_list if raw_plan.analyze_plans is not None and len(raw_plan.analyze_plans) > 0]
-    for i, plan in tqdm(enumerate(json_workload_run.parsed_plans)):
+    for i, plan in enumerate(tqdm(json_workload_run.parsed_plans)):
         db_plan = create_plan_db_model(plan, db_stats)
 
         db_plan.id_in_run = i

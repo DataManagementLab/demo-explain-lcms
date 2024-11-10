@@ -10,6 +10,7 @@ class MLSettings(BaseModel):
     statistics_file: str = ""
     zs_model_dir: str = ""
     zs_model_file_name: str = ""
+    load_only_first_model_from_runs_config: bool = True
 
     hyperparameters_file: str = ""
 
