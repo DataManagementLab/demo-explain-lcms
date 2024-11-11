@@ -6,8 +6,6 @@ class FidelityEvaluationResponse(CustomModel):
     output: PredictionResponseBase
     explanation: ExplanationResponseBase
     masked_output: PredictionResponseBase
-    relative_change: float
-    outputs_equal: bool
     score: int
 
 

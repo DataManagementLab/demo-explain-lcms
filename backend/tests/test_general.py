@@ -1,7 +1,7 @@
 import pytest
 from ml.dependencies import MLHelperOld
 from ml.service import ExplainerType
-from utils import get_test_value, approx_rel
+from test_utils import get_test_value, approx_rel
 from zero_shot_learned_db.explanations.data_models.nodes import NodeType
 
 
@@ -26,16 +26,16 @@ def test_explain(ml: MLHelperOld):
     plan = ml.get_plan(0)
     base_explainer = ml.get_explainer(ExplainerType.GRADIENT)
     explanation = base_explainer.explain(plan)
-    print([i for i in explanation.node_importance if i.importance > 0.1])
+    print([i for i in explanation.scaled_importance if i.score > 0.1])
 
     def get_importance(node_id: int):
-        return next(filter(lambda x: x.node_id == node_id, explanation.node_importance)).importance
+        return next(filter(lambda x: x.node_id == node_id, explanation.scaled_importance)).score
 
     assert get_test_value(get_importance(34)) == 0.2411
     assert get_test_value(get_importance(26)) == 0.2330
     assert get_test_value(get_importance(27)) == 0.1047
     assert get_test_value(get_importance(36)) == 0.2022
-    assert sum(map(lambda x: x.importance, explanation.node_importance)) == pytest.approx(1.0, rel=approx_rel)
+    assert sum(map(lambda x: x.score, explanation.scaled_importance)) == pytest.approx(1.0, rel=approx_rel)
 
 
 def test_actual_importance(ml: MLHelperOld):
