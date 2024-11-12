@@ -2,8 +2,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from evaluation_fns.dependencies import EvaluationBaseParams, evaluation_base_params
-from evaluation_fns.schemas import CorrelationEvaluationResponse, FidelityEvaluationResponse, MostImportantNodeEvaluationResponse
-from zero_shot_learned_db.explanations.evaluation import evaluation_fidelity_minus, evaluation_fidelity_plus, evaluation_most_important_node, evaluation_pearson_correlation, evaluation_spearman_correlation
+from evaluation_fns.schemas import CorrelationEvaluationResponse, FidelityEvaluationResponse, MostImportantNodeEvaluationResponse, ScoreResponse
+from zero_shot_learned_db.explanations.evaluation import evaluation_characterization_score_raw, evaluation_fidelity_minus, evaluation_fidelity_plus, evaluation_most_important_node, evaluation_pearson_correlation, evaluation_spearman_correlation
 
 
 router = APIRouter(tags=["evaluation-fns"], prefix="/evaluation-fns")
@@ -17,6 +17,11 @@ def fidelity_plus(params: Annotated[EvaluationBaseParams, Depends(evaluation_bas
 @router.post("/fidelity-minus", response_model=FidelityEvaluationResponse)
 def fidelity_minus(params: Annotated[EvaluationBaseParams, Depends(evaluation_base_params)]):
     return evaluation_fidelity_minus(params.base_explainer, params.explanation, params.parsed_plan)
+
+
+@router.post("/characterization-score", response_model=ScoreResponse)
+def characterization_score(params: Annotated[EvaluationBaseParams, Depends(evaluation_base_params)]):
+    return evaluation_characterization_score_raw(params.base_explainer, params.explanation, params.parsed_plan)
 
 
 @router.post("/most-important-node", response_model=MostImportantNodeEvaluationResponse)

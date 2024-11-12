@@ -36,7 +36,7 @@ def evaluation_base_params(
         raise HTTPException(422, "Either explainer or explanation should be specified")
     if explanation is None:
         explanation = explainer.explain(parsed_plan)
-    explanation = Explanation(node_count=len(parsed_plan.graph_nodes), **explanation.model_dump())
+    explanation = Explanation(node_count=len(parsed_plan.graph_nodes), **explanation.model_dump(exclude=["node_count"]))
 
     yield EvaluationBaseParams(
         parsed_plan=parsed_plan,

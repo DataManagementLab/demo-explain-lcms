@@ -34,6 +34,7 @@ class PlanExplanation(Base):
 class EvaluationType(StrEnum):
     FIDELITY_PLUS = "fidelity_plus"
     FIDELITY_MINUS = "fidelity_minus"
+    CHARACTERIZATION_SCORE = "characterization_score"
     PEARSON = "pearson"
     SPEARMAN = "spearman"
     PEARSON_CARDINALITY = "pearson-cardinality"
