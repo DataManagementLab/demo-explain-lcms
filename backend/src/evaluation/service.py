@@ -2,6 +2,7 @@ from enum import StrEnum
 from statistics import mean
 from typing import Callable
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
 from tqdm import tqdm
 from evaluation.models import EvaluationType
 from evaluation.schemas import CorrelationEvaluation, CorrelationScore, TablesToScore, TablesToScoreEvaluationResponse
@@ -171,6 +172,12 @@ class EvaluationScoreToDraw:
 
 
 def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]], output_dir: str, evaluation_type: EvaluationType, model_name: str):
+    additional_params = ""
+    if "|" in evaluation_type:
+        evaluation_type, additional_params = evaluation_type.split("|")
+    if additional_params != "":
+        additional_params = f"_{additional_params}"
+
     plt.figure()
     for explainer_type, scores in data.items():
         plt.plot([s.join_count for s in scores], [s.score for s in scores], label=explainer_to_string[explainer_type])
@@ -179,6 +186,40 @@ def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]]
     plt.ylim(0, 1)
     plt.xlabel("# of join operators")
     plt.ylabel(evaluation_type_string[evaluation_type])
-    plt.title(f"{evaluation_type_string[evaluation_type]}")
+    plt.title(f"{evaluation_type_string[evaluation_type]}{additional_params}")
     plt.legend()
-    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}.png")
+
+    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}{additional_params}.png")
+    plt.close()
+
+
+def draw_score_evaluations_combined(data: list[dict[ExplainerType, list[EvaluationScoreToDraw]]], output_dir: str, evaluation_type: EvaluationType, model_name: str, evaluation_type_variants: list[str]):
+    explainer_types = data[0].keys()
+    colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+    line_styles = ["dotted", "dashed", "solid"]
+    legend_handles = []
+    for line_color, explainer_type in zip(colors, explainer_types):
+        legend_handles.append(mlines.Line2D([], [], color=line_color, linestyle="solid", label=explainer_to_string[explainer_type]))
+    for line_style, eval_variant in zip(line_styles, evaluation_type_variants):
+        legend_handles.append(mlines.Line2D([], [], color="k", linestyle=line_style, label=eval_variant))
+
+    plt.figure()
+    for explainer_scores, line_style in zip(data, line_styles):
+        for (explainer_type, scores), line_color in zip(explainer_scores.items(), colors):
+            plt.plot(
+                [s.join_count for s in scores],
+                [s.score for s in scores],
+                label=explainer_to_string[explainer_type],
+                linestyle=line_style,
+                color=line_color,
+            )
+    max_joins = max([score.join_count for explainer_scores in data for scores in explainer_scores.values() for score in scores])
+    plt.xticks(range(0, max_joins + 1))
+    plt.ylim(0, 1)
+    plt.xlabel("# of join operators")
+    plt.ylabel(evaluation_type_string[evaluation_type])
+    plt.title(f"{evaluation_type_string[evaluation_type]} Combined")
+    plt.legend(handles=legend_handles)
+
+    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}_combined.png")
+    plt.close()
