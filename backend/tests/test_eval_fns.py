@@ -1,6 +1,6 @@
 import pytest
 from zero_shot_learned_db.explanations.evaluation import _get_fidelity_evaluation_internal
-from zero_shot_learned_db.explanations.utils import harmonic_mean, relative_change
+from zero_shot_learned_db.explanations.utils import filter_cumulative, harmonic_mean, relative_change
 
 
 def test_relative_change():
@@ -57,3 +57,14 @@ def test_harmonic_mean():
     assert harmonic_mean(1, 1) == 1
     assert harmonic_mean(0.5, 0.3) == pytest.approx(0.375)
     assert harmonic_mean(0.04, 0.6) == pytest.approx(0.075)
+
+
+def test_filter_cumulative_test():
+    def key_fn(t: tuple[int, float]):
+        return t[1]
+
+    assert filter_cumulative([(1, 0.3), (2, 0.5), (3, 0.15), (4, 0.05)], key_fn) == [(2, 0.5), (1, 0.3), (3, 0.15)]
+    assert filter_cumulative([(4, 0.05), (1, 0.3), (2, 0.5), (3, 0.15)], key_fn) == [(2, 0.5), (1, 0.3), (3, 0.15)]
+    assert filter_cumulative([(4, 0.1), (1, 0.3), (2, 0.5), (3, 0.1)], key_fn) == [(2, 0.5), (1, 0.3), (4, 0.1)]
+    assert filter_cumulative([(4, 0.1), (1, 0.3), (2, 0.5), (3, 0.1)], key_fn, 0.95) == [(2, 0.5), (1, 0.3), (4, 0.1), (3, 0.1)]
+    assert filter_cumulative([(4, 0.08), (1, 0.3), (5, 0.03), (2, 0.5), (3, 0.09)], key_fn) == [(2, 0.5), (1, 0.3), (3, 0.09), (4, 0.08)]
