@@ -158,6 +158,17 @@ def compute_fidelity(
     return response
 
 
+explainers_for_evaluation = [
+    ExplainerType.GRADIENT,
+    ExplainerType.GUIDED_BP,
+    ExplainerType.GNN_EXPLAINER,
+    ExplainerType.GNN_EXPLAINER_ONLY_PLANS,
+]
+
+colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+line_styles = ["dotted", "dashed", "solid"]
+
+
 class EvaluationScoreToDraw:
     score: float
     explainer_type: ExplainerType
@@ -179,8 +190,8 @@ def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]]
         additional_params = f"_{additional_params}"
 
     plt.figure()
-    for explainer_type, scores in data.items():
-        plt.plot([s.join_count for s in scores], [s.score for s in scores], label=explainer_to_string[explainer_type])
+    for explainer_type, color in zip(explainers_for_evaluation, colors):
+        plt.plot([s.join_count for s in data[explainer_type]], [s.score for s in data[explainer_type]], color=color, label=explainer_to_string[explainer_type])
     max_joins = max([score.join_count for scores in data.values() for score in scores])
     plt.xticks(range(0, max_joins + 1))
     plt.ylim(0, 1)
@@ -194,21 +205,18 @@ def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]]
 
 
 def draw_score_evaluations_combined(data: list[dict[ExplainerType, list[EvaluationScoreToDraw]]], output_dir: str, evaluation_type: EvaluationType, model_name: str, evaluation_type_variants: list[str]):
-    explainer_types = data[0].keys()
-    colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
-    line_styles = ["dotted", "dashed", "solid"]
     legend_handles = []
-    for line_color, explainer_type in zip(colors, explainer_types):
+    for line_color, explainer_type in zip(colors, explainers_for_evaluation):
         legend_handles.append(mlines.Line2D([], [], color=line_color, linestyle="solid", label=explainer_to_string[explainer_type]))
     for line_style, eval_variant in zip(line_styles, evaluation_type_variants):
         legend_handles.append(mlines.Line2D([], [], color="k", linestyle=line_style, label=eval_variant))
 
     plt.figure()
     for explainer_scores, line_style in zip(data, line_styles):
-        for (explainer_type, scores), line_color in zip(explainer_scores.items(), colors):
+        for explainer_type, line_color in zip(explainers_for_evaluation, colors):
             plt.plot(
-                [s.join_count for s in scores],
-                [s.score for s in scores],
+                [s.join_count for s in explainer_scores[explainer_type]],
+                [s.score for s in explainer_scores[explainer_type]],
                 label=explainer_to_string[explainer_type],
                 linestyle=line_style,
                 color=line_color,

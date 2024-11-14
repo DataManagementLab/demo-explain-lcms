@@ -20,13 +20,6 @@ from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExpl
 router = APIRouter(tags=["evaluation"], prefix="/evaluation")
 
 
-def get_fidelity_evaluation_fn(fn, params: tuple[float, float, float]):
-    def fn_internal(base_params: EvaluationBaseParams):
-        return fn(base_params.base_explainer, base_params.explanation, base_params.parsed_plan, params[0], params[1], params[2])
-
-    return fn_internal
-
-
 @router.get("/workload/{workload_id}/run_all")
 def run_all_for_workload(
     db: db_depends,
@@ -36,6 +29,12 @@ def run_all_for_workload(
     base_cardinality_explainer: Annotated[BaseExplainer, Depends(get_base_cardinality_explainer)],
     evaluation_run: Annotated[EvaluationRunComposed, Depends(store_and_get_explanations_for_workload)],
 ):
+    def get_fidelity_evaluation_fn(fn, params: tuple[float, float, float]):
+        def fn_internal(base_params: EvaluationBaseParams):
+            return fn(base_params.base_explainer, base_params.explanation, base_params.parsed_plan, params[0], params[1], params[2], settings.eval.use_binary_fidelity)
+
+        return fn_internal
+
     score_evaluation_fns = [
         (EvaluationType.FIDELITY_PLUS, fidelity_plus),
         (EvaluationType.FIDELITY_MINUS, fidelity_minus),
@@ -57,8 +56,8 @@ def run_all_for_workload(
             for j in fidelity_test_thresholds[1]:
                 for k in fidelity_test_thresholds[2]:
                     t = (i, j, k)
-                    score_evaluation_fns.append((f"{EvaluationType.FIDELITY_PLUS}|{json.dumps(t)}", get_fidelity_evaluation_fn(evaluation_fidelity_plus, t)))
-                    score_evaluation_fns.append((f"{EvaluationType.FIDELITY_MINUS}|{json.dumps(t)}", get_fidelity_evaluation_fn(evaluation_fidelity_minus, t)))
+                    score_evaluation_fns.append((f"{EvaluationType.FIDELITY_PLUS}|{json.dumps(t)}{'_b' if settings.eval.use_binary_fidelity else ''}", get_fidelity_evaluation_fn(evaluation_fidelity_plus, t)))
+                    score_evaluation_fns.append((f"{EvaluationType.FIDELITY_MINUS}|{json.dumps(t)}{'_b' if settings.eval.use_binary_fidelity else ''}", get_fidelity_evaluation_fn(evaluation_fidelity_minus, t)))
 
     evaluation_types = [e[0] for e in score_evaluation_fns]
 
@@ -119,13 +118,12 @@ def run_all_for_workload(
 
     for evaluation_type, model_results in agg_scores.items():
         for model_name, explainer_results in model_results.items():
-            draw_score_evaluation(explainer_results, settings.demo.evaluation_results_dir, evaluation_type, model_name)
+            draw_score_evaluation(explainer_results, settings.eval.results_dir, evaluation_type, model_name)
 
     if settings.eval.evaluate_fidelity_params:
         model_name = list(agg_scores[EvaluationType.FIDELITY_PLUS].keys())[0]
         variants = [evaluation_type.split("|")[1] for evaluation_type in agg_scores if EvaluationType.FIDELITY_PLUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_PLUS]
         fidelity_plus_evaluations = [agg_scores[evaluation_type][model_name] for evaluation_type in agg_scores if EvaluationType.FIDELITY_PLUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_PLUS]
         fidelity_minus_evaluations = [agg_scores[evaluation_type][model_name] for evaluation_type in agg_scores if EvaluationType.FIDELITY_MINUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_MINUS]
-
-        draw_score_evaluations_combined(fidelity_plus_evaluations, settings.demo.evaluation_results_dir, EvaluationType.FIDELITY_PLUS, model_name, variants)
-        draw_score_evaluations_combined(fidelity_minus_evaluations, settings.demo.evaluation_results_dir, EvaluationType.FIDELITY_MINUS, model_name, variants)
+        draw_score_evaluations_combined(fidelity_plus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, variants)
+        draw_score_evaluations_combined(fidelity_minus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, variants)

@@ -9,6 +9,7 @@ from ml.service import ExplainerType
 from query.dependecies import InferenceMutex, get_parsed_plan
 from query.models import Dataset, Plan, PlanStats, WorkloadRun
 from query.db import db_depends
+from evaluation.service import explainers_for_evaluation
 
 
 class EvaluationRunComposed:
@@ -36,7 +37,6 @@ def store_and_get_explanations_for_workload(
         db.commit()
         db.refresh(evaluation_run)
     res.evaluation_run = evaluation_run
-    skip_explainers = [ExplainerType.BASE, ExplainerType.BASE_CARDINALITY]
     existing_explanations = evaluation_run.plan_explanations
     for model_id, model in enumerate(ml.concrete_models_for_datasets[workload.dataset.name]):
         for table_count in range(1, settings.eval.max_table_count + 1):
@@ -45,7 +45,7 @@ def store_and_get_explanations_for_workload(
             for plan in tqdm(plans):
                 explanations: list[PlanExplanation] = []
                 for explainer_type in ExplainerType:
-                    if explainer_type in skip_explainers:
+                    if explainer_type not in explainers_for_evaluation:
                         continue
                     plan_explanation = next(filter(lambda x: x.explainer_type == explainer_type and x.plan_id == plan.id and x.model_name == model.name, existing_explanations), None)
                     if plan_explanation is None:
