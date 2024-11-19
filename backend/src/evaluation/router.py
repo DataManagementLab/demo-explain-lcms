@@ -48,8 +48,8 @@ def run_all_for_workload(
     if settings.eval.evaluate_fidelity_params:
         # (rel_change_threshold, abs_change_threshold, cumulative_importance)
         fidelity_test_thresholds: tuple[list[float], list[float], list[float]] = (
-            [0.5, 1, 1.5],
-            [None],
+            [1],
+            [6],
             [0.9],
         )
         for i in fidelity_test_thresholds[0]:
