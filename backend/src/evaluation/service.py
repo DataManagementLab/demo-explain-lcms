@@ -25,6 +25,7 @@ explainer_to_string = {
 evaluation_type_string = {
     EvaluationType.FIDELITY_PLUS: "Fidelity+",
     EvaluationType.FIDELITY_MINUS: "Fidelity-",
+    EvaluationType.CHARACTERIZATION_SCORE: "Characterization score",
     EvaluationType.PEARSON: "Person correlation with runtime",
     EvaluationType.SPEARMAN: "Spearman correlaiton with runtime",
     EvaluationType.PEARSON_CARDINALITY: "Person correlation with cardinality",
