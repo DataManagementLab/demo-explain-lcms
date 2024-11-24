@@ -22,8 +22,8 @@ def test_relative_change():
 def test_fidelity():
     # Simple test
     assert _get_fidelity_evaluation_internal(1, 2, False) == 1
-    assert _get_fidelity_evaluation_internal(1, 1.5, False) == 1
-    assert _get_fidelity_evaluation_internal(2, 2.5, False) == 0.5
+    assert _get_fidelity_evaluation_internal(1, 1.5, False) == 0.5
+    assert _get_fidelity_evaluation_internal(2, 2.5, False) == 0.25
     assert _get_fidelity_evaluation_internal(2, 6, False) == 1
 
     # Another relative threshold test
@@ -39,8 +39,8 @@ def test_fidelity():
     assert _get_fidelity_evaluation_internal(2, -2, False, rel_change_threshold=2) == 1
 
     # Big values test
-    assert _get_fidelity_evaluation_internal(20, 21, False) == 0.2
-    assert _get_fidelity_evaluation_internal(20, 25, False) == 1
+    assert _get_fidelity_evaluation_internal(20, 23, False) == 0.5
+    assert _get_fidelity_evaluation_internal(20, 26, False) == 1
 
     # Real change threshold test
     assert _get_fidelity_evaluation_internal(20, 21, False, rel_change_threshold=2, abs_change_threshold=2) == 0.5

@@ -50,7 +50,7 @@ def run_all_for_workload(
         fidelity_test_thresholds: tuple[list[float], list[float], list[float]] = (
             [1],
             [6],
-            [0.9],
+            [0.95],
         )
         for i in fidelity_test_thresholds[0]:
             for j in fidelity_test_thresholds[1]:
