@@ -34,6 +34,8 @@ const explanainerTypes = [
   ExplainerType.guidedBackpropagation,
   ExplainerType.gnnExplainer,
   ExplainerType.gnnExplainerOnlyPlans,
+  ExplainerType.differenceExplainer,
+  ExplainerType.differenceExplainerOnlyPlans,
 ];
 
 const explainerTypesRuntimeCorrelaiton = [
@@ -42,6 +44,8 @@ const explainerTypesRuntimeCorrelaiton = [
   ExplainerType.guidedBackpropagation,
   ExplainerType.gnnExplainer,
   ExplainerType.gnnExplainerOnlyPlans,
+  ExplainerType.differenceExplainer,
+  ExplainerType.differenceExplainerOnlyPlans,
 ];
 
 const explainerTypesRuntimeCorrelaitonCard =
@@ -51,7 +55,10 @@ const explainerTypesCardinalityCorrelaiton = [
   ExplainerType.baseCardinality,
   ExplainerType.gradient,
   ExplainerType.guidedBackpropagation,
+  ExplainerType.gnnExplainer,
   ExplainerType.gnnExplainerOnlyPlans,
+  ExplainerType.differenceExplainer,
+  ExplainerType.differenceExplainerOnlyPlans,
 ];
 
 const explainerTypesCardinalityCorrelaitonCard =

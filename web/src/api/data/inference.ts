@@ -29,6 +29,8 @@ export enum ExplainerType {
   guidedBackpropagation = 'GuidedBPExplainer',
   gnnExplainer = 'GNNExplainer',
   gnnExplainerOnlyPlans = 'GNNExplainerOnlyPlans',
+  differenceExplainer = 'DifferenceExplainer',
+  differenceExplainerOnlyPlans = 'DifferenceExplainerOnlyPlans',
 }
 
 export const explainerTypeToDisplay = new Map([
@@ -38,4 +40,6 @@ export const explainerTypeToDisplay = new Map([
   [ExplainerType.guidedBackpropagation, 'Guided Backpropagation'],
   [ExplainerType.gnnExplainer, 'GNNExplainer'],
   [ExplainerType.gnnExplainerOnlyPlans, 'GNNExplainer (Only Plans)'],
+  [ExplainerType.differenceExplainer, 'Difference'],
+  [ExplainerType.differenceExplainerOnlyPlans, 'Difference (Only Plans)'],
 ]);
