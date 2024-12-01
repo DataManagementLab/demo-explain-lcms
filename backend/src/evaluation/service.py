@@ -232,3 +232,25 @@ def draw_score_evaluations_combined(data: list[dict[ExplainerType, list[Evaluati
 
     plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}_combined.png")
     plt.close()
+
+
+def draw_score_evaluations_threshold_trend(data: dict[ExplainerType, dict[str, list[EvaluationScoreToDraw]]], output_dir: str, evaluation_type: EvaluationType, model_name: str, filter_join_counts: int | None = None):
+    plt.figure()
+    for explainer_type, color in zip(explainers_for_evaluation, colors):
+        curr_data = data[explainer_type]
+        variants = [v.split("|")[1].split(",")[0].replace("[", "") for v in curr_data.keys()]
+        avgs = [mean([score.score for score in curr_data[v] if filter_join_counts is None or score.join_count == filter_join_counts]) for v in curr_data.keys()]
+        plt.plot(
+            variants,
+            avgs,
+            color=color,
+            label=explainer_to_string[explainer_type],
+        )
+    plt.ylim(0, 1)
+    plt.xlabel("Threshold variant")
+    plt.ylabel(evaluation_type_string[evaluation_type])
+    plt.title(f"{evaluation_type_string[evaluation_type]} Threshold Trend")
+    plt.legend()
+
+    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}_{filter_join_counts}_trend.png")
+    plt.close()

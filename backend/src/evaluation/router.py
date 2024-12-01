@@ -7,10 +7,11 @@ import json
 from config import Settings, get_settings
 from evaluation.dependencies import EvaluationRunComposed, store_and_get_explanations_for_workload
 from evaluation.models import EvaluationScore, EvaluationType
-from evaluation.service import EvaluationScoreToDraw, draw_score_evaluation, draw_score_evaluations_combined
+from evaluation.service import EvaluationScoreToDraw, draw_score_evaluation, draw_score_evaluations_combined, draw_score_evaluations_threshold_trend
 from evaluation_fns.dependencies import EvaluationBaseParams
 from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, spearman, pearson_cardinality, spearman_cardinality
 from ml.dependencies import MLHelper, get_base_cardinality_explainer, get_base_explainer
+from ml.service import ExplainerType
 from query.dependecies import get_parsed_plan
 from query.db import db_depends
 from zero_shot_learned_db.explanations.data_models.explanation import Explanation, NodeScore
@@ -133,3 +134,29 @@ def run_all_for_workload(
         fidelity_minus_evaluations = [agg_scores[evaluation_type][model_name] for evaluation_type in agg_scores if EvaluationType.FIDELITY_MINUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_MINUS]
         draw_score_evaluations_combined(fidelity_plus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, variants)
         draw_score_evaluations_combined(fidelity_minus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, variants)
+
+    if settings.eval.evaluate_fidelity_params:
+
+        def get_data_for_trend_evaluation(target_evaluation_type: EvaluationType):
+            res: dict[ExplainerType, dict[EvaluationType, list[EvaluationScoreToDraw]]] = {}
+            for evaluation_type, evaluation_type_scores in agg_scores.items():
+                for model_name, model_scores in evaluation_type_scores.items():
+                    for explainer_type, scores in model_scores.items():
+                        if target_evaluation_type in evaluation_type and evaluation_type != target_evaluation_type:
+                            if explainer_type not in res:
+                                res[explainer_type] = {}
+                            if evaluation_type in res[explainer_type]:
+                                res[explainer_type][evaluation_type].extend(scores)
+                            else:
+                                res[explainer_type][evaluation_type] = list(scores)
+            return res
+
+        model_name = list(agg_scores[EvaluationType.FIDELITY_PLUS].keys())[0]
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, filter_join_counts=1)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, filter_join_counts=3)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, filter_join_counts=5)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=1)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=3)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=5)
