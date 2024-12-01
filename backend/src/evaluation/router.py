@@ -153,10 +153,10 @@ def run_all_for_workload(
 
         model_name = list(agg_scores[EvaluationType.FIDELITY_PLUS].keys())[0]
         draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name)
-        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, filter_join_counts=1)
-        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, filter_join_counts=3)
-        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, filter_join_counts=5)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, filter_join_counts=0)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, filter_join_counts=2)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_PLUS), settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, filter_join_counts=4)
         draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name)
-        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=1)
-        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=3)
-        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=5)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=0)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=2)
+        draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=4)

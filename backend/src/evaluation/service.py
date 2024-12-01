@@ -166,9 +166,11 @@ explainers_for_evaluation = [
     ExplainerType.GUIDED_BP,
     ExplainerType.GNN_EXPLAINER,
     ExplainerType.GNN_EXPLAINER_ONLY_PLANS,
+    ExplainerType.DIFFERENCE_EXPLAINER,
+    ExplainerType.DIFFERENCE_EXPLAINER_ONLY_PLANS,
 ]
 
-colors = ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:pink"]
 line_styles = ["dotted", "dashed", "solid"]
 
 
