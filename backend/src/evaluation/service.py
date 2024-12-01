@@ -20,6 +20,8 @@ explainer_to_string = {
     ExplainerType.GUIDED_BP: "Guided Backpropagation",
     ExplainerType.GNN_EXPLAINER: "GNNExplainer",
     ExplainerType.GNN_EXPLAINER_ONLY_PLANS: "GNNExplainer (Only Plans)",
+    ExplainerType.DIFFERENCE_EXPLAINER: "Difference",
+    ExplainerType.DIFFERENCE_EXPLAINER_ONLY_PLANS: "Difference (Only Plans)",
 }
 
 evaluation_type_string = {
