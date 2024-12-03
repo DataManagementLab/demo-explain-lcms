@@ -170,7 +170,7 @@ explainers_for_evaluation = [
     ExplainerType.DIFFERENCE_EXPLAINER_ONLY_PLANS,
 ]
 
-colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:pink"]
+colors = ["tab:blue", "tab:cyan", "tab:red", "tab:orange", "tab:purple", "tab:pink"]
 line_styles = ["dotted", "dashed", "solid"]
 
 
