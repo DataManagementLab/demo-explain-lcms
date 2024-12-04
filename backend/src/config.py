@@ -1,7 +1,6 @@
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from demo.config import DemoSettings
 from evaluation.config import EvaluationSettings
 from ml.config import MLSettings
 from query.config import QuerySettings
@@ -18,7 +17,6 @@ class Settings(BaseSettings):
     disable_eval_routes: bool = False
 
     ml: MLSettings = MLSettings()
-    demo: DemoSettings = DemoSettings()
     eval: EvaluationSettings = EvaluationSettings()
     query: QuerySettings = QuerySettings()
 
