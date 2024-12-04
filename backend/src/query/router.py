@@ -2,9 +2,9 @@ import time
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 
-from ml.dependencies import MLHelper, get_base_explainer
+from ml.dependencies import MLHelper
 from query.db import db_depends
-from query.dependecies import get_explainer_for_parsed_plan, get_parsed_plan, get_parsed_plan_for_inference, inference_mutex
+from query.dependecies import get_explainer_for_parsed_plan, get_parsed_plan, get_parsed_plan_for_inference, get_predictor, inference_mutex
 from query.models import Dataset, Plan, WorkloadRun
 from query.schemas import DatasetResponse, ExplanationResponse, FullQueryResponse, GraphNodeResponse, PredictionResponse, QueriesPageResponse, QueryResponse, WorkloadRunResponse
 from query.service import get_query_stats, get_workload_run_queries_count
@@ -85,7 +85,7 @@ def get_query(parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan)]):
 @router.get("/queries/{query_id}/prediction", response_model=PredictionResponse)
 def get_prediction(
     parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
-    base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
+    base_explainer: Annotated[BaseExplainer, Depends(get_predictor)],
     inference_mutex: Annotated[None, Depends(inference_mutex)],
 ):
     start = time.time()

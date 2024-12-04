@@ -38,7 +38,7 @@ def store_and_get_explanations_for_workload(
         db.refresh(evaluation_run)
     res.evaluation_run = evaluation_run
     existing_explanations = evaluation_run.plan_explanations
-    for model_id, model in enumerate(ml.concrete_models_for_datasets[workload.dataset.name]):
+    for model in ml.concrete_models_for_datasets[workload.dataset.name]:
         for table_count in range(1, settings.eval.max_table_count + 1):
             print(f"Explaining plans with {table_count} tables with {model.name}")
             plans = db.query(Plan).join(Plan.plan_stats).filter(Plan.sql.is_not(None), Plan.workload_run_id == workload_id, PlanStats.tables == table_count).order_by(Plan.id_in_run).limit(settings.eval.max_plans_per_table_count).all()
@@ -50,7 +50,7 @@ def store_and_get_explanations_for_workload(
                     plan_explanation = next(filter(lambda x: x.explainer_type == explainer_type and x.plan_id == plan.id and x.model_name == model.name, existing_explanations), None)
                     if plan_explanation is None:
                         with InferenceMutex():
-                            explainer = ml.get_explainer(explainer_type, workload.dataset.name, model_id)
+                            explainer = ml.get_explainer(explainer_type, workload.dataset.name, model.name)
                             parsed_plan = get_parsed_plan(plan.id, db, ml)
                             parsed_plan.prepare_plan_for_inference()
                             explanation = explainer.explain(parsed_plan)

@@ -47,6 +47,21 @@ def get_explainer_for_parsed_plan(
     return ml.get_explainer(explainer_type, dataset_name=parsed_plan.dataset_name)
 
 
+def get_explainer_optional_for_parsed_plan(
+    ml: Annotated[MLHelper, Depends()],
+    parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
+    explainer_type: ExplainerType | None = None,
+):
+    return ml.get_explainer(explainer_type, dataset_name=parsed_plan.dataset_name) if explainer_type is not None else None
+
+
+def get_predictor(
+    ml: Annotated[MLHelper, Depends()],
+    parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
+):
+    return ml.get_explainer(ExplainerType.BASE, dataset_name=parsed_plan.dataset_name)
+
+
 _inference_mutex = threading.Lock()
 
 

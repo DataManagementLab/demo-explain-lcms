@@ -10,13 +10,12 @@ from evaluation.models import EvaluationRun, EvaluationScore, EvaluationType
 from evaluation.service import EvaluationScoreToDraw, draw_score_evaluation, draw_score_evaluations_threshold_trend
 from evaluation_fns.dependencies import EvaluationBaseParams
 from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, spearman, pearson_cardinality, spearman_cardinality
-from ml.dependencies import MLHelper, get_base_cardinality_explainer, get_base_explainer
+from ml.dependencies import MLHelper
 from ml.service import ExplainerType
 from query.dependecies import get_parsed_plan
 from query.db import db_depends
 from zero_shot_learned_db.explanations.data_models.explanation import Explanation, NodeScore
 from zero_shot_learned_db.explanations.evaluation import evaluation_characterization_score, evaluation_fidelity_minus, evaluation_fidelity_plus
-from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 
 router = APIRouter(tags=["evaluation"], prefix="/evaluation")
 
@@ -37,8 +36,6 @@ def run_all_for_workload(
     db: db_depends,
     settings: Annotated[Settings, Depends(get_settings)],
     ml: Annotated[MLHelper, Depends()],
-    base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
-    base_cardinality_explainer: Annotated[BaseExplainer, Depends(get_base_cardinality_explainer)],
     evaluation_run: Annotated[EvaluationRunComposed, Depends(store_and_get_explanations_for_workload)],
 ):
     def get_fidelity_evaluation_fn(fn, params: tuple[float, float, float]):
@@ -97,8 +94,8 @@ def run_all_for_workload(
                         )
                         base_params = EvaluationBaseParams(
                             parsed_plan=parsed_plan,
-                            base_explainer=base_explainer,
-                            base_cardinality_explainer=base_cardinality_explainer,
+                            base_explainer=ml.get_explainer(ExplainerType.BASE, parsed_plan.dataset_name, plan_explanation.model_name),
+                            base_cardinality_explainer=ml.get_explainer(ExplainerType.BASE_CARDINALITY, parsed_plan.dataset_name, plan_explanation.model_name),
                             explanation=explanation,
                         )
                         res = fn(base_params)

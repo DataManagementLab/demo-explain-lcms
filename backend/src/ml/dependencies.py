@@ -1,7 +1,6 @@
 import os.path
 import time
-from typing import Annotated
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 import numpy as np
 import torch
 import tqdm
@@ -33,7 +32,7 @@ class ZSModel:
 class MLHelper:
     hyperparameters: HyperParameters
     feature_statistics: FeatureStatistics
-    model: ZeroShotModel
+    model: ZeroShotModel = None
     concrete_models_for_datasets: dict[str, list[ZSModel]]
     settings: Settings
     database_stats: dict[int, PydanticDatabaseStats]
@@ -57,14 +56,6 @@ class MLHelper:
         self.feature_statistics = load_statistics(statistics_file)
         label_norm = get_label_norm_runtimes([i[0] for i in db.query(Plan.plan_runtime).filter(Plan.sql.is_not(None)).all()], self.hyperparameters.final_mlp_kwargs.loss_class_name)
 
-        self.model = prepare_model(
-            self.hyperparameters,
-            self.feature_statistics,
-            label_norm,
-            model_dir,
-            settings.ml.zs_model_file_name,
-        )
-
         runs_config = load_model_from_file(SavedRunsConfig, settings.query.saved_runs_config_file)
         self.concrete_models_for_datasets = {}
         for dataset in runs_config.datasets:
@@ -85,6 +76,8 @@ class MLHelper:
                     )
                 )
                 print("Loaded model:", model)
+                if self.model is None:
+                    self.model = self.concrete_models_for_datasets[dataset.name][0].model
                 if settings.ml.load_only_first_model_from_runs_config:
                     break
 
@@ -98,13 +91,15 @@ class MLHelper:
         assert self.model is not None
         assert self.concrete_models_for_datasets is not None
 
-    def get_explainer(self, explainer_type: ExplainerType, dataset_name: str | None = None, model_id: int = 0):
+    def get_explainer(self, explainer_type: ExplainerType, dataset_name: str | None = None, model_name: str | None = None):
         self._assert_loaded()
 
         if dataset_name is None:
             return explainers[explainer_type](self.model, log=self.settings.ml.explainers_log)
 
-        return explainers[explainer_type](self.concrete_models_for_datasets[dataset_name][model_id].model, log=self.settings.ml.explainers_log)
+        dataset_models = self.concrete_models_for_datasets[dataset_name]
+        model = next(filter(lambda x: x.name == model_name, dataset_models), dataset_models[0])
+        return explainers[explainer_type](model.model, log=self.settings.ml.explainers_log)
 
     def cache_store_plan(self, plan: ParsedPlan):
         self.plans_cache[plan.id] = (plan, time.time())
@@ -124,22 +119,6 @@ class MLHelper:
         plan = self.plans_cache[plan_id][0]
         self.cache_store_plan(plan)
         return plan
-
-
-def get_explainer(explainer_type: ExplainerType, ml: Annotated[MLHelper, Depends()]):
-    return ml.get_explainer(explainer_type)
-
-
-def get_explainer_optional(ml: Annotated[MLHelper, Depends()], explainer_type: ExplainerType | None = None):
-    return ml.get_explainer(explainer_type) if explainer_type is not None else None
-
-
-def get_base_explainer(ml: Annotated[MLHelper, Depends()]):
-    return ml.get_explainer(ExplainerType.BASE)
-
-
-def get_base_cardinality_explainer(ml: Annotated[MLHelper, Depends()]):
-    return ml.get_explainer(ExplainerType.BASE_CARDINALITY)
 
 
 class MLHelperOld:

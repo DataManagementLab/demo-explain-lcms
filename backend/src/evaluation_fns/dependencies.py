@@ -1,11 +1,11 @@
 from typing import Annotated
 from fastapi import Depends, HTTPException
 
-from ml.dependencies import get_base_cardinality_explainer, get_base_explainer, get_explainer_optional
-from query.dependecies import get_parsed_plan_for_inference, inference_mutex
+from ml.dependencies import MLHelper
+from ml.service import ExplainerType
+from query.dependecies import get_explainer_optional_for_parsed_plan, get_parsed_plan_for_inference, inference_mutex
 from query.schemas import ExplanationResponseBase
 
-# from zero_shot_learned_db.explanations.data_models.explanation import Explanation
 from zero_shot_learned_db.explanations.data_models.explanation import Explanation
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
@@ -26,10 +26,9 @@ class EvaluationBaseParams:
 
 def evaluation_base_params(
     parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
-    base_explainer: Annotated[BaseExplainer, Depends(get_base_explainer)],
-    base_cardinality_explainer: Annotated[BaseExplainer, Depends(get_base_cardinality_explainer)],
-    explainer: Annotated[BaseExplainer, Depends(get_explainer_optional)],
+    explainer: Annotated[BaseExplainer, Depends(get_explainer_optional_for_parsed_plan)],
     inference_mutex: Annotated[None, Depends(inference_mutex)],
+    ml: Annotated[MLHelper, Depends()],
     explanation: ExplanationResponseBase | None = None,
 ):
     if explainer is None and explanation is None:
@@ -40,7 +39,7 @@ def evaluation_base_params(
 
     yield EvaluationBaseParams(
         parsed_plan=parsed_plan,
-        base_explainer=base_explainer,
-        base_cardinality_explainer=base_cardinality_explainer,
+        base_explainer=ml.get_explainer(ExplainerType.BASE, parsed_plan.dataset_name),
+        base_cardinality_explainer=ml.get_explainer(ExplainerType.BASE_CARDINALITY, parsed_plan.dataset_name),
         explanation=explanation,
     )
