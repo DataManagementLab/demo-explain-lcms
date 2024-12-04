@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     db_password: str = ""
     db_log: bool = False
 
+    disable_eval_routes: bool = False
+
     ml: MLSettings = MLSettings()
     demo: DemoSettings = DemoSettings()
     eval: EvaluationSettings = EvaluationSettings()

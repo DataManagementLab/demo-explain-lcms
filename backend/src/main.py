@@ -65,7 +65,8 @@ app.add_middleware(
 app.include_router(evaluation_router)
 app.include_router(test_approaches_router)
 app.include_router(query_router)
-app.include_router(evaluation_fns_router)
+if not settings.disable_eval_routes:
+    app.include_router(evaluation_fns_router)
 
 
 # Index
