@@ -202,7 +202,7 @@ def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]]
     plt.ylim(0, 1)
     plt.xlabel("# of join operators")
     plt.ylabel(evaluation_type_string[evaluation_type])
-    plt.title(f"{evaluation_type_string[evaluation_type]}{additional_params}")
+    plt.title(f"{evaluation_type_string[evaluation_type]}{additional_params} {model_name}")
     plt.legend()
 
     plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}{additional_params}.png")
@@ -242,7 +242,7 @@ def draw_score_evaluations_threshold_trend(data: dict[ExplainerType, dict[str, l
     plt.figure()
     for explainer_type, color in zip(explainers_for_evaluation, colors):
         curr_data = data[explainer_type]
-        variants = [v.split("|")[1].split(",")[0].replace("[", "") for v in curr_data.keys()]
+        variants = [v.split("|")[1].split(",")[2].replace("[", "").replace("]", "") for v in curr_data.keys()]
         avgs = [mean([score.score for score in curr_data[v] if filter_join_counts is None or score.join_count == filter_join_counts]) for v in curr_data.keys()]
         plt.plot(
             variants,
@@ -251,10 +251,10 @@ def draw_score_evaluations_threshold_trend(data: dict[ExplainerType, dict[str, l
             label=explainer_to_string[explainer_type],
         )
     plt.ylim(0, 1)
-    plt.xlabel("Threshold variant")
+    plt.xlabel("t_mask variant")
     plt.ylabel(evaluation_type_string[evaluation_type])
-    plt.title(f"{evaluation_type_string[evaluation_type]} Threshold Trend")
+    plt.title(f"{evaluation_type_string[evaluation_type]} t_mask trend {'all queries' if filter_join_counts is None else str(filter_join_counts) + ' joins'}")
     plt.legend()
 
-    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}_{filter_join_counts}_trend.png")
+    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}_{filter_join_counts}_trend_tmask.png")
     plt.close()

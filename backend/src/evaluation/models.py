@@ -5,14 +5,14 @@ from sqlalchemy.dialects.postgresql import JSONB
 from query.db import Base
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
-from query.models import Plan
+from query.models import Plan, WorkloadRun
 
 
 class EvaluationRun(Base):
     __tablename__ = "eval_runs"
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    workload_id: Mapped[int] = mapped_column(ForeignKey(Plan.id))
+    workload_id: Mapped[int] = mapped_column(ForeignKey(WorkloadRun.id))
     created_at: Mapped[datetime] = mapped_column(default=datetime.now())
 
     plan_explanations: Mapped[list["PlanExplanation"]] = relationship()
@@ -28,6 +28,7 @@ class PlanExplanation(Base):
     model_name: Mapped[str]
 
     plan_id: Mapped[int] = mapped_column(ForeignKey(Plan.id))
+    plan: Mapped[Plan] = relationship()
     evaluation_run_id: Mapped[int] = mapped_column(ForeignKey(EvaluationRun.id))
 
 

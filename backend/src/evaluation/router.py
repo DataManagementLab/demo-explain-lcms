@@ -6,8 +6,8 @@ import json
 
 from config import Settings, get_settings
 from evaluation.dependencies import EvaluationRunComposed, store_and_get_explanations_for_workload
-from evaluation.models import EvaluationScore, EvaluationType
-from evaluation.service import EvaluationScoreToDraw, draw_score_evaluation, draw_score_evaluations_combined, draw_score_evaluations_threshold_trend
+from evaluation.models import EvaluationRun, EvaluationScore, EvaluationType
+from evaluation.service import EvaluationScoreToDraw, draw_score_evaluation, draw_score_evaluations_threshold_trend
 from evaluation_fns.dependencies import EvaluationBaseParams
 from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, spearman, pearson_cardinality, spearman_cardinality
 from ml.dependencies import MLHelper, get_base_cardinality_explainer, get_base_explainer
@@ -19,6 +19,17 @@ from zero_shot_learned_db.explanations.evaluation import evaluation_characteriza
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 
 router = APIRouter(tags=["evaluation"], prefix="/evaluation")
+
+
+score_evaluation_fns_global = [
+    (EvaluationType.FIDELITY_PLUS, fidelity_plus),
+    (EvaluationType.FIDELITY_MINUS, fidelity_minus),
+    (EvaluationType.CHARACTERIZATION_SCORE, None),
+    (EvaluationType.PEARSON, pearson),
+    (EvaluationType.SPEARMAN, spearman),
+    (EvaluationType.PEARSON_CARDINALITY, pearson_cardinality),
+    (EvaluationType.SPEARMAN_CARDINALITY, spearman_cardinality),
+]
 
 
 @router.get("/workload/{workload_id}/run_all")
@@ -36,24 +47,19 @@ def run_all_for_workload(
 
         return fn_internal
 
-    score_evaluation_fns = [
-        (EvaluationType.FIDELITY_PLUS, fidelity_plus),
-        (EvaluationType.FIDELITY_MINUS, fidelity_minus),
-        (EvaluationType.CHARACTERIZATION_SCORE, None),
-        (EvaluationType.PEARSON, pearson),
-        (EvaluationType.SPEARMAN, spearman),
-        (EvaluationType.PEARSON_CARDINALITY, pearson_cardinality),
-        (EvaluationType.SPEARMAN_CARDINALITY, spearman_cardinality),
-    ]
+    score_evaluation_fns = list(score_evaluation_fns_global)
 
     if settings.eval.evaluate_fidelity_params:
         # (rel_change_threshold, abs_change_threshold, cumulative_importance)
         fidelity_test_thresholds: tuple[list[float], list[float], list[float]] = (
+            # rel_change_threshold
             # [0.01, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3],
             [1],
+            # abs_change_threshold
             # [1, 2, 3, 4, 5, 6, 7, 8, None],
-            [2],
-            # [None],
+            # [2],
+            [None],
+            # cumulative_importance
             # [0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99],
             [0.99],
         )
@@ -131,13 +137,13 @@ def run_all_for_workload(
         for model_name, explainer_results in model_results.items():
             draw_score_evaluation(explainer_results, settings.eval.results_dir, evaluation_type, model_name)
 
-    if settings.eval.evaluate_fidelity_params:
-        model_name = list(agg_scores[EvaluationType.FIDELITY_PLUS].keys())[0]
-        variants = [evaluation_type.split("|")[1] for evaluation_type in agg_scores if EvaluationType.FIDELITY_PLUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_PLUS]
-        fidelity_plus_evaluations = [agg_scores[evaluation_type][model_name] for evaluation_type in agg_scores if EvaluationType.FIDELITY_PLUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_PLUS]
-        fidelity_minus_evaluations = [agg_scores[evaluation_type][model_name] for evaluation_type in agg_scores if EvaluationType.FIDELITY_MINUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_MINUS]
-        draw_score_evaluations_combined(fidelity_plus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, variants)
-        draw_score_evaluations_combined(fidelity_minus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, variants)
+    # if settings.eval.evaluate_fidelity_params:
+    #     model_name = list(agg_scores[EvaluationType.FIDELITY_PLUS].keys())[0]
+    #     variants = [evaluation_type.split("|")[1] for evaluation_type in agg_scores if EvaluationType.FIDELITY_PLUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_PLUS]
+    #     fidelity_plus_evaluations = [agg_scores[evaluation_type][model_name] for evaluation_type in agg_scores if EvaluationType.FIDELITY_PLUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_PLUS]
+    #     fidelity_minus_evaluations = [agg_scores[evaluation_type][model_name] for evaluation_type in agg_scores if EvaluationType.FIDELITY_MINUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_MINUS]
+    #     draw_score_evaluations_combined(fidelity_plus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, variants)
+    #     draw_score_evaluations_combined(fidelity_minus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, variants)
 
     if settings.eval.evaluate_fidelity_params:
 
@@ -164,3 +170,60 @@ def run_all_for_workload(
         draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=0)
         draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=2)
         draw_score_evaluations_threshold_trend(get_data_for_trend_evaluation(EvaluationType.FIDELITY_MINUS), settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, filter_join_counts=4)
+
+
+@router.get("/draw_plots_combined_different_datsets")
+def draw_plots_combine_all_datasets(
+    db: db_depends,
+    settings: Annotated[Settings, Depends(get_settings)],
+):
+    score_evaluation_fns = list(score_evaluation_fns_global)
+    evaluation_types = [e[0] for e in score_evaluation_fns]
+
+    score_evaluations: dict[EvaluationType, list[EvaluationScoreToDraw]] = {}
+    for evaluation_type in evaluation_types:
+        score_evaluations[evaluation_type] = []
+
+    evaluation_runs = db.query(EvaluationRun).all()
+    latest_runs: dict[int, EvaluationRun] = {}
+
+    for run in evaluation_runs:
+        if run.workload_id not in latest_runs or run.created_at > latest_runs[run.workload_id].created_at:
+            latest_runs[run.workload_id] = run
+
+    explanations_count = 0
+    for run in latest_runs.values():
+        for explanation in tqdm(run.plan_explanations):
+            if "_0" not in explanation.model_name:
+                continue
+            explanations_count += 1
+            for evaluation_type, fn in score_evaluation_fns:
+                evaluation = next(filter(lambda x: x.evaluation_type == evaluation_type, explanation.evaluations), None)
+                score_evaluations[evaluation.evaluation_type].append(
+                    EvaluationScoreToDraw(
+                        score=evaluation.score,
+                        explainer_type=explanation.explainer_type,
+                        join_count=explanation.plan.plan_stats.joins,
+                        model_name=explanation.model_name,
+                    )
+                )
+
+    print(f"Combined score for {sum([len(i) for i in score_evaluations.values()])} evaluation scores and {explanations_count} explanations")
+    agg_scores = {
+        evaluation_type: {
+            explainer_type: [
+                EvaluationScoreToDraw(
+                    score=mean([score.score for score in scores if score.explainer_type == explainer_type and score.join_count == join_count]),
+                    explainer_type=explainer_type,
+                    join_count=join_count,
+                    model_name="all",
+                )
+                for join_count in set([i.join_count for i in scores])
+            ]
+            for explainer_type in set([i.explainer_type for i in scores])
+        }
+        for evaluation_type, scores in score_evaluations.items()
+    }
+
+    for evaluation_type, explainer_results in agg_scores.items():
+        draw_score_evaluation(explainer_results, settings.eval.results_dir, evaluation_type, "all")
