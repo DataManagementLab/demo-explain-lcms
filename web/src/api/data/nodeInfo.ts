@@ -31,6 +31,7 @@ export const nodeFieldSkipToken = '___';
 
 export const nodeFieldToDisplay = new Map<string, string>([
   ['nodeType', 'Node type'],
+  ['nodeDepth', 'Node depth'],
 
   ['tablename', 'Table name'],
   ['attname', 'Attribute name'],
