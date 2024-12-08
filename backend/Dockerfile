@@ -11,7 +11,7 @@ COPY requirements /tmp/requirements
 RUN pip install --no-cache-dir -r /tmp/requirements/base.txt
 
 
-FROM install
+FROM install AS run-app
 
 COPY ./zero-shot-data /zero-shot-data
 
