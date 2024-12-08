@@ -10,7 +10,7 @@ engine = None
 
 
 def setup_db_connection(settings: Settings):
-    create_db(settings, settings.query.db_name)
+    create_db(settings, settings.query.db_name, settings.query.db_init_backup_file)
     connection_string = get_db_connection_string(settings, settings.query.db_name)
     global engine
     engine = create_engine(connection_string)

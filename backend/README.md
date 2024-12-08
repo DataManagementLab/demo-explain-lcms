@@ -27,51 +27,53 @@ Based on:
 
 0. You may want to start a full demo app with docker-compose, see ["Quick production setup" section in main README](../README.md#quick-production-setup) instead. Otherwise, continue here:
 1. Copy **zero-shot-data** into the root of the **backend** directory
-2. Make sure to have docker installed
-3. Setup Postgres database
-```sh
-docker network create expl-zs-network
-docker run --name expl-zs-postgres --env POSTGRES_PASSWORD=mysecretpassword --network expl-zs-network -d postgres
-```
-4. Build image and run docker container
-```sh
-docker build -t expl-zs-backend-image .
-docker run --name expl-zs-backend --env db_password=mysecretpassword --network expl-zs-network -p 5240:80 -d expl-zs-backend-image
-```
+2. *(Optional)* Install psql `apt-get install postgresql-client-16` and copy **zs_queries.backup** into [./src](./src/)
+3. Make sure to have docker installed
+4. Setup Postgres database
+    ```console
+    docker network create expl-zs-network
+    docker run --name expl-zs-postgres --env    POSTGRES_PASSWORD=mysecretpassword --network    expl-zs-network -d postgres
+    ```
+5. Build image and run docker container
+    ```console
+    docker build -t expl-zs-backend-image .
+    docker run --name expl-zs-backend --env     db_password=mysecretpassword --network expl-zs-network -p     5240:80 -d expl-zs-backend-image
+    ```
 
 ## Development Setup
 
 1. Install Python 3.11
 2. Make sure to have docker installed
 3. Copy **zero-shot-data** into the root of the **backend** directory (or set corresponding environmental variables, see [Environmental Variables, ML section](#ml))
-4. Setup Postgres database
-```sh
-docker run --name expl-zs-postgres-dev -e POSTGRES_PASSWORD=mysecretpassword -d postgres
-```
-5. Create a minimal **.env** file in [./src/.env](./src/.env) (see [Minimal config example](#minimal-config-example))
-6. Install graphviz:
-```sh
-apt-get update
-apt-get install graphviz graphviz-dev
-```
-7. Create and activate python virtual environment:
-```sh
-python -m venv venv
-source venv/bin/activate
-```
-8. Install packages:
-```sh
-pip install --upgrade setuptools
-pip install --upgrade pip
-pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/rocm5.6
-pip install --no-cache-dir dgl -f https://data.dgl.ai/wheels/torch-2.1/repo.html
-pip install -r ./requirements/dev.txt
-```
-9. Run backend:
-```sh
-cd src
-uvicorn main:app
-```
+4.  *(Optional)* Install psql `apt-get install postgresql-client-16` and copy **zs_queries.backup** into [./src](./src/)
+5. Setup Postgres database
+    ```console
+    docker run --name expl-zs-postgres-dev -e     POSTGRES_PASSWORD=mysecretpassword -d postgres
+    ```
+6. Create a minimal **.env** file in [./src/.env](./src/.env) (see [Minimal config example](#minimal-config-example))
+7. Install graphviz:
+    ```console
+    apt-get update
+    apt-get install graphviz graphviz-dev
+    ```
+8. Create and activate python virtual environment:
+    ```console
+    python -m venv venv
+    source venv/bin/activate
+    ```
+9. Install packages:
+    ```console
+    pip install --upgrade setuptools
+    pip install --upgrade pip
+    pip install torch==2.1.2 torchvision==0.16.2    torchaudio==2.1.2 --index-url https://download.pytorch.   org/whl/rocm5.6
+    pip install --no-cache-dir dgl -f https://data.dgl.ai/    wheels/torch-2.1/repo.html
+    pip install -r ./requirements/dev.txt
+    ```
+10. Run backend:
+    ```console
+    cd src
+    uvicorn main:app
+    ```
 
 ## Environmental Variables
 

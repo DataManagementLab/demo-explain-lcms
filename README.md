@@ -14,6 +14,8 @@ This directory contains a project that was developed in terms of *"Opening the B
 ## Quick production setup
 
 1. Copy **zero-shot-data** into the root of the **backend** directory
-2. Make sure to have docker installed
-3. Run `docker-compose up -d`
-4. Web frontend can be found at http://localhost:5241/ and backend docs can be found at http://localhost:5240/docs
+2. *(Optional)* Install psql `apt-get install postgresql-client-16` and copy **zs_queries.backup** into [./backend/src](./backend/src/)
+3. Make sure to have docker installed
+4. Run `docker-compose up --build -d`
+5. If you skipped step 2, wait for database initialization
+6. Web frontend can be found at http://localhost:5241/ and backend docs can be found at http://localhost:5240/docs

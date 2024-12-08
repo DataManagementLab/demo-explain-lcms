@@ -5,6 +5,9 @@ RUN pip install --no-cache-dir torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.
 RUN pip install --no-cache-dir dgl -f https://data.dgl.ai/wheels/torch-2.1/repo.html
 RUN apt-get update
 RUN apt-get install -y graphviz graphviz-dev
+RUN apt install -y postgresql-common
+RUN /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+RUN apt-get install -y postgresql-client-16
 
 FROM pytorch-base AS install
 COPY requirements /tmp/requirements

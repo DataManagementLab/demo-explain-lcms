@@ -163,3 +163,4 @@ cython_debug/
 .vscode
 evaluation_results/
 zero-shot-data/
+zs_queries.backup
