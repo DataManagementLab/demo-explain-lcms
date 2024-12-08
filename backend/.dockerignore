@@ -162,4 +162,3 @@ cython_debug/
 .ruff_cache
 .vscode
 evaluation_results/
-zero-shot-data/
