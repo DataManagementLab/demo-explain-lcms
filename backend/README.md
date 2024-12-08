@@ -25,13 +25,13 @@ Based on:
 
 ## Quick production setup
 
-0. You may want to start a full demo app, see ["Quick production setup" section in main README](../README.md#quick-production-setup) instead. Otherwise, continue here:
+0. You may want to start a full demo app with docker-compose, see ["Quick production setup" section in main README](../README.md#quick-production-setup) instead. Otherwise, continue here:
 1. Copy **zero-shot-data** into the root of the **backend** directory
 2. Make sure to have docker installed
 3. Setup Postgres database
 ```sh
 docker network create expl-zs-network
-docker run --name expl-zs-postgres -e POSTGRES_PASSWORD=mysecretpassword --network expl-zs-network -d postgres
+docker run --name expl-zs-postgres --env POSTGRES_PASSWORD=mysecretpassword --network expl-zs-network -d postgres
 ```
 4. Build image and run docker container
 ```sh

@@ -16,7 +16,7 @@ FROM install AS run-app
 COPY ./zero-shot-data /zero-shot-data
 
 ENV ml__base_data_dir=/zero-shot-data
-ENV cors_origins='["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5242", "http://127.0.0.1:5242"]'
+ENV cors_origins='["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5241", "http://127.0.0.1:5241"]'
 ENV db_host=expl-zs-postgres
 
 
