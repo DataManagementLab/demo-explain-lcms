@@ -18,6 +18,7 @@ ENV VITE_BACKEND_URL=${BACKEND_URL}
 
 RUN pnpm build
 
-FROM nginx:alpine
+FROM nginx:latest
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d
 COPY --from=build /app/dist /usr/share/nginx/html
-CMD ["nginx", "-g", "daemon off;"]

@@ -24,7 +24,7 @@ Based on:
 2. Build image and run docker container
 ```sh
 docker build --build-arg BACKEND_URL=http://127.0.0.1:5240/ -t expl-zs-frontend-image .
-docker run --name expl-zs-frontend --network expl-zs-network -p 5241:80 -d expl-zs-frontend-image
+docker run --name expl-zs-frontend -p 5241:80 -d expl-zs-frontend-image
 ```
 
 
