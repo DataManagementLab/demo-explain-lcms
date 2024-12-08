@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data 
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+    networks:
+      - expl-zs-network
+  backend:
+    build: ./backend
+    restart: always
+    environment:
+      - db_password=mysecretpassword
+      - db_host=postgres
+    networks:
+      - expl-zs-network
+    ports:
+      - 5240:80
+  web:
+    build:
+      context: ./web
+      args:
+        - BACKEND_URL=http://127.0.0.1:5240/
+    restart: always
+    ports:
+      - 5241:80
+
+networks:
+  expl-zs-network:
+
+volumes:
+  pgdata:
