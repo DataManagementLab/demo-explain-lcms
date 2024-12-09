@@ -1,20 +1,26 @@
 import { ExplanationBase, PredictionBase } from './inference';
 
-export interface FidelityEvaluation {
-  output: PredictionBase;
-  explanation: ExplanationBase;
-  maskedOutput: PredictionBase;
+export interface ScoreEvaluation {
   score: number;
 }
 
-export type FidelityType = 'fidelity-plus' | 'fidelity-minus';
+export interface FidelityEvaluation extends ScoreEvaluation {
+  output: PredictionBase;
+  explanation: ExplanationBase;
+  maskedOutput: PredictionBase;
+}
+
+export type FidelityType =
+  | 'fidelity-plus'
+  | 'fidelity-minus'
+  | 'characterization-score';
 export const fidelityTypeToDisplay = {
   'fidelity-plus': 'Fidelity Plus',
   'fidelity-minus': 'Fidelity Minus',
+  'characterization-score': 'Characterization Score',
 } satisfies Record<FidelityType, string>;
 
-export interface CorrelationEvaluation {
-  score: number;
+export interface CorrelationEvaluation extends ScoreEvaluation {
   baseline: ExplanationBase;
   explanation: ExplanationBase;
 }

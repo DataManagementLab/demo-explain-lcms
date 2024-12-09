@@ -91,14 +91,15 @@ function useSelectedInfo<T>(key: SelectedInfoKey, initialItems: T[]) {
     ? (JSON.parse(storedSelectedStr) as SelectedInfo<T>[])
     : undefined;
   const [selected, setSelected] = useState(
-    storedSelected ??
-      initialItems.map(
-        (item) =>
-          ({
-            item: item,
-            isSelected: true,
-          }) satisfies SelectedInfo<T>,
-      ),
+    storedSelected != undefined && storedSelected.length == initialItems.length
+      ? storedSelected
+      : initialItems.map(
+          (item) =>
+            ({
+              item: item,
+              isSelected: true,
+            }) satisfies SelectedInfo<T>,
+        ),
   );
 
   useEffect(
@@ -125,6 +126,7 @@ function useSelectedInfo<T>(key: SelectedInfoKey, initialItems: T[]) {
 const evaluations = [
   'fidelity-plus',
   'fidelity-minus',
+  'characterization-score',
   'pearson',
   'spearman',
   'pearson-cardinality',
@@ -332,6 +334,15 @@ function Demo() {
                     <Separator />
                     <FidelityEvaluationCard
                       fidelityType="fidelity-minus"
+                      explainerTypes={selectedExplainerTypes}
+                    />
+                  </>
+                )}
+                {selectedEvaluationTypes.includes('characterization-score') && (
+                  <>
+                    <Separator />
+                    <FidelityEvaluationCard
+                      fidelityType="characterization-score"
                       explainerTypes={selectedExplainerTypes}
                     />
                   </>
