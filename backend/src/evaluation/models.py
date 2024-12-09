@@ -40,6 +40,8 @@ class EvaluationType(StrEnum):
     SPEARMAN = "spearman"
     PEARSON_CARDINALITY = "pearson-cardinality"
     SPEARMAN_CARDINALITY = "spearman-cardinality"
+    PEARSON_NODE_DEPTH = "pearson-node-depth"
+    SPEARMAN_NODE_DEPTH = "spearman-node-depth"
 
 
 class EvaluationScore(Base):

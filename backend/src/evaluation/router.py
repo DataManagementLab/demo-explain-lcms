@@ -9,10 +9,10 @@ from evaluation.dependencies import EvaluationRunComposed, store_and_get_explana
 from evaluation.models import EvaluationRun, EvaluationScore, EvaluationType
 from evaluation.service import EvaluationScoreToDraw, draw_score_evaluation, draw_score_evaluations_threshold_trend
 from evaluation_fns.dependencies import EvaluationBaseParams
-from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, spearman, pearson_cardinality, spearman_cardinality
+from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, pearson_node_depth, spearman, pearson_cardinality, spearman_cardinality, spearman_node_depth
 from ml.dependencies import MLHelper
 from ml.service import ExplainerType
-from query.dependecies import get_parsed_plan
+from query.dependecies import InferenceMutex, get_parsed_plan
 from query.db import db_depends
 from zero_shot_learned_db.explanations.data_models.explanation import Explanation, NodeScore
 from zero_shot_learned_db.explanations.evaluation import evaluation_characterization_score, evaluation_fidelity_minus, evaluation_fidelity_plus
@@ -28,6 +28,8 @@ score_evaluation_fns_global = [
     (EvaluationType.SPEARMAN, spearman),
     (EvaluationType.PEARSON_CARDINALITY, pearson_cardinality),
     (EvaluationType.SPEARMAN_CARDINALITY, spearman_cardinality),
+    (EvaluationType.PEARSON_NODE_DEPTH, pearson_node_depth),
+    (EvaluationType.SPEARMAN_NODE_DEPTH, spearman_node_depth),
 ]
 
 
@@ -80,27 +82,28 @@ def run_all_for_workload(
             for evaluation_type, fn in score_evaluation_fns:
                 res = next(filter(lambda x: x.evaluation_type == evaluation_type, plan_explanation.evaluations), None)
                 if res is None:
-                    parsed_plan = get_parsed_plan(plan.id, db, ml)
-                    parsed_plan.prepare_plan_for_inference()
-                    if evaluation_type == EvaluationType.CHARACTERIZATION_SCORE:
-                        fidelity_plus_score = next(filter(lambda x: x.evaluation_type == EvaluationType.FIDELITY_PLUS, plan_explanation.evaluations))
-                        fidelity_minus_score = next(filter(lambda x: x.evaluation_type == EvaluationType.FIDELITY_MINUS, plan_explanation.evaluations))
-                        res = evaluation_characterization_score(fidelity_plus_score.score, fidelity_minus_score.score, parsed_plan)
-                        score = EvaluationScore(score=res.score, evaluation_type=evaluation_type)
-                    else:
-                        explanation = Explanation(
-                            node_count=plan.plan_stats.nodes,
-                            base_scores=[NodeScore(**score) for score in plan_explanation.base_scores],
-                        )
-                        base_params = EvaluationBaseParams(
-                            parsed_plan=parsed_plan,
-                            base_explainer=ml.get_explainer(ExplainerType.BASE, parsed_plan.dataset_name, plan_explanation.model_name),
-                            ml=ml,
-                            explanation=explanation,
-                        )
-                        res = fn(base_params)
-                        score = EvaluationScore(score=res.score, evaluation_type=evaluation_type)
-                    plan_explanation.evaluations.append(score)
+                    with InferenceMutex() as mutex:
+                        parsed_plan = get_parsed_plan(plan.id, db, ml, mutex)
+                        parsed_plan.prepare_plan_for_inference()
+                        if evaluation_type == EvaluationType.CHARACTERIZATION_SCORE:
+                            fidelity_plus_score = next(filter(lambda x: x.evaluation_type == EvaluationType.FIDELITY_PLUS, plan_explanation.evaluations))
+                            fidelity_minus_score = next(filter(lambda x: x.evaluation_type == EvaluationType.FIDELITY_MINUS, plan_explanation.evaluations))
+                            res = evaluation_characterization_score(fidelity_plus_score.score, fidelity_minus_score.score, parsed_plan)
+                            score = EvaluationScore(score=res.score, evaluation_type=evaluation_type)
+                        else:
+                            explanation = Explanation(
+                                node_count=plan.plan_stats.nodes,
+                                base_scores=[NodeScore(**score) for score in plan_explanation.base_scores],
+                            )
+                            base_params = EvaluationBaseParams(
+                                parsed_plan=parsed_plan,
+                                base_explainer=ml.get_explainer(ExplainerType.BASE, parsed_plan.dataset_name, plan_explanation.model_name),
+                                ml=ml,
+                                explanation=explanation,
+                            )
+                            res = fn(base_params)
+                            score = EvaluationScore(score=res.score, evaluation_type=evaluation_type)
+                        plan_explanation.evaluations.append(score)
                 score_evaluations[evaluation_type].append(
                     EvaluationScoreToDraw(
                         score=res.score,

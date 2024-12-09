@@ -49,9 +49,9 @@ def store_and_get_explanations_for_workload(
                         continue
                     plan_explanation = next(filter(lambda x: x.explainer_type == explainer_type and x.plan_id == plan.id and x.model_name == model.name, existing_explanations), None)
                     if plan_explanation is None:
-                        with InferenceMutex():
+                        with InferenceMutex() as mutex:
                             explainer = ml.get_explainer(explainer_type, workload.dataset.name, model.name)
-                            parsed_plan = get_parsed_plan(plan.id, db, ml)
+                            parsed_plan = get_parsed_plan(plan.id, db, ml, mutex)
                             parsed_plan.prepare_plan_for_inference()
                             explanation = explainer.explain(parsed_plan)
                         plan_explanation = PlanExplanation(

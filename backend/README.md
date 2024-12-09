@@ -87,6 +87,7 @@ Based on:
 - **db_log** (default *"False*"): if "True" all SQL operations will be logged to *src/sqlalchemy.log*
 
 ### ML
+
 - **ml__base_data_dir** (default *"./zero-shot-data"*): full path to the directory with query workloads and trained zero-shot cost models
 - **ml__statistics_file** (default *"statistics_workload_combined.json"*): relative path to workload statistics file (relative to *ml__base_data_dir*)
 - **ml__zs_model_dir** (default *"evaluation/models"*): relative path to directory with zero-shot cost models (relative to *ml__base_data_dir*)

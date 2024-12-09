@@ -31,6 +31,8 @@ evaluation_type_string = {
     EvaluationType.SPEARMAN: "Spearman correlaiton with runtime",
     EvaluationType.PEARSON_CARDINALITY: "Person correlation with cardinality",
     EvaluationType.SPEARMAN_CARDINALITY: "Spearman correlaiton with cardinality",
+    EvaluationType.PEARSON_NODE_DEPTH: "Person correlation with node depth",
+    EvaluationType.SPEARMAN_NODE_DEPTH: "Spearman correlaiton with node depth",
 }
 
 
