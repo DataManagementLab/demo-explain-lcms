@@ -8,16 +8,12 @@ interface Props {
   explanation: NodeScore[] | undefined;
   selectedNodeId: number | undefined;
   setSelectedNodeId: (nodeId: number) => void;
-  renderCount: number;
-  setRenderCount: (value: number) => void;
 }
 
 export function CorrelationBarSingle({
   explanation,
   selectedNodeId,
   setSelectedNodeId,
-  renderCount,
-  setRenderCount,
 }: Props) {
   const graphDiv = useRef<HTMLDivElement>(null);
   const [measureRef, _size] = useMeasure();
@@ -94,8 +90,6 @@ export function CorrelationBarSingle({
     d3.select(graphDiv.current)
       .selectAll('[clickNode]')
       .on('click', (_e, d) => setSelectedNodeId(d));
-
-    setRenderCount(renderCount + 1);
   };
 
   const selectNode = () => {

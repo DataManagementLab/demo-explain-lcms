@@ -41,7 +41,6 @@ export function CorrelationBarsCard({
       )
     : undefined;
 
-  const [renderCount, setRenderCount] = useState(0);
   const [showLegend, setShowLegend] = useState(false);
 
   return (
@@ -54,14 +53,15 @@ export function CorrelationBarsCard({
           {validExplanations && query.isSuccess ? (
             <>
               {validExplanations.map((explanation, i) => (
-                <div className="flex flex-col gap-1" key={explainerTypes[i]}>
+                <div
+                  className="flex flex-col gap-1"
+                  key={`bar-${explainerTypes[i]}`}
+                >
                   <Label>{explainerTypeToDisplay[explainerTypes[i]]}</Label>
                   <CorrelationBarSingle
                     explanation={explanation}
                     selectedNodeId={selectedNodeId}
                     setSelectedNodeId={setSelectedNodeId}
-                    renderCount={renderCount}
-                    setRenderCount={setRenderCount}
                   />
                 </div>
               ))}
@@ -84,7 +84,6 @@ export function CorrelationBarsCard({
                           </TableCell>
                           <TableCell>
                             <div
-                              key={renderCount}
                               className="h-6 w-6"
                               style={{
                                 backgroundColor: getBarColor(nodeId),
@@ -106,7 +105,9 @@ export function CorrelationBarsCard({
               </Button>
             </>
           ) : (
-            explainerTypes.map((i) => <Skeleton className="h-6" key={i} />)
+            explainerTypes.map((i) => (
+              <Skeleton className="h-6" key={`skeleton-${i}`} />
+            ))
           )}
         </div>
       </CardContent>

@@ -37,7 +37,8 @@ export function FidelityEvaluationCard({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {evaluations.isSuccess ? (
+        {evaluations.isSuccess &&
+        explainerTypes.length == evaluations.data.length ? (
           <Table>
             <TableBody>
               {explainerTypes.map((explainerType, i) => (
