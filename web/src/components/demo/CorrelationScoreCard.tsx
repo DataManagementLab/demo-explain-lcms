@@ -38,7 +38,7 @@ export function CorrelationScoreCard({
     <Card className="border-none">
       <CardHeader className="p-0 px-6 pb-2 pt-6">
         <CardTitle>
-          {correlationTypeToDisplay.get(correlationType)} Correlation Score
+          {correlationTypeToDisplay[correlationType]} Correlation Score
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -48,7 +48,7 @@ export function CorrelationScoreCard({
               {evaluations.data.map((correlation, i) => (
                 <TableRow className="hover:bg-background" key={i}>
                   <TableCell>
-                    {explainerTypeToDisplay.get(explainerTypes[i])}
+                    {explainerTypeToDisplay[explainerTypes[i]]}
                   </TableCell>
                   <TableCell>{round(correlation.score)}</TableCell>
                 </TableRow>

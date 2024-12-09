@@ -43,7 +43,7 @@ export function FidelityEvaluationCard({
               {explainerTypes.map((explainerType, i) => (
                 <TableRow className="hover:bg-background" key={explainerType}>
                   <TableCell className="font-medium">
-                    {explainerTypeToDisplay.get(explainerType)}
+                    {explainerTypeToDisplay[explainerType]}
                   </TableCell>
                   <TableCell className="font-medium">
                     {round(evaluations.data[i].score)}

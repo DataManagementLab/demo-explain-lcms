@@ -27,42 +27,35 @@ export const Route = createFileRoute('/demo')({
   component: Demo,
 });
 
-const explanainerTypes = [
-  ExplainerType.baseRuntime,
-  ExplainerType.baseCardinality,
+const realExplainers = [
   ExplainerType.gradient,
   ExplainerType.guidedBackpropagation,
   ExplainerType.gnnExplainer,
   ExplainerType.gnnExplainerOnlyPlans,
   ExplainerType.differenceExplainer,
   ExplainerType.differenceExplainerOnlyPlans,
+];
+
+const explanainerTypes = [
+  ExplainerType.baseRuntime,
+  ExplainerType.baseCardinality,
+  ...realExplainers,
 ];
 
 const explainerTypesRuntimeCorrelaiton = [
   ExplainerType.baseRuntime,
-  ExplainerType.gradient,
-  ExplainerType.guidedBackpropagation,
-  ExplainerType.gnnExplainer,
-  ExplainerType.gnnExplainerOnlyPlans,
-  ExplainerType.differenceExplainer,
-  ExplainerType.differenceExplainerOnlyPlans,
+  ...realExplainers,
 ];
-
-const explainerTypesRuntimeCorrelaitonCard =
-  explainerTypesRuntimeCorrelaiton.slice(1);
 
 const explainerTypesCardinalityCorrelaiton = [
   ExplainerType.baseCardinality,
-  ExplainerType.gradient,
-  ExplainerType.guidedBackpropagation,
-  ExplainerType.gnnExplainer,
-  ExplainerType.gnnExplainerOnlyPlans,
-  ExplainerType.differenceExplainer,
-  ExplainerType.differenceExplainerOnlyPlans,
+  ...realExplainers,
 ];
 
-const explainerTypesCardinalityCorrelaitonCard =
-  explainerTypesCardinalityCorrelaiton.slice(1);
+const explainerTypesNodeDepthCorrelaiton = [
+  ExplainerType.baseNodeDepth,
+  ...realExplainers,
+];
 
 const nodeIdToColor = new Map<number, string>();
 
@@ -178,12 +171,12 @@ function Demo() {
                 <Separator />
                 <CorrelationScoreCard
                   correlationType="pearson"
-                  explainerTypes={explainerTypesRuntimeCorrelaitonCard}
+                  explainerTypes={realExplainers}
                 />
                 <Separator />
                 <CorrelationScoreCard
                   correlationType="spearman"
-                  explainerTypes={explainerTypesRuntimeCorrelaitonCard}
+                  explainerTypes={realExplainers}
                 />
                 <CorrelationBarsCard
                   title="Correlation between cardinality importance and explainers"
@@ -193,12 +186,27 @@ function Demo() {
                 <Separator />
                 <CorrelationScoreCard
                   correlationType="pearson-cardinality"
-                  explainerTypes={explainerTypesCardinalityCorrelaitonCard}
+                  explainerTypes={realExplainers}
                 />
                 <Separator />
                 <CorrelationScoreCard
                   correlationType="spearman-cardinality"
-                  explainerTypes={explainerTypesCardinalityCorrelaitonCard}
+                  explainerTypes={realExplainers}
+                />
+                <CorrelationBarsCard
+                  title="Correlation between node depth importance and explainers"
+                  explainerTypes={explainerTypesNodeDepthCorrelaiton}
+                  nodeIdToColor={nodeIdToColor}
+                ></CorrelationBarsCard>
+                <Separator />
+                <CorrelationScoreCard
+                  correlationType="pearson-node-depth"
+                  explainerTypes={realExplainers}
+                />
+                <Separator />
+                <CorrelationScoreCard
+                  correlationType="spearman-node-depth"
+                  explainerTypes={realExplainers}
                 />
               </>
             )}

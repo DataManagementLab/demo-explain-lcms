@@ -95,7 +95,7 @@ def run_all_for_workload(
                         base_params = EvaluationBaseParams(
                             parsed_plan=parsed_plan,
                             base_explainer=ml.get_explainer(ExplainerType.BASE, parsed_plan.dataset_name, plan_explanation.model_name),
-                            base_cardinality_explainer=ml.get_explainer(ExplainerType.BASE_CARDINALITY, parsed_plan.dataset_name, plan_explanation.model_name),
+                            ml=ml,
                             explanation=explanation,
                         )
                         res = fn(base_params)

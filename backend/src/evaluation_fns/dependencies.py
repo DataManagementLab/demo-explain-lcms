@@ -14,13 +14,13 @@ from zero_shot_learned_db.explanations.load import ParsedPlan
 class EvaluationBaseParams:
     parsed_plan: ParsedPlan
     base_explainer: BaseExplainer
-    base_cardinality_explainer: BaseExplainer
+    ml: MLHelper
     explanation: Explanation
 
-    def __init__(self, parsed_plan: ParsedPlan, base_explainer: BaseExplainer, base_cardinality_explainer: BaseExplainer, explanation: Explanation):
+    def __init__(self, parsed_plan: ParsedPlan, base_explainer: BaseExplainer, ml: MLHelper, explanation: Explanation):
         self.parsed_plan = parsed_plan
         self.base_explainer = base_explainer
-        self.base_cardinality_explainer = base_cardinality_explainer
+        self.ml = ml
         self.explanation = explanation
 
 
@@ -40,6 +40,6 @@ def evaluation_base_params(
     yield EvaluationBaseParams(
         parsed_plan=parsed_plan,
         base_explainer=ml.get_explainer(ExplainerType.BASE, parsed_plan.dataset_name),
-        base_cardinality_explainer=ml.get_explainer(ExplainerType.BASE_CARDINALITY, parsed_plan.dataset_name),
+        ml=ml,
         explanation=explanation,
     )

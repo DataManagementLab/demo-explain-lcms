@@ -92,7 +92,7 @@ export function CorrelationBarsCard({
             <>
               {validExplanations.map((explanation, i) => (
                 <div className="flex flex-col gap-1" key={explainerTypes[i]}>
-                  <Label>{explainerTypeToDisplay.get(explainerTypes[i])}</Label>
+                  <Label>{explainerTypeToDisplay[explainerTypes[i]]}</Label>
                   <CorrelationBarSingle
                     explanation={explanation}
                     uniqueNodes={uniqueNodes}

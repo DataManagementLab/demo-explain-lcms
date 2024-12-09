@@ -25,6 +25,7 @@ export interface Explanation extends ExplanationBase {
 export enum ExplainerType {
   baseRuntime = 'BaseExplainer',
   baseCardinality = 'BaseExplainerCardinality',
+  baseNodeDepth = 'BaseExplainerNodeDepth',
   gradient = 'GradientExplainer',
   guidedBackpropagation = 'GuidedBPExplainer',
   gnnExplainer = 'GNNExplainer',
@@ -33,13 +34,14 @@ export enum ExplainerType {
   differenceExplainerOnlyPlans = 'DifferenceExplainerOnlyPlans',
 }
 
-export const explainerTypeToDisplay = new Map([
-  [ExplainerType.baseRuntime, 'Runtime importance'],
-  [ExplainerType.baseCardinality, 'Cardinality importance'],
-  [ExplainerType.gradient, 'Gradient'],
-  [ExplainerType.guidedBackpropagation, 'Guided Backpropagation'],
-  [ExplainerType.gnnExplainer, 'GNNExplainer'],
-  [ExplainerType.gnnExplainerOnlyPlans, 'GNNExplainer (Only Plans)'],
-  [ExplainerType.differenceExplainer, 'Difference'],
-  [ExplainerType.differenceExplainerOnlyPlans, 'Difference (Only Plans)'],
-]);
+export const explainerTypeToDisplay = {
+  [ExplainerType.baseRuntime]: 'Runtime importance',
+  [ExplainerType.baseCardinality]: 'Cardinality importance',
+  [ExplainerType.baseNodeDepth]: 'Node Depth importance',
+  [ExplainerType.gradient]: 'Gradient',
+  [ExplainerType.guidedBackpropagation]: 'Guided Backpropagation',
+  [ExplainerType.gnnExplainer]: 'GNNExplainer',
+  [ExplainerType.gnnExplainerOnlyPlans]: 'GNNExplainer (Only Plans)',
+  [ExplainerType.differenceExplainer]: 'Difference',
+  [ExplainerType.differenceExplainerOnlyPlans]: 'Difference (Only Plans)',
+} satisfies Record<ExplainerType, string>;

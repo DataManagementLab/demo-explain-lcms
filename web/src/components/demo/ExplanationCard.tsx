@@ -41,7 +41,7 @@ export function ExplanationCard({ explainerType }: Props) {
       <Card className="border-none">
         <CardHeader className="p-0 px-6 pb-2 pt-6">
           <CardTitle>
-            Explainer: {explainerTypeToDisplay.get(explainerType)}
+            Explainer: {explainerTypeToDisplay[explainerType]}
           </CardTitle>
           <CardDescription>
             {explanation.isSuccess
