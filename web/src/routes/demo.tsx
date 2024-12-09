@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { CorrelationType } from '@/api/data/evaluation';
 import { ExplainerType } from '@/api/data/inference';
 import { useGetPrediction } from '@/api/inference';
@@ -68,8 +68,6 @@ const explanainerTypes = [
   ...realExplainers,
 ] satisfies ExplainerType[];
 
-const nodeIdToColor = new Map<number, string>();
-
 function Demo() {
   const [
     datasetId,
@@ -92,10 +90,6 @@ function Demo() {
   const query = useGetQuery({ queryId: queryId });
   const prediction = useGetPrediction({ queryId: queryId });
   const [minimized, setMinimized] = useState(true);
-
-  useEffect(() => nodeIdToColor.clear(), [queryId]);
-
-  console.log(baseExplainerInfos);
 
   return (
     <div className="grid grid-cols-12 gap-x-4">
@@ -184,7 +178,6 @@ function Demo() {
                         baseExplainerInfo.explainerType,
                         ...realExplainers,
                       ]}
-                      nodeIdToColor={nodeIdToColor}
                     ></CorrelationBarsCard>
                     <Separator />
                     <CorrelationScoreCard

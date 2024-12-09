@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetExplanations } from '@/api/inference';
 import { useGetQuery } from '@/api/queries';
+import { getBarColor } from '@/lib/barColors';
 import { useDemoStore } from '@/stores/demoStore';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -15,13 +16,11 @@ import { CorrelationBarSingle } from './CorrelationBarSingle';
 interface Props {
   baseExplainersType: ExplainerType;
   explainerTypes: ExplainerType[];
-  nodeIdToColor: Map<number, string>;
 }
 
 export function CorrelationBarsCard({
   baseExplainersType,
   explainerTypes,
-  nodeIdToColor,
 }: Props) {
   const [queryId, selectedNodeId, setSelectedNodeId] = useDemoStore(
     useShallow((state) => [
@@ -59,7 +58,6 @@ export function CorrelationBarsCard({
                   <Label>{explainerTypeToDisplay[explainerTypes[i]]}</Label>
                   <CorrelationBarSingle
                     explanation={explanation}
-                    nodeIdToColor={nodeIdToColor}
                     selectedNodeId={selectedNodeId}
                     setSelectedNodeId={setSelectedNodeId}
                     renderCount={renderCount}
@@ -71,26 +69,30 @@ export function CorrelationBarsCard({
               {showLegend && (
                 <Table>
                   <TableBody>
-                    {nodeIdToColor.keys().map((nodeId) => (
-                      <TableRow
-                        key={nodeId}
-                        onClick={() => setSelectedNodeId(nodeId)}
-                        data-state={nodeId == selectedNodeId ? 'selected' : ''}
-                      >
-                        <TableCell>
-                          {query.data.graphNodes[nodeId].label}
-                        </TableCell>
-                        <TableCell>
-                          <div
-                            key={renderCount}
-                            className="h-6 w-6"
-                            style={{
-                              backgroundColor: nodeIdToColor.get(nodeId),
-                            }}
-                          ></div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {query.data.graphNodes
+                      .map((node) => node.nodeId)
+                      .map((nodeId) => (
+                        <TableRow
+                          key={nodeId}
+                          onClick={() => setSelectedNodeId(nodeId)}
+                          data-state={
+                            nodeId == selectedNodeId ? 'selected' : ''
+                          }
+                        >
+                          <TableCell>
+                            {query.data.graphNodes[nodeId].label}
+                          </TableCell>
+                          <TableCell>
+                            <div
+                              key={renderCount}
+                              className="h-6 w-6"
+                              style={{
+                                backgroundColor: getBarColor(nodeId),
+                              }}
+                            ></div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               )}

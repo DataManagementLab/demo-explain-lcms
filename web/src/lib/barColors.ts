@@ -1,0 +1,36 @@
+const barColors = [
+  '#B34962',
+  '#5EC353',
+  '#9957CA',
+  '#9CB835',
+  '#5B6FD9',
+  '#409538',
+  '#D561C5',
+  '#69882B',
+  '#D5448E',
+  '#5DC08A',
+  '#D33B55',
+  '#40C0BC',
+  '#C64221',
+  '#48A8D7',
+  '#DE882F',
+  '#6D8ED3',
+  '#CBAA3E',
+  '#6C60A6',
+  '#A1B56D',
+  '#9F4D8F',
+  '#408147',
+  '#CF90D0',
+  '#626A2A',
+  '#E2828C',
+  '#308266',
+  '#E56E4F',
+  '#944C68',
+  '#977D33',
+  '#9D5930',
+  '#DC9A6C',
+];
+
+export function getBarColor(nodeId: number) {
+  return barColors[nodeId % barColors.length];
+}

@@ -1,44 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { NodeScore } from '@/api/data/inference';
+import { getBarColor } from '@/lib/barColors';
 import { useMeasure, useThrottle } from '@uidotdev/usehooks';
 import * as d3 from 'd3';
 
-const colors = [
-  '#B34962',
-  '#5EC353',
-  '#9957CA',
-  '#9CB835',
-  '#5B6FD9',
-  '#409538',
-  '#D561C5',
-  '#69882B',
-  '#D5448E',
-  '#5DC08A',
-  '#D33B55',
-  '#40C0BC',
-  '#C64221',
-  '#48A8D7',
-  '#DE882F',
-  '#6D8ED3',
-  '#CBAA3E',
-  '#6C60A6',
-  '#A1B56D',
-  '#9F4D8F',
-  '#408147',
-  '#CF90D0',
-  '#626A2A',
-  '#E2828C',
-  '#308266',
-  '#E56E4F',
-  '#944C68',
-  '#977D33',
-  '#9D5930',
-  '#DC9A6C',
-];
-
 interface Props {
   explanation: NodeScore[] | undefined;
-  nodeIdToColor: Map<number, string>;
   selectedNodeId: number | undefined;
   setSelectedNodeId: (nodeId: number) => void;
   renderCount: number;
@@ -47,7 +14,6 @@ interface Props {
 
 export function CorrelationBarSingle({
   explanation,
-  nodeIdToColor,
   selectedNodeId,
   setSelectedNodeId,
   renderCount,
@@ -92,21 +58,13 @@ export function CorrelationBarSingle({
       if (barWidth >= width || !importance) {
         continue;
       }
-      let color = nodeIdToColor.get(importance.nodeId);
-      if (!color) {
-        color =
-          nodeIdToColor.size < colors.length
-            ? colors[nodeIdToColor.size]
-            : '#FFFFFF';
-        nodeIdToColor.set(importance.nodeId, color);
-      }
+      const color = getBarColor(importance.nodeId);
       const item_width = Math.round(width * importance.score);
       bar
         .append('rect')
         .attr('x', barWidth)
         .attr('width', item_width)
         .attr('height', height)
-        .attr('fill', color)
         .attr('nodeId', importance.nodeId)
         .attr('fill', 'black')
         .classed('opacity-0', true)
@@ -121,6 +79,16 @@ export function CorrelationBarSingle({
         .attr('clickNode', importance.nodeId)
         .datum(importance.nodeId);
       barWidth += item_width;
+    }
+
+    if (barWidth < width) {
+      bar
+        .append('rect')
+        .attr('x', barWidth)
+        .attr('y', borderOffset / 2)
+        .attr('width', width - barWidth)
+        .attr('height', height - borderOffset)
+        .attr('fill', 'black');
     }
 
     d3.select(graphDiv.current)
