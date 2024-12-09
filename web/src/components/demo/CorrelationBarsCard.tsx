@@ -13,13 +13,13 @@ import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 import { CorrelationBarSingle } from './CorrelationBarSingle';
 
 interface Props {
-  title: string;
+  baseExplainersType: ExplainerType;
   explainerTypes: ExplainerType[];
   nodeIdToColor: Map<number, string>;
 }
 
 export function CorrelationBarsCard({
-  title,
+  baseExplainersType,
   explainerTypes,
   nodeIdToColor,
 }: Props) {
@@ -48,7 +48,7 @@ export function CorrelationBarsCard({
   return (
     <Card className="h-w-full border-none">
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle>{`Correlation with ${explainerTypeToDisplay[baseExplainersType]}`}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-2">

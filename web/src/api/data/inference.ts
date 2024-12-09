@@ -35,9 +35,9 @@ export enum ExplainerType {
 }
 
 export const explainerTypeToDisplay = {
-  [ExplainerType.baseRuntime]: 'Runtime importance',
-  [ExplainerType.baseCardinality]: 'Cardinality importance',
-  [ExplainerType.baseNodeDepth]: 'Node Depth importance',
+  [ExplainerType.baseRuntime]: 'Runtime Importance',
+  [ExplainerType.baseCardinality]: 'Cardinality Importance',
+  [ExplainerType.baseNodeDepth]: 'Node Depth Importance',
   [ExplainerType.gradient]: 'Gradient',
   [ExplainerType.guidedBackpropagation]: 'Guided Backpropagation',
   [ExplainerType.gnnExplainer]: 'GNNExplainer',

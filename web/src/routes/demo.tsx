@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { CorrelationType } from '@/api/data/evaluation';
 import { ExplainerType } from '@/api/data/inference';
 import { useGetPrediction } from '@/api/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
@@ -27,6 +28,32 @@ export const Route = createFileRoute('/demo')({
   component: Demo,
 });
 
+interface BaseExplainerInfo {
+  explainerType: ExplainerType;
+  pearsonFn: CorrelationType;
+  spearmanFn: CorrelationType;
+}
+
+const baseExplainerInfos = [
+  {
+    explainerType: ExplainerType.baseRuntime,
+    pearsonFn: 'pearson',
+    spearmanFn: 'spearman',
+  },
+  {
+    explainerType: ExplainerType.baseCardinality,
+    pearsonFn: 'pearson-cardinality',
+    spearmanFn: 'spearman-cardinality',
+  },
+  {
+    explainerType: ExplainerType.baseNodeDepth,
+    pearsonFn: 'pearson-node-depth',
+    spearmanFn: 'spearman-node-depth',
+  },
+] satisfies BaseExplainerInfo[];
+
+const baseExplainerTypes = baseExplainerInfos.map((info) => info.explainerType);
+
 const realExplainers = [
   ExplainerType.gradient,
   ExplainerType.guidedBackpropagation,
@@ -34,28 +61,12 @@ const realExplainers = [
   ExplainerType.gnnExplainerOnlyPlans,
   ExplainerType.differenceExplainer,
   ExplainerType.differenceExplainerOnlyPlans,
-];
+] satisfies ExplainerType[];
 
 const explanainerTypes = [
-  ExplainerType.baseRuntime,
-  ExplainerType.baseCardinality,
+  ...baseExplainerTypes,
   ...realExplainers,
-];
-
-const explainerTypesRuntimeCorrelaiton = [
-  ExplainerType.baseRuntime,
-  ...realExplainers,
-];
-
-const explainerTypesCardinalityCorrelaiton = [
-  ExplainerType.baseCardinality,
-  ...realExplainers,
-];
-
-const explainerTypesNodeDepthCorrelaiton = [
-  ExplainerType.baseNodeDepth,
-  ...realExplainers,
-];
+] satisfies ExplainerType[];
 
 const nodeIdToColor = new Map<number, string>();
 
@@ -83,6 +94,8 @@ function Demo() {
   const [minimized, setMinimized] = useState(true);
 
   useEffect(() => nodeIdToColor.clear(), [queryId]);
+
+  console.log(baseExplainerInfos);
 
   return (
     <div className="grid grid-cols-12 gap-x-4">
@@ -146,13 +159,13 @@ function Demo() {
               </Button>
             ) : (
               <>
-                <Separator />
                 {explanainerTypes.map((explainerType) => (
                   <React.Fragment key={explainerType}>
-                    <ExplanationCard explainerType={explainerType} />
                     <Separator />
+                    <ExplanationCard explainerType={explainerType} />
                   </React.Fragment>
                 ))}
+                <Separator />
                 <FidelityEvaluationCard
                   fidelityType="plus"
                   explainerTypes={explanainerTypes}
@@ -162,52 +175,29 @@ function Demo() {
                   fidelityType="minus"
                   explainerTypes={explanainerTypes}
                 />
-                <Separator />
-                <CorrelationBarsCard
-                  title="Correlation between runtime importance and explainers"
-                  explainerTypes={explainerTypesRuntimeCorrelaiton}
-                  nodeIdToColor={nodeIdToColor}
-                ></CorrelationBarsCard>
-                <Separator />
-                <CorrelationScoreCard
-                  correlationType="pearson"
-                  explainerTypes={realExplainers}
-                />
-                <Separator />
-                <CorrelationScoreCard
-                  correlationType="spearman"
-                  explainerTypes={realExplainers}
-                />
-                <CorrelationBarsCard
-                  title="Correlation between cardinality importance and explainers"
-                  explainerTypes={explainerTypesCardinalityCorrelaiton}
-                  nodeIdToColor={nodeIdToColor}
-                ></CorrelationBarsCard>
-                <Separator />
-                <CorrelationScoreCard
-                  correlationType="pearson-cardinality"
-                  explainerTypes={realExplainers}
-                />
-                <Separator />
-                <CorrelationScoreCard
-                  correlationType="spearman-cardinality"
-                  explainerTypes={realExplainers}
-                />
-                <CorrelationBarsCard
-                  title="Correlation between node depth importance and explainers"
-                  explainerTypes={explainerTypesNodeDepthCorrelaiton}
-                  nodeIdToColor={nodeIdToColor}
-                ></CorrelationBarsCard>
-                <Separator />
-                <CorrelationScoreCard
-                  correlationType="pearson-node-depth"
-                  explainerTypes={realExplainers}
-                />
-                <Separator />
-                <CorrelationScoreCard
-                  correlationType="spearman-node-depth"
-                  explainerTypes={realExplainers}
-                />
+                {baseExplainerInfos.map((baseExplainerInfo) => (
+                  <React.Fragment key={baseExplainerInfo.explainerType}>
+                    <Separator />
+                    <CorrelationBarsCard
+                      baseExplainersType={baseExplainerInfo.explainerType}
+                      explainerTypes={[
+                        baseExplainerInfo.explainerType,
+                        ...realExplainers,
+                      ]}
+                      nodeIdToColor={nodeIdToColor}
+                    ></CorrelationBarsCard>
+                    <Separator />
+                    <CorrelationScoreCard
+                      correlationType={baseExplainerInfo.pearsonFn}
+                      explainerTypes={realExplainers}
+                    />
+                    <Separator />
+                    <CorrelationScoreCard
+                      correlationType={baseExplainerInfo.spearmanFn}
+                      explainerTypes={realExplainers}
+                    />
+                  </React.Fragment>
+                ))}
               </>
             )}
           </div>
