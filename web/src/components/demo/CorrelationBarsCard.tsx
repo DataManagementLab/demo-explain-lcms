@@ -36,47 +36,11 @@ export function CorrelationBarsCard({
   });
   const query = useGetQuery({ queryId: queryId });
 
-  const baseNodes = explanations.isSuccess
-    ? explanations.data[0].scaledImportance.map((i) => i.nodeId)
-    : undefined;
-
   const validExplanations = explanations.isSuccess
     ? explanations.data.map((explanation) =>
         explanation.scaledImportance.filter((i) => i.score >= 0.01),
       )
     : undefined;
-
-  const importanceSortFn = (a: number, b: number) => {
-    if (!validExplanations) {
-      return 0;
-    }
-    const aExplanationId = validExplanations.findIndex((e) =>
-      e.map((i) => i.nodeId).includes(a),
-    );
-    const bExplanationId = validExplanations.findIndex((e) =>
-      e.map((i) => i.nodeId).includes(b),
-    );
-    if (aExplanationId != bExplanationId) {
-      return bExplanationId - aExplanationId;
-    }
-    const explanation = validExplanations[aExplanationId];
-    const aImportance = explanation.find((i) => i.nodeId == a);
-    const bImportance = explanation.find((i) => i.nodeId == b);
-    if (aImportance && bImportance) {
-      return aImportance.score - bImportance.score;
-    }
-    return 0;
-  };
-
-  const uniqueNodes =
-    validExplanations && baseNodes
-      ? validExplanations
-          .flat()
-          .map((i) => i.nodeId)
-          .filter((value, index, array) => array.indexOf(value) == index)
-          .toSorted(importanceSortFn)
-          .toReversed()
-      : undefined;
 
   const [renderCount, setRenderCount] = useState(0);
   const [showLegend, setShowLegend] = useState(false);
@@ -88,14 +52,13 @@ export function CorrelationBarsCard({
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-2">
-          {validExplanations && uniqueNodes && query.isSuccess ? (
+          {validExplanations && query.isSuccess ? (
             <>
               {validExplanations.map((explanation, i) => (
                 <div className="flex flex-col gap-1" key={explainerTypes[i]}>
                   <Label>{explainerTypeToDisplay[explainerTypes[i]]}</Label>
                   <CorrelationBarSingle
                     explanation={explanation}
-                    uniqueNodes={uniqueNodes}
                     nodeIdToColor={nodeIdToColor}
                     selectedNodeId={selectedNodeId}
                     setSelectedNodeId={setSelectedNodeId}
@@ -108,7 +71,7 @@ export function CorrelationBarsCard({
               {showLegend && (
                 <Table>
                   <TableBody>
-                    {uniqueNodes.map((nodeId) => (
+                    {nodeIdToColor.keys().map((nodeId) => (
                       <TableRow
                         key={nodeId}
                         onClick={() => setSelectedNodeId(nodeId)}

@@ -38,7 +38,6 @@ const colors = [
 
 interface Props {
   explanation: NodeScore[] | undefined;
-  uniqueNodes: number[] | undefined;
   nodeIdToColor: Map<number, string>;
   selectedNodeId: number | undefined;
   setSelectedNodeId: (nodeId: number) => void;
@@ -48,7 +47,6 @@ interface Props {
 
 export function CorrelationBarSingle({
   explanation,
-  uniqueNodes,
   nodeIdToColor,
   selectedNodeId,
   setSelectedNodeId,
@@ -60,7 +58,7 @@ export function CorrelationBarSingle({
   const size = useThrottle(_size, 100);
 
   const drawGraph = () => {
-    if (!graphDiv.current || !explanation || !uniqueNodes) {
+    if (!graphDiv.current || !explanation) {
       return;
     }
     const margin = { top: 0, right: 4, bottom: 0, left: 4 };
@@ -84,7 +82,12 @@ export function CorrelationBarSingle({
       .attr('height', height)
       .attr('fill', '#FFFFFF');
     let barWidth = 0;
-    for (const nodeId of uniqueNodes) {
+
+    const sortedNodes = explanation
+      .toSorted((a, b) => b.score - a.score)
+      .map((nodeScore) => nodeScore.nodeId);
+
+    for (const nodeId of sortedNodes) {
       const importance = explanation.find((i) => i.nodeId == nodeId);
       if (barWidth >= width || !importance) {
         continue;
