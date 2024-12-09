@@ -7,6 +7,12 @@ export interface FidelityEvaluation {
   score: number;
 }
 
+export type FidelityType = 'fidelity-plus' | 'fidelity-minus';
+export const fidelityTypeToDisplay = {
+  'fidelity-plus': 'Fidelity Plus',
+  'fidelity-minus': 'Fidelity Minus',
+} satisfies Record<FidelityType, string>;
+
 export interface CorrelationEvaluation {
   score: number;
   baseline: ExplanationBase;
@@ -29,3 +35,9 @@ export const correlationTypeToDisplay = {
   'pearson-node-depth': 'Pearson Node Depth',
   'spearman-node-depth': 'Spearman Node Depth',
 } satisfies Record<CorrelationType, string>;
+
+export type EvaluationType = FidelityType | CorrelationType;
+export const evaluationTypeToDisplay = {
+  ...fidelityTypeToDisplay,
+  ...correlationTypeToDisplay,
+};

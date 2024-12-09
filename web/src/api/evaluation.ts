@@ -6,6 +6,7 @@ import {
   CorrelationEvaluation,
   CorrelationType,
   FidelityEvaluation,
+  FidelityType,
 } from './data/evaluation';
 import { Explanation, ExplanationBase } from './data/inference';
 
@@ -16,10 +17,10 @@ interface EvaluationPrams {
 
 function get_fidelity(
   { queryId, explanation }: EvaluationPrams,
-  type: 'plus' | 'minus',
+  type: FidelityType,
 ) {
   return api
-    .post<FidelityEvaluation>(`evaluation-fns/fidelity-${type}`, {
+    .post<FidelityEvaluation>(`evaluation-fns/${type}`, {
       searchParams: { query_id: queryId },
       json: explanation,
     })
@@ -29,7 +30,7 @@ function get_fidelity(
 interface EvaluationPramsFidelity {
   queryId?: number;
   explanations: (Explanation | undefined)[];
-  type: 'plus' | 'minus';
+  type: FidelityType;
 }
 
 export function useGetFidelityEvaluations({
@@ -41,7 +42,7 @@ export function useGetFidelityEvaluations({
     queries: explanations.map(
       (explanation) =>
         ({
-          queryKey: ['fidelity-plus', queryId, explanation, type],
+          queryKey: [queryId, explanation, type],
           queryFn:
             explanation != undefined && queryId != undefined
               ? () => get_fidelity({ queryId, explanation }, type)
@@ -79,7 +80,7 @@ export function useGetCorrelaitonEvaluations({
     queries: explanations.map(
       (explanation) =>
         ({
-          queryKey: ['fidelity-plus', queryId, explanation, type],
+          queryKey: [queryId, explanation, type],
           queryFn:
             explanation != undefined && queryId != undefined
               ? () => get_correlation({ queryId, explanation }, type)

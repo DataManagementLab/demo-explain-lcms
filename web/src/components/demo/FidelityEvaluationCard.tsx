@@ -1,3 +1,4 @@
+import { FidelityType, fidelityTypeToDisplay } from '@/api/data/evaluation';
 import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetFidelityEvaluations } from '@/api/evaluation';
 import { useGetExplanations } from '@/api/inference';
@@ -10,7 +11,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
 interface Props {
-  fidelityType: 'plus' | 'minus';
+  fidelityType: FidelityType;
   explainerTypes: ExplainerType[];
 }
 
@@ -31,12 +32,10 @@ export function FidelityEvaluationCard({
 
   return (
     <Card className="border-none">
-      <CardHeader className="p-0 px-6 pb-2 pt-6">
-        <CardTitle>
-          Fidelity {fidelityType == 'plus' ? 'Plus' : 'Minus'}
-        </CardTitle>
+      <CardHeader className="p-0 px-6 pb-2 pt-4">
+        <CardTitle>{fidelityTypeToDisplay[fidelityType]}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0">
         {evaluations.isSuccess &&
         explainerTypes.length == evaluations.data.length ? (
           <Table>

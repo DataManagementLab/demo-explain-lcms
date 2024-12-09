@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { CorrelationType } from '@/api/data/evaluation';
+import {
+  CorrelationType,
+  EvaluationType,
+  evaluationTypeToDisplay,
+} from '@/api/data/evaluation';
 import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetPrediction } from '@/api/inference';
 import { useGetQuery, useGetWorkloads } from '@/api/queries';
@@ -79,7 +83,7 @@ interface SelectedInfo<T> {
   isSelected: boolean;
 }
 
-type SelectedInfoKey = 'explainers' | 'evaluations';
+type SelectedInfoKey = 'selectedExplainers' | 'selectedEvaluations';
 
 function useSelectedInfo<T>(key: SelectedInfoKey, initialItems: T[]) {
   const storedSelectedStr = localStorage.getItem(key);
@@ -118,6 +122,17 @@ function useSelectedInfo<T>(key: SelectedInfoKey, initialItems: T[]) {
   return [selected, setSelectedItem] as const;
 }
 
+const evaluations = [
+  'fidelity-plus',
+  'fidelity-minus',
+  'pearson',
+  'spearman',
+  'pearson-cardinality',
+  'spearman-cardinality',
+  'pearson-node-depth',
+  'spearman-node-depth',
+] satisfies EvaluationType[];
+
 function Demo() {
   const [
     datasetId,
@@ -142,7 +157,7 @@ function Demo() {
   const [minimized, setMinimized] = useState(true);
 
   const [selectedExplainers, toggleSelectedExplainer] = useSelectedInfo(
-    'explainers',
+    'selectedExplainers',
     explainerTypes,
   );
   const selectedExplainerTypes = selectedExplainers
@@ -151,6 +166,14 @@ function Demo() {
   const selectedRealExplainers = selectedExplainerTypes.filter((e) =>
     realExplainers.includes(e),
   );
+
+  const [selectedEvaluations, toggleSelectedEvaluation] = useSelectedInfo(
+    'selectedEvaluations',
+    evaluations,
+  );
+  const selectedEvaluationTypes = selectedEvaluations
+    .filter((e) => e.isSelected)
+    .map((e) => e.item);
 
   return (
     <div className="grid grid-cols-12 gap-x-4">
@@ -202,7 +225,7 @@ function Demo() {
             <SqlCard />
             <Separator />
             <PredictionCard />
-            <div className="grid">
+            <div className="mt-6 grid">
               {!showExplanations ? (
                 <Button
                   variant="outline"
@@ -214,11 +237,10 @@ function Demo() {
                   Run Explanations
                 </Button>
               ) : (
-                <h3 className="col-start-1 row-start-1 self-center justify-self-center">
+                <h3 className="col-start-1 row-start-1 self-center justify-self-center text-xl">
                   Explanations
                 </h3>
               )}
-
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -229,29 +251,22 @@ function Demo() {
                     <Settings className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[400px]">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col">
-                      <h4>Explainers</h4>
-                      <Separator className="mb-2 mt-0.5"></Separator>
-                      <div className="flex flex-col gap-1">
-                        {selectedExplainers.map((explainer) => (
-                          <LabeledSwitch
-                            key={explainer.item}
-                            id={explainer.item}
-                            label={explainerTypeToDisplay[explainer.item]}
-                            checked={explainer.isSelected}
-                            onCheckedChange={(value) => {
-                              toggleSelectedExplainer(explainer.item, value);
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex flex-col">
-                      <h4>Evaluations</h4>
-                      <Separator className="mb-2 mt-0.5"></Separator>
-                      <div className="flex flex-col gap-1"></div>
+                <PopoverContent>
+                  <div className="flex flex-col">
+                    <h4>Explainers</h4>
+                    <Separator className="mb-2 mt-0.5"></Separator>
+                    <div className="flex flex-col gap-1">
+                      {selectedExplainers.map((explainer) => (
+                        <LabeledSwitch
+                          key={explainer.item}
+                          id={explainer.item}
+                          label={explainerTypeToDisplay[explainer.item]}
+                          checked={explainer.isSelected}
+                          onCheckedChange={(value) => {
+                            toggleSelectedExplainer(explainer.item, value);
+                          }}
+                        />
+                      ))}
                     </div>
                   </div>
                 </PopoverContent>
@@ -265,36 +280,103 @@ function Demo() {
                     <ExplanationCard explainerType={explainerType} />
                   </React.Fragment>
                 ))}
-                <Separator />
-                <FidelityEvaluationCard
-                  fidelityType="plus"
-                  explainerTypes={selectedExplainerTypes}
-                />
-                <Separator />
-                <FidelityEvaluationCard
-                  fidelityType="minus"
-                  explainerTypes={selectedExplainerTypes}
-                />
+                <div className="mt-6 grid">
+                  <h3 className="col-start-1 row-start-1 self-center justify-self-center text-xl">
+                    Evaluations
+                  </h3>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="col-start-1 row-start-1 mr-2 justify-self-end"
+                        size="icon"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <div className="flex flex-col">
+                        <h4>Explainers</h4>
+                        <Separator className="mb-2 mt-0.5"></Separator>
+                        <div className="flex flex-col gap-1">
+                          {selectedEvaluations.map((evaluation) => (
+                            <LabeledSwitch
+                              key={evaluation.item}
+                              id={evaluation.item}
+                              label={evaluationTypeToDisplay[evaluation.item]}
+                              checked={evaluation.isSelected}
+                              onCheckedChange={(value) => {
+                                toggleSelectedEvaluation(
+                                  evaluation.item,
+                                  value,
+                                );
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                {selectedEvaluationTypes.includes('fidelity-plus') && (
+                  <>
+                    <Separator />
+                    <FidelityEvaluationCard
+                      fidelityType="fidelity-plus"
+                      explainerTypes={selectedExplainerTypes}
+                    />
+                  </>
+                )}
+                {selectedEvaluationTypes.includes('fidelity-minus') && (
+                  <>
+                    <Separator />
+                    <FidelityEvaluationCard
+                      fidelityType="fidelity-minus"
+                      explainerTypes={selectedExplainerTypes}
+                    />
+                  </>
+                )}
                 {baseExplainerInfos.map((baseExplainerInfo) => (
                   <React.Fragment key={baseExplainerInfo.explainerType}>
-                    <Separator />
-                    <CorrelationBarsCard
-                      baseExplainersType={baseExplainerInfo.explainerType}
-                      explainerTypes={[
-                        baseExplainerInfo.explainerType,
-                        ...selectedRealExplainers,
-                      ]}
-                    ></CorrelationBarsCard>
-                    <Separator />
-                    <CorrelationScoreCard
-                      correlationType={baseExplainerInfo.pearsonFn}
-                      explainerTypes={selectedRealExplainers}
-                    />
-                    <Separator />
-                    <CorrelationScoreCard
-                      correlationType={baseExplainerInfo.spearmanFn}
-                      explainerTypes={selectedRealExplainers}
-                    />
+                    {(selectedEvaluationTypes.includes(
+                      baseExplainerInfo.pearsonFn,
+                    ) ||
+                      selectedEvaluationTypes.includes(
+                        baseExplainerInfo.spearmanFn,
+                      )) && (
+                      <>
+                        <Separator />
+                        <CorrelationBarsCard
+                          baseExplainersType={baseExplainerInfo.explainerType}
+                          explainerTypes={[
+                            baseExplainerInfo.explainerType,
+                            ...selectedRealExplainers,
+                          ]}
+                        ></CorrelationBarsCard>
+                      </>
+                    )}
+                    {selectedEvaluationTypes.includes(
+                      baseExplainerInfo.pearsonFn,
+                    ) && (
+                      <>
+                        <Separator />
+                        <CorrelationScoreCard
+                          correlationType={baseExplainerInfo.pearsonFn}
+                          explainerTypes={selectedRealExplainers}
+                        />
+                      </>
+                    )}
+                    {selectedEvaluationTypes.includes(
+                      baseExplainerInfo.spearmanFn,
+                    ) && (
+                      <>
+                        <Separator />
+                        <CorrelationScoreCard
+                          correlationType={baseExplainerInfo.spearmanFn}
+                          explainerTypes={selectedRealExplainers}
+                        />
+                      </>
+                    )}
                   </React.Fragment>
                 ))}
               </>

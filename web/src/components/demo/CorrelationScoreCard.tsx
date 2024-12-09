@@ -36,12 +36,12 @@ export function CorrelationScoreCard({
 
   return (
     <Card className="border-none">
-      <CardHeader className="p-0 px-6 pb-2 pt-6">
+      <CardHeader className="p-0 px-6 pb-2 pt-4">
         <CardTitle>
           {correlationTypeToDisplay[correlationType]} Correlation Score
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0">
         {evaluations.isSuccess ? (
           <Table>
             <TableBody>

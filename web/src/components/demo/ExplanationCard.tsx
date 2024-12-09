@@ -39,17 +39,15 @@ export function ExplanationCard({ explainerType }: Props) {
   return (
     queryId != undefined && (
       <Card className="border-none">
-        <CardHeader className="p-0 px-6 pb-2 pt-6">
-          <CardTitle>
-            Explainer: {explainerTypeToDisplay[explainerType]}
-          </CardTitle>
+        <CardHeader className="p-0 px-6 pb-2 pt-4">
+          <CardTitle>{explainerTypeToDisplay[explainerType]}</CardTitle>
           <CardDescription>
             {explanation.isSuccess
               ? `${round(explanation.data.executionTime)} s`
               : ''}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2">
+        <CardContent className="flex flex-col gap-2 p-4 pt-0">
           {explanation.isSuccess && query.isSuccess ? (
             <Table>
               <TableBody className="overflow-y-auto">

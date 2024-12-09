@@ -20,7 +20,7 @@ export function PredictionCard() {
   return (
     queryId != undefined && (
       <Card className="border-none">
-        <CardHeader className="p-0 px-6 pb-2 pt-6">
+        <CardHeader className="p-0 px-6 pb-2 pt-4">
           <CardTitle>Prediction</CardTitle>
           <CardDescription>
             {prediction.isSuccess
@@ -28,7 +28,7 @@ export function PredictionCard() {
               : ''}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col">
+        <CardContent className="flex flex-col p-4 pt-0">
           {prediction.isSuccess ? (
             <Table>
               <TableBody>
