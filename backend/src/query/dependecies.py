@@ -7,8 +7,31 @@ from query.db import db_depends
 from query.models import Plan, WorkloadRun
 from zero_shot_learned_db.explanations.load import ParsedPlan
 
+_inference_mutex = threading.Lock()
 
-def get_parsed_plan(query_id: int, db: db_depends, ml: Annotated[MLHelper, Depends()]):
+
+def inference_mutex():
+    try:
+        _inference_mutex.acquire()
+        yield
+    finally:
+        _inference_mutex.release()
+
+
+class InferenceMutex:
+    def __enter__(self):
+        _inference_mutex.acquire()
+
+    def __exit__(self, *args):
+        _inference_mutex.release()
+
+
+def get_parsed_plan(
+    query_id: int,
+    db: db_depends,
+    ml: Annotated[MLHelper, Depends()],
+    inference_mutex: Annotated[None, Depends(inference_mutex)],
+):
     parsed_plan = ml.cache_get_plan(query_id)
     if parsed_plan is not None:
         return parsed_plan
@@ -60,22 +83,3 @@ def get_predictor(
     parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
 ):
     return ml.get_explainer(ExplainerType.BASE, dataset_name=parsed_plan.dataset_name)
-
-
-_inference_mutex = threading.Lock()
-
-
-def inference_mutex():
-    try:
-        _inference_mutex.acquire()
-        yield
-    finally:
-        _inference_mutex.release()
-
-
-class InferenceMutex:
-    def __enter__(self):
-        _inference_mutex.acquire()
-
-    def __exit__(self, *args):
-        _inference_mutex.release()
