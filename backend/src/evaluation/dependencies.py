@@ -65,3 +65,14 @@ def store_and_get_explanations_for_workload(
                 res.explanations.append((plan, explanations))
             db.commit()
     return res
+
+
+def get_latest_runs_all_datasets(db: db_depends):
+    evaluation_runs = db.query(EvaluationRun).all()
+    latest_runs: dict[int, EvaluationRun] = {}
+
+    for run in evaluation_runs:
+        if run.workload_id not in latest_runs or run.created_at > latest_runs[run.workload_id].created_at:
+            latest_runs[run.workload_id] = run
+
+    return latest_runs

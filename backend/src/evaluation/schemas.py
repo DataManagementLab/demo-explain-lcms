@@ -1,4 +1,5 @@
 from custom_model import CustomModel
+from ml.service import ExplainerType
 
 
 class TablesToScore(CustomModel):
@@ -61,3 +62,16 @@ class DatasetQueriesStats(CustomModel):
     avg_qerror: float
     queries_count_0: int
     avg_qerror_0: float
+
+
+class MostImportantNodeStatsForModel(CustomModel):
+    explainer_type: ExplainerType
+    model: str | None = None
+    nodes: dict[str, int]
+    nodes_percentage: dict[str, float]
+    queries_count: int
+
+
+class MostImportantNodeStats(CustomModel):
+    stats: list[MostImportantNodeStatsForModel]
+    stats_total_0: list[MostImportantNodeStatsForModel]

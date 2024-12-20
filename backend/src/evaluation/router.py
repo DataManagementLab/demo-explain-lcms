@@ -6,9 +6,9 @@ from tqdm import tqdm
 import json
 
 from config import Settings, get_settings
-from evaluation.dependencies import EvaluationRunComposed, store_and_get_explanations_for_workload
+from evaluation.dependencies import EvaluationRunComposed, get_latest_runs_all_datasets, store_and_get_explanations_for_workload
 from evaluation.models import EvalPrediction, EvaluationRun, EvaluationScore, EvaluationType
-from evaluation.schemas import DatasetQueriesStats, ValidQueriesStats
+from evaluation.schemas import DatasetQueriesStats, MostImportantNodeStats, MostImportantNodeStatsForModel, ValidQueriesStats
 from evaluation.service import EvaluationScoreToDraw, QErrorToDraw, draw_qerrors, draw_score_evaluation, draw_score_evaluations_threshold_trend
 from evaluation_fns.dependencies import EvaluationBaseParams
 from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, pearson_node_depth, spearman, pearson_cardinality, spearman_cardinality, spearman_node_depth
@@ -19,6 +19,7 @@ from query.db import db_depends
 from query.models import Plan, PlanStats, WorkloadRun
 from utils import save_model_to_file
 from zero_shot_learned_db.explanations.data_models.explanation import Explanation, NodeScore
+from zero_shot_learned_db.explanations.data_models.nodes import NodeType
 from zero_shot_learned_db.explanations.evaluation import evaluation_characterization_score, evaluation_fidelity_minus, evaluation_fidelity_plus
 
 router = APIRouter(tags=["evaluation"], prefix="/evaluation")
@@ -178,7 +179,7 @@ def run_all_for_workload(
 
 @router.get("/draw_plots_combined_different_datsets")
 def draw_plots_combine_all_datasets(
-    db: db_depends,
+    latest_runs: Annotated[dict[int, EvaluationRun], Depends(get_latest_runs_all_datasets)],
     settings: Annotated[Settings, Depends(get_settings)],
 ):
     score_evaluation_fns = list(score_evaluation_fns_global)
@@ -188,15 +189,9 @@ def draw_plots_combine_all_datasets(
     for evaluation_type in evaluation_types:
         score_evaluations[evaluation_type] = []
 
-    evaluation_runs = db.query(EvaluationRun).all()
-    latest_runs: dict[int, EvaluationRun] = {}
-
-    for run in evaluation_runs:
-        if run.workload_id not in latest_runs or run.created_at > latest_runs[run.workload_id].created_at:
-            latest_runs[run.workload_id] = run
-
     explanations_count = 0
     for run in latest_runs.values():
+        print(f"Evaluating explanations of workload {run.workload_id}")
         for explanation in tqdm(run.plan_explanations):
             if settings.eval.main_model_token not in explanation.model_name:
                 continue
@@ -231,6 +226,97 @@ def draw_plots_combine_all_datasets(
 
     for evaluation_type, explainer_results in agg_scores.items():
         draw_score_evaluation(explainer_results, settings.eval.results_dir, evaluation_type, "all")
+
+
+@router.get("/most_important_nodes")
+def get_most_important_nodes(
+    db: db_depends,
+    ml: Annotated[MLHelper, Depends()],
+    latest_runs: Annotated[dict[int, EvaluationRun], Depends(get_latest_runs_all_datasets)],
+    settings: Annotated[Settings, Depends(get_settings)],
+):
+    most_important_nodes: list[MostImportantNodeStatsForModel] = []
+    for run in latest_runs.values():
+        print(f"Evaluating explanations of workload {run.workload_id}")
+        for explanation in tqdm(run.plan_explanations):
+            base_scores = [NodeScore(**score) for score in explanation.base_scores]
+            node_id = max(base_scores, key=lambda x: x.score).node_id
+            node = get_parsed_plan(explanation.plan_id, db, ml, None).get_node(node_id)
+            node_name = node.node.node_type if node.node.node_type != NodeType.PLAN else node.node.get_label()
+            current_stats = next(filter(lambda x: x.model == explanation.model_name and x.explainer_type == explanation.explainer_type, most_important_nodes), None)
+            if current_stats is None:
+                current_stats = MostImportantNodeStatsForModel(
+                    explainer_type=explanation.explainer_type,
+                    model=explanation.model_name,
+                    nodes={},
+                    nodes_percentage={},
+                    queries_count=0,
+                )
+                most_important_nodes.append(current_stats)
+            if node_name not in current_stats.nodes:
+                current_stats.nodes[node_name] = 0
+            current_stats.nodes[node_name] += 1
+            current_stats.queries_count += 1
+
+        print(f"Evaluating base explanations of workload {run.workload_id}")
+        for table_count in range(1, settings.eval.max_table_count + 1):
+            plans = db.query(Plan).join(Plan.plan_stats).filter(Plan.sql.is_not(None), Plan.workload_run_id == run.workload_id, PlanStats.tables == table_count).order_by(Plan.id_in_run).limit(settings.eval.max_plans_per_table_count).all()
+            for plan in tqdm(plans):
+                parsed_plan = get_parsed_plan(plan.id, db, ml, None)
+                for base_explainer_type in [ExplainerType.BASE, ExplainerType.BASE_CARDINALITY, ExplainerType.BASE_NODE_DEPTH]:
+                    base_explainer = ml.get_explainer(base_explainer_type)
+                    node_id = max(base_explainer.explain(parsed_plan).base_scores, key=lambda x: x.score).node_id
+                    node = parsed_plan.get_node(node_id)
+                    node_name = node.node.node_type if node.node.node_type != NodeType.PLAN else node.node.get_label()
+                    current_stats = next(filter(lambda x: x.explainer_type == base_explainer_type, most_important_nodes), None)
+                    if current_stats is None:
+                        current_stats = MostImportantNodeStatsForModel(
+                            explainer_type=base_explainer_type,
+                            nodes={},
+                            nodes_percentage={},
+                            queries_count=0,
+                        )
+                        most_important_nodes.append(current_stats)
+                    if node_name not in current_stats.nodes:
+                        current_stats.nodes[node_name] = 0
+                    current_stats.nodes[node_name] += 1
+                    current_stats.queries_count += 1
+
+    most_important_nodes_total: list[MostImportantNodeStatsForModel] = []
+    for stats in most_important_nodes:
+        if stats.model is None or settings.eval.main_model_token in stats.model:
+            current_stats_total = next(filter(lambda x: x.explainer_type == stats.explainer_type, most_important_nodes_total), None)
+            if current_stats_total is None:
+                current_stats_total = MostImportantNodeStatsForModel(
+                    explainer_type=stats.explainer_type,
+                    nodes={},
+                    nodes_percentage={},
+                    queries_count=0,
+                )
+                most_important_nodes_total.append(current_stats_total)
+            current_stats_total.queries_count += stats.queries_count
+        for node_name, node_count in stats.nodes.items():
+            stats.nodes_percentage[node_name] = node_count / stats.queries_count
+            if stats.model is None or settings.eval.main_model_token in stats.model:
+                if node_name not in current_stats_total.nodes:
+                    current_stats_total.nodes[node_name] = 0
+                current_stats_total.nodes[node_name] += node_count
+        stats.nodes = {k: v for k, v in sorted(stats.nodes.items(), key=lambda item: item[1], reverse=True)}
+        stats.nodes_percentage = {k: v for k, v in sorted(stats.nodes_percentage.items(), key=lambda item: item[1], reverse=True)}
+
+    for stats in most_important_nodes_total:
+        for node_name, node_count in stats.nodes.items():
+            stats.nodes_percentage[node_name] = node_count / stats.queries_count
+        stats.nodes = {k: v for k, v in sorted(stats.nodes.items(), key=lambda item: item[1], reverse=True)}
+        stats.nodes_percentage = {k: v for k, v in sorted(stats.nodes_percentage.items(), key=lambda item: item[1], reverse=True)}
+
+    save_model_to_file(
+        MostImportantNodeStats(
+            stats=most_important_nodes,
+            stats_total_0=most_important_nodes_total,
+        ),
+        os.path.join(settings.eval.results_dir, "most_important_nodes.json"),
+    )
 
 
 @router.post("/draw_plots_qerrors")
@@ -275,13 +361,13 @@ def draw_plots_qerror(
     for dataset in qerrors_all:
         if dataset not in data_to_draw:
             data_to_draw[dataset] = {}
-        for model in qerrors_all[dataset]:
+        for model_name in qerrors_all[dataset]:
             scores_to_draw: list[QErrorToDraw] = []
-            for table_count, qerrors in qerrors_all[dataset][model].items():
+            for table_count, qerrors in qerrors_all[dataset][model_name].items():
                 scores_to_draw.append(QErrorToDraw(score=sum(qerrors) / len(qerrors), join_count=table_count - 1, queries_count=len(qerrors)))
             valid_queries_stats.append(
                 ValidQueriesStats(
-                    model=model,
+                    model=model_name,
                     dataset=dataset,
                     queries_count_per_joins={i.join_count: i.queries_count for i in scores_to_draw},
                     avg_qerror_per_joins={i.join_count: i.score for i in scores_to_draw},
@@ -289,7 +375,7 @@ def draw_plots_qerror(
                     avg_qerror=mean([i.score for i in scores_to_draw]),
                 )
             )
-            data_to_draw[dataset][model] = scores_to_draw
+            data_to_draw[dataset][model_name] = scores_to_draw
 
     save_model_to_file(
         DatasetQueriesStats(
@@ -308,10 +394,10 @@ def draw_plots_qerror(
     composed_data_to_draw: dict[str, list[QErrorToDraw]] = {"all": []}
     all_scores: list[QErrorToDraw] = []
     for dataset in data_to_draw:
-        for model in data_to_draw[dataset]:
-            all_scores.extend(data_to_draw[dataset][model])
-            if settings.eval.main_model_token in model:
-                composed_data_to_draw[model] = data_to_draw[dataset][model]
+        for model_name in data_to_draw[dataset]:
+            all_scores.extend(data_to_draw[dataset][model_name])
+            if settings.eval.main_model_token in model_name:
+                composed_data_to_draw[model_name] = data_to_draw[dataset][model_name]
 
     for join_count in range(0, settings.eval.max_table_count):
         scores = [s.score for s in all_scores if s.join_count == join_count]
