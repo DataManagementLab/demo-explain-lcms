@@ -63,13 +63,15 @@ class MLHelper:
                 continue
             self.concrete_models_for_datasets[dataset.name] = []
             for model in dataset.zsmodels:
+                # Only imdb models require label normalizer?????????????????????????
+                label_norm_for_model = label_norm if "imdb" in model else None
                 self.concrete_models_for_datasets[dataset.name].append(
                     ZSModel(
                         model,
                         prepare_model(
                             self.hyperparameters,
                             self.feature_statistics,
-                            label_norm,
+                            label_norm_for_model,
                             model_dir,
                             model,
                         ),

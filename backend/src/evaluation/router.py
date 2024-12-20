@@ -1,3 +1,4 @@
+import os.path
 from statistics import mean
 from typing import Annotated
 from fastapi import APIRouter, Depends
@@ -6,14 +7,17 @@ import json
 
 from config import Settings, get_settings
 from evaluation.dependencies import EvaluationRunComposed, store_and_get_explanations_for_workload
-from evaluation.models import EvaluationRun, EvaluationScore, EvaluationType
-from evaluation.service import EvaluationScoreToDraw, draw_score_evaluation, draw_score_evaluations_threshold_trend
+from evaluation.models import EvalPrediction, EvaluationRun, EvaluationScore, EvaluationType
+from evaluation.schemas import DatasetQueriesStats, ValidQueriesStats
+from evaluation.service import EvaluationScoreToDraw, QErrorToDraw, draw_qerrors, draw_score_evaluation, draw_score_evaluations_threshold_trend
 from evaluation_fns.dependencies import EvaluationBaseParams
 from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, pearson_node_depth, spearman, pearson_cardinality, spearman_cardinality, spearman_node_depth
 from ml.dependencies import MLHelper
 from ml.service import ExplainerType
 from query.dependecies import InferenceMutex, get_parsed_plan
 from query.db import db_depends
+from query.models import Plan, PlanStats, WorkloadRun
+from utils import save_model_to_file
 from zero_shot_learned_db.explanations.data_models.explanation import Explanation, NodeScore
 from zero_shot_learned_db.explanations.evaluation import evaluation_characterization_score, evaluation_fidelity_minus, evaluation_fidelity_plus
 
@@ -194,7 +198,7 @@ def draw_plots_combine_all_datasets(
     explanations_count = 0
     for run in latest_runs.values():
         for explanation in tqdm(run.plan_explanations):
-            if "_0" not in explanation.model_name:
+            if settings.eval.main_model_token not in explanation.model_name:
                 continue
             explanations_count += 1
             for evaluation_type, fn in score_evaluation_fns:
@@ -227,3 +231,91 @@ def draw_plots_combine_all_datasets(
 
     for evaluation_type, explainer_results in agg_scores.items():
         draw_score_evaluation(explainer_results, settings.eval.results_dir, evaluation_type, "all")
+
+
+@router.post("/draw_plots_qerrors")
+def draw_plots_qerror(
+    workload_ids: list[int],
+    db: db_depends,
+    settings: Annotated[Settings, Depends(get_settings)],
+    ml: Annotated[MLHelper, Depends()],
+):
+    qerrors_all: dict[str, dict[str, dict[int, list[float]]]] = {}
+    invalid_queries: list[str] = []
+    for workload_id in workload_ids:
+        workload = db.query(WorkloadRun).filter(WorkloadRun.id == workload_id).first()
+        if workload.dataset.name not in qerrors_all:
+            qerrors_all[workload.dataset.name] = {}
+        for model in ml.concrete_models_for_datasets[workload.dataset.name]:
+            if model not in qerrors_all[workload.dataset.name]:
+                qerrors_all[workload.dataset.name][model.name] = {}
+            for table_count in range(1, settings.eval.max_table_count + 1):
+                if table_count not in qerrors_all[workload.dataset.name][model.name]:
+                    qerrors_all[workload.dataset.name][model.name][table_count] = []
+                print(f"Getting qerrors for plans with {table_count} tables with {model.name}")
+                plans = db.query(Plan).join(Plan.plan_stats).filter(Plan.sql.is_not(None), Plan.workload_run_id == workload.id, PlanStats.tables == table_count).order_by(Plan.id_in_run).limit(settings.eval.max_plans_per_table_count).all()
+                for plan in tqdm(plans):
+                    prediction = db.query(EvalPrediction).filter(EvalPrediction.plan_id == plan.id, EvalPrediction.model_name == model.name).first()
+                    if prediction is None:
+                        with InferenceMutex() as mutex:
+                            parsed_plan = get_parsed_plan(plan.id, db, ml, mutex)
+                            parsed_plan.prepare_plan_for_inference()
+                            base_explainer = ml.get_explainer(ExplainerType.BASE, parsed_plan.dataset_name, model.name)
+                            prediction = base_explainer.predict(parsed_plan)
+                            db.add(EvalPrediction(plan_id=plan.id, model_name=model.name, prediction=prediction.prediction, qerror=prediction.qerror))
+                    if prediction.qerror > settings.eval.valid_qerror_threshold:
+                        error_str = f"Invalid query - Qerror {prediction.qerror}, Dataset {workload.dataset.name}, Model {model.name}, Id {plan.id}, Workload {workload.file_name}, Id in workload {plan.id_in_run}"
+                        invalid_queries.append(error_str)
+                        continue
+                    qerrors_all[workload.dataset.name][model.name][table_count].append(prediction.qerror)
+                db.commit()
+
+    data_to_draw: dict[str, dict[str, list[QErrorToDraw]]] = {}
+    valid_queries_stats: list[ValidQueriesStats] = []
+    for dataset in qerrors_all:
+        if dataset not in data_to_draw:
+            data_to_draw[dataset] = {}
+        for model in qerrors_all[dataset]:
+            scores_to_draw: list[QErrorToDraw] = []
+            for table_count, qerrors in qerrors_all[dataset][model].items():
+                scores_to_draw.append(QErrorToDraw(score=sum(qerrors) / len(qerrors), join_count=table_count - 1, queries_count=len(qerrors)))
+            valid_queries_stats.append(
+                ValidQueriesStats(
+                    model=model,
+                    dataset=dataset,
+                    queries_count_per_joins={i.join_count: i.queries_count for i in scores_to_draw},
+                    avg_qerror_per_joins={i.join_count: i.score for i in scores_to_draw},
+                    queries_count=sum([i.queries_count for i in scores_to_draw]),
+                    avg_qerror=mean([i.score for i in scores_to_draw]),
+                )
+            )
+            data_to_draw[dataset][model] = scores_to_draw
+
+    save_model_to_file(
+        DatasetQueriesStats(
+            valid_queries=valid_queries_stats,
+            invalid_queries=invalid_queries,
+            queries_count=sum([i.queries_count for i in valid_queries_stats]),
+            avg_qerror=mean([i.avg_qerror for i in valid_queries_stats]),
+            queries_count_0=sum([i.queries_count for i in valid_queries_stats if settings.eval.main_model_token in i.model]),
+            avg_qerror_0=mean([i.avg_qerror for i in valid_queries_stats if settings.eval.main_model_token in i.model]),
+        ),
+        os.path.join(settings.eval.results_dir, "qerror_stats.json"),
+    )
+    for dataset in data_to_draw:
+        draw_qerrors(data_to_draw[dataset], settings.eval.results_dir, dataset)
+
+    composed_data_to_draw: dict[str, list[QErrorToDraw]] = {"all": []}
+    all_scores: list[QErrorToDraw] = []
+    for dataset in data_to_draw:
+        for model in data_to_draw[dataset]:
+            all_scores.extend(data_to_draw[dataset][model])
+            if settings.eval.main_model_token in model:
+                composed_data_to_draw[model] = data_to_draw[dataset][model]
+
+    for join_count in range(0, settings.eval.max_table_count):
+        scores = [s.score for s in all_scores if s.join_count == join_count]
+        counts = [s.queries_count for s in all_scores if s.join_count == join_count]
+        composed_data_to_draw["all"].append(QErrorToDraw(score=sum(scores) / len(scores), join_count=join_count, queries_count=sum(counts)))
+
+    draw_qerrors(composed_data_to_draw, settings.eval.results_dir, "all")

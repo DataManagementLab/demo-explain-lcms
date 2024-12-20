@@ -165,3 +165,4 @@ evaluation_results/
 .git
 .gitignore
 *.md
+**/*.env

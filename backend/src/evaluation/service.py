@@ -1,18 +1,9 @@
-from enum import StrEnum
+import os.path
 from statistics import mean
-from typing import Callable
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
-from tqdm import tqdm
 from evaluation.models import EvaluationType
-from evaluation.schemas import CorrelationEvaluation, CorrelationScore, TablesToScore, TablesToScoreEvaluationResponse
-from utils import load_model_from_file, save_model_to_file
-from evaluation.utils import float_range
 from ml.service import ExplainerType
-from zero_shot_learned_db.explanations.data_models.evaluation import FidelityEvaluation
-from zero_shot_learned_db.explanations.data_models.nodes import NodeType, Plan
-from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
-from zero_shot_learned_db.explanations.load import ParsedPlan
 
 explainer_to_string = {
     ExplainerType.GRADIENT: "Gradient",
@@ -34,132 +25,6 @@ evaluation_type_string = {
     EvaluationType.PEARSON_NODE_DEPTH: "Person correlation with node depth",
     EvaluationType.SPEARMAN_NODE_DEPTH: "Spearman correlaiton with node depth",
 }
-
-
-class FidelityType(StrEnum):
-    PLUS = "plus"
-    MINUS = "minus"
-
-
-def draw_fidelity_score(data: dict[ExplainerType, list[TablesToScore]], output_dir: str, fidelity_type: FidelityType):
-    plt.figure()
-    for key, scores in data.items():
-        plt.plot([s.table_count - 1 for s in scores], [s.score for s in scores], label=explainer_to_string[key])
-    max_tables = max([score.table_count for scores in data.values() for score in scores])
-    plt.xticks(range(0, max_tables))
-    plt.ylim(0, 1)
-    plt.xlabel("# of join operators")
-    plt.ylabel(f"Fidelity {fidelity_type}")
-    plt.title(f"Fidelity {fidelity_type} evaluation")
-    plt.legend()
-    plt.savefig(f"{output_dir}/plot_fidelity_{fidelity_type}.png")
-
-
-def draw_cost_score(data: dict[ExplainerType, list[TablesToScore]], output_dir: str):
-    plt.figure()
-    max_tables = max([score.table_count for scores in data.values() for score in scores])
-    for key, scores in data.items():
-        plt.plot([s.table_count - 1 for s in scores], [s.score for s in scores], label=explainer_to_string[key])
-    plt.xticks(range(0, max_tables))
-    plt.yticks(float_range(0, 2, floats=10))
-    plt.xlabel("# of join operators")
-    plt.ylabel("Cost hit rate")
-    plt.title("Cost Evaluation")
-    plt.legend()
-    plt.savefig(f"{output_dir}/plot_cost.png")
-
-
-def get_hash_joins_count(plan: ParsedPlan):
-    hash_joins_count = 0
-    for node in plan.graph_nodes:
-        if node.node.node_type != NodeType.PLAN:
-            continue
-        operator: Plan = node.node
-        if operator.plan_parameters.op_name == "Hash Join":
-            hash_joins_count += 1
-    return hash_joins_count
-
-
-def draw_scatter_node_importance(
-    node_importances: list[dict[int, float]],
-    actual_node_importances: list[dict[int, float]],
-    explainer: ExplainerType,
-    output_dir: str,
-    postfix: str = "all",
-):
-    plt.figure()
-
-    x: list[float] = []
-    y: list[float] = []
-    max_value = 0
-
-    for plan in zip(node_importances, actual_node_importances):
-        node_importance = plan[0]
-        actual_node_importance = plan[1]
-        for node in node_importance:
-            if node not in actual_node_importance:
-                continue
-            x.append(node_importance[node])
-            y.append(actual_node_importance[node])
-            max_value = max(node_importance[node], actual_node_importance[node], max_value)
-
-    plt.scatter(x, y, marker="x")
-    plt.plot([0, max_value], [0, max_value], "g--")
-
-    plt.xlabel("Importance from explainer")
-    plt.ylabel("Importance from runtime")
-    plt.title("Correlation between actual runtime and importance")
-    plt.savefig(f"{output_dir}/plot_scatter_node_importance_{explainer}_{postfix}.png")
-
-
-def draw_correlation_evaluations(correlation_evaluations: dict[ExplainerType, CorrelationEvaluation], plot_name: str, output_dir: str):
-    plt.figure()
-
-    for explainer, correlation in correlation_evaluations.items():
-        plt.plot([c.table_count - 1 for c in correlation.correlations_mean], [c.score for c in correlation.correlations_mean], label=explainer_to_string[explainer])
-    max_tables = max([c.table_count for correlation in correlation_evaluations.values() for c in correlation.correlations])
-    plt.xticks(range(0, max_tables))
-    plt.xlabel("# of join operators")
-    plt.ylabel("Correlation score")
-    plt.title(plot_name)
-    plt.legend()
-    plt.savefig(f"{output_dir}/plot_correlation_{plot_name.replace(' ', '_').lower()}.png")
-
-
-def get_correlation_evaluation(node_importances: list[dict[int, float]], actual_node_importances: list[dict[int, float]], plans: list[ParsedPlan], correlation_fn: Callable[[dict[int, float], dict[int, float]], float], table_counts: list[int]):
-    correlations_to_table = [CorrelationScore(table_count=plans[i].graph_nodes_stats[NodeType.TABLE], score=correlation_fn(node_importances[i], actual_node_importances[i])) for i in range(0, len(plans))]
-    correlations_to_table_mean: list[CorrelationScore] = []
-    for table_count in table_counts:
-        correlations = [c.score for c in correlations_to_table if c.table_count == table_count]
-        correlations_to_table_mean.append(CorrelationScore(table_count=table_count, score=mean(correlations)))
-    correlations_mean = mean([c.score for c in correlations_to_table])
-    return CorrelationEvaluation(correlations=correlations_to_table, correlations_mean=correlations_to_table_mean, correlations_mean_all=correlations_mean)
-
-
-def compute_fidelity(
-    explainer_type: ExplainerType,
-    explainer: BaseExplainer,
-    evaluation_plans: list[ParsedPlan],
-    output_dir: str,
-    fidelity_function: Callable[[BaseExplainer, ParsedPlan], FidelityEvaluation],
-    fidelity_type: FidelityType,
-):
-    file_name = f"{output_dir}/fidelity_{fidelity_type}_{explainer_type}.json"
-    response = load_model_from_file(TablesToScoreEvaluationResponse, file_name)
-    if response is not None:
-        return response
-
-    evaluations = [fidelity_function(explainer, plan) for plan in tqdm(evaluation_plans)]
-    table_counts = list(set([e._parsed_plan.graph_nodes_stats[NodeType.TABLE] for e in evaluations]))
-    table_counts.sort()
-    scores: list[TablesToScore] = []
-    for table_count in table_counts:
-        score = mean([e.score for e in evaluations if e._parsed_plan.graph_nodes_stats[NodeType.TABLE] == table_count])
-        scores.append(TablesToScore(table_count=table_count, score=score))
-
-    response = TablesToScoreEvaluationResponse(scores=scores)
-    save_model_to_file(response, file_name)
-    return response
 
 
 explainers_for_evaluation = [
@@ -206,7 +71,7 @@ def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]]
     plt.title(f"{evaluation_type_string[evaluation_type]}{additional_params} {model_name}")
     plt.legend()
 
-    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}{additional_params}.png")
+    plt.savefig(os.path.join(output_dir, f"plot_{evaluation_type}_{model_name}{additional_params}.png"))
     plt.close()
 
 
@@ -235,7 +100,7 @@ def draw_score_evaluations_combined(data: list[dict[ExplainerType, list[Evaluati
     plt.title(f"{evaluation_type_string[evaluation_type]} Combined")
     plt.legend(handles=legend_handles)
 
-    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}_combined.png")
+    plt.savefig(os.path.join(output_dir, f"plot_{evaluation_type}_{model_name}_combined.png"))
     plt.close()
 
 
@@ -257,5 +122,32 @@ def draw_score_evaluations_threshold_trend(data: dict[ExplainerType, dict[str, l
     plt.title(f"{evaluation_type_string[evaluation_type]} t_mask trend {'all queries' if filter_join_counts is None else str(filter_join_counts) + ' joins'}")
     plt.legend()
 
-    plt.savefig(f"{output_dir}/plot_{evaluation_type}_{model_name}_{filter_join_counts}_trend_tmask.png")
+    plt.savefig(os.path.join(output_dir, f"plot_{evaluation_type}_{model_name}_{filter_join_counts}_trend_tmask.png"))
+    plt.close()
+
+
+class QErrorToDraw:
+    score: float
+    queries_count: int
+    join_count: int
+
+    def __init__(self, score: float, join_count: int, queries_count: int):
+        self.score = score
+        self.join_count = join_count
+        self.queries_count = queries_count
+
+
+def draw_qerrors(data: dict[str, list[QErrorToDraw]], output_dir: str, tag: str | None = None):
+    plt.figure()
+    for model, scores in data.items():
+        plt.plot([s.join_count for s in scores], [s.score for s in scores], label=model)
+    max_joins = max([score.join_count for scores in data.values() for score in scores])
+    plt.xticks(range(0, max_joins + 1))
+    plt.ylim(1, 2.5)
+    plt.xlabel("# of join operators")
+    plt.ylabel("QError")
+    plt.title(f"Prediction QError {tag}")
+    plt.legend()
+
+    plt.savefig(os.path.join(output_dir, f"prediction_qerror_{tag}.png"))
     plt.close()

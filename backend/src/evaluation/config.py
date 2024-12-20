@@ -7,3 +7,5 @@ class EvaluationSettings(BaseModel):
     max_plans_per_table_count: int = 100
     evaluate_fidelity_params: bool = False
     use_binary_fidelity: bool = False
+    valid_qerror_threshold: float = 10
+    main_model_token: str = "_0"

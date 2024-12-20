@@ -51,3 +51,14 @@ class EvaluationScore(Base):
     explanation_id: Mapped[int] = mapped_column(ForeignKey(PlanExplanation.id))
     score: Mapped[float]
     evaluation_type: Mapped[str]
+
+
+class EvalPrediction(Base):
+    __tablename__ = "eval_predictions"
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    plan_id: Mapped[int] = mapped_column(ForeignKey(Plan.id))
+    plan: Mapped[Plan] = relationship()
+    model_name: Mapped[str]
+    prediction: Mapped[float]
+    qerror: Mapped[float]

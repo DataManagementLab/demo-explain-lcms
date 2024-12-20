@@ -43,3 +43,21 @@ class NodeImportanceEvaluation(CustomModel):
     node_importances: list[dict[int, float]]
     pearson_correlation: CorrelationEvaluation
     spearman_correlation: CorrelationEvaluation
+
+
+class ValidQueriesStats(CustomModel):
+    model: str
+    dataset: str
+    queries_count_per_joins: dict[int, int]
+    avg_qerror_per_joins: dict[int, float]
+    queries_count: int
+    avg_qerror: float
+
+
+class DatasetQueriesStats(CustomModel):
+    valid_queries: list[ValidQueriesStats]
+    invalid_queries: list[str]
+    queries_count: int
+    avg_qerror: float
+    queries_count_0: int
+    avg_qerror_0: float
