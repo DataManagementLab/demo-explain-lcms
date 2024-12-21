@@ -9,7 +9,7 @@ from config import Settings, get_settings
 from evaluation.dependencies import EvaluationRunComposed, get_latest_runs_all_datasets, store_and_get_explanations_for_workload
 from evaluation.models import EvalPrediction, EvaluationRun, EvaluationScore, EvaluationType
 from evaluation.schemas import DatasetQueriesStats, MostImportantNodeStats, MostImportantNodeStatsForModel, ValidQueriesStats
-from evaluation.service import EvaluationScoreToDraw, QErrorToDraw, draw_qerrors, draw_score_evaluation, draw_score_evaluations_threshold_trend
+from evaluation.service import EvaluationScoreToDraw, QErrorToDraw, create_dirs, draw_qerrors, draw_score_evaluation, draw_score_evaluations_threshold_trend
 from evaluation_fns.dependencies import EvaluationBaseParams
 from evaluation_fns.router import fidelity_minus, fidelity_plus, pearson, pearson_node_depth, spearman, pearson_cardinality, spearman_cardinality, spearman_node_depth
 from ml.dependencies import MLHelper
@@ -137,6 +137,8 @@ def run_all_for_workload(
         }
         for evaluation_type, scores in score_evaluations.items()
     }
+
+    create_dirs(settings.eval.results_dir, [j.name.split("_")[0] for i in ml.concrete_models_for_datasets.values() for j in i] + ["all"])
 
     for evaluation_type, model_results in agg_scores.items():
         for model_name, explainer_results in model_results.items():
@@ -315,7 +317,7 @@ def get_most_important_nodes(
             stats=most_important_nodes,
             stats_total_0=most_important_nodes_total,
         ),
-        os.path.join(settings.eval.results_dir, "most_important_nodes.json"),
+        os.path.join(settings.eval.results_dir, "all", "most_important_nodes.json"),
     )
 
 
@@ -386,10 +388,10 @@ def draw_plots_qerror(
             queries_count_0=sum([i.queries_count for i in valid_queries_stats if settings.eval.main_model_token in i.model]),
             avg_qerror_0=mean([i.avg_qerror for i in valid_queries_stats if settings.eval.main_model_token in i.model]),
         ),
-        os.path.join(settings.eval.results_dir, "qerror_stats.json"),
+        os.path.join(settings.eval.results_dir, "all", "qerror_stats.json"),
     )
     for dataset in data_to_draw:
-        draw_qerrors(data_to_draw[dataset], settings.eval.results_dir, dataset)
+        draw_qerrors(data_to_draw[dataset], settings.eval.results_dir)
 
     composed_data_to_draw: dict[str, list[QErrorToDraw]] = {"all": []}
     all_scores: list[QErrorToDraw] = []

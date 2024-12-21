@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from evaluation.models import EvaluationType
 from ml.service import ExplainerType
+from pathlib import Path
 
 explainer_to_string = {
     ExplainerType.GRADIENT: "Gradient",
@@ -53,6 +54,11 @@ class EvaluationScoreToDraw:
         self.model_name = model_name
 
 
+def create_dirs(ouput_dir: str, sub_dirs: list[str]):
+    for dir_name in sub_dirs:
+        Path(os.path.join(ouput_dir, dir_name)).mkdir(parents=True, exist_ok=True)
+
+
 def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]], output_dir: str, evaluation_type: EvaluationType, model_name: str):
     additional_params = ""
     if "|" in evaluation_type:
@@ -71,7 +77,7 @@ def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]]
     plt.title(f"{evaluation_type_string[evaluation_type]}{additional_params} {model_name}")
     plt.legend()
 
-    plt.savefig(os.path.join(output_dir, f"plot_{evaluation_type}_{model_name}{additional_params}.png"))
+    plt.savefig(os.path.join(output_dir, model_name.split("_")[0], f"plot_{evaluation_type}_{model_name}{additional_params}.png"))
     plt.close()
 
 
@@ -122,7 +128,7 @@ def draw_score_evaluations_threshold_trend(data: dict[ExplainerType, dict[str, l
     plt.title(f"{evaluation_type_string[evaluation_type]} t_mask trend {'all queries' if filter_join_counts is None else str(filter_join_counts) + ' joins'}")
     plt.legend()
 
-    plt.savefig(os.path.join(output_dir, f"plot_{evaluation_type}_{model_name}_{filter_join_counts}_trend_tmask.png"))
+    plt.savefig(os.path.join(output_dir, model_name.split("_")[0], f"plot_{evaluation_type}_{model_name}_{filter_join_counts}_trend_tmask.png"))
     plt.close()
 
 
@@ -146,8 +152,10 @@ def draw_qerrors(data: dict[str, list[QErrorToDraw]], output_dir: str, tag: str 
     plt.ylim(1, 2.5)
     plt.xlabel("# of join operators")
     plt.ylabel("QError")
+    if tag is None:
+        tag = list(data.keys())[0].split("_")[0]
     plt.title(f"Prediction QError {tag}")
     plt.legend()
 
-    plt.savefig(os.path.join(output_dir, f"prediction_qerror_{tag}.png"))
+    plt.savefig(os.path.join(output_dir, tag, f"prediction_qerror_{tag}.png"))
     plt.close()
