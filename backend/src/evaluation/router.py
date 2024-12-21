@@ -144,14 +144,6 @@ def run_all_for_workload(
         for model_name, explainer_results in model_results.items():
             draw_score_evaluation(explainer_results, settings.eval.results_dir, evaluation_type, model_name)
 
-    # if settings.eval.evaluate_fidelity_params:
-    #     model_name = list(agg_scores[EvaluationType.FIDELITY_PLUS].keys())[0]
-    #     variants = [evaluation_type.split("|")[1] for evaluation_type in agg_scores if EvaluationType.FIDELITY_PLUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_PLUS]
-    #     fidelity_plus_evaluations = [agg_scores[evaluation_type][model_name] for evaluation_type in agg_scores if EvaluationType.FIDELITY_PLUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_PLUS]
-    #     fidelity_minus_evaluations = [agg_scores[evaluation_type][model_name] for evaluation_type in agg_scores if EvaluationType.FIDELITY_MINUS in evaluation_type and evaluation_type != EvaluationType.FIDELITY_MINUS]
-    #     draw_score_evaluations_combined(fidelity_plus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_PLUS, model_name, variants)
-    #     draw_score_evaluations_combined(fidelity_minus_evaluations, settings.eval.results_dir, EvaluationType.FIDELITY_MINUS, model_name, variants)
-
     if settings.eval.evaluate_fidelity_params:
 
         def get_data_for_trend_evaluation(target_evaluation_type: EvaluationType):

@@ -1,7 +1,6 @@
 import os.path
 from statistics import mean
 import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
 from evaluation.models import EvaluationType
 from ml.service import ExplainerType
 from pathlib import Path
@@ -78,35 +77,6 @@ def draw_score_evaluation(data: dict[ExplainerType, list[EvaluationScoreToDraw]]
     plt.legend()
 
     plt.savefig(os.path.join(output_dir, model_name.split("_")[0], f"plot_{evaluation_type}_{model_name}{additional_params}.png"))
-    plt.close()
-
-
-def draw_score_evaluations_combined(data: list[dict[ExplainerType, list[EvaluationScoreToDraw]]], output_dir: str, evaluation_type: EvaluationType, model_name: str, evaluation_type_variants: list[str]):
-    legend_handles = []
-    for line_color, explainer_type in zip(colors, explainers_for_evaluation):
-        legend_handles.append(mlines.Line2D([], [], color=line_color, linestyle="solid", label=explainer_to_string[explainer_type]))
-    for line_style, eval_variant in zip(line_styles, evaluation_type_variants):
-        legend_handles.append(mlines.Line2D([], [], color="k", linestyle=line_style, label=eval_variant))
-
-    plt.figure()
-    for explainer_scores, line_style in zip(data, line_styles):
-        for explainer_type, line_color in zip(explainers_for_evaluation, colors):
-            plt.plot(
-                [s.join_count for s in explainer_scores[explainer_type]],
-                [s.score for s in explainer_scores[explainer_type]],
-                label=explainer_to_string[explainer_type],
-                linestyle=line_style,
-                color=line_color,
-            )
-    max_joins = max([score.join_count for explainer_scores in data for scores in explainer_scores.values() for score in scores])
-    plt.xticks(range(0, max_joins + 1))
-    plt.ylim(0, 1)
-    plt.xlabel("# of join operators")
-    plt.ylabel(evaluation_type_string[evaluation_type])
-    plt.title(f"{evaluation_type_string[evaluation_type]} Combined")
-    plt.legend(handles=legend_handles)
-
-    plt.savefig(os.path.join(output_dir, f"plot_{evaluation_type}_{model_name}_combined.png"))
     plt.close()
 
 
