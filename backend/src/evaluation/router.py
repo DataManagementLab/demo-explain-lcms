@@ -19,8 +19,10 @@ from query.db import db_depends
 from query.models import Plan, PlanStats, WorkloadRun
 from utils import save_model_to_file
 from zero_shot_learned_db.explanations.data_models.explanation import Explanation, NodeScore
-from zero_shot_learned_db.explanations.data_models.nodes import NodeType
+from zero_shot_learned_db.explanations.data_models.nodes import NodeType, PlanOperator
 from zero_shot_learned_db.explanations.evaluation import evaluation_characterization_score, evaluation_fidelity_minus, evaluation_fidelity_plus
+from zero_shot_learned_db.explanations.load import GraphNode
+from zero_shot_learned_db.explanations.data_models.nodes import Plan as PydanticPlan
 
 router = APIRouter(tags=["evaluation"], prefix="/evaluation")
 
@@ -229,52 +231,56 @@ def get_most_important_nodes(
     latest_runs: Annotated[dict[int, EvaluationRun], Depends(get_latest_runs_all_datasets)],
     settings: Annotated[Settings, Depends(get_settings)],
 ):
+    def gather_most_important_node_stats(node: GraphNode, all_stats: list[MostImportantNodeStatsForModel], explainer_type: ExplainerType, model_name: str | None = None):
+        node_name = node.node.node_type
+        if node.node.node_type == NodeType.PLAN:
+            plan_node: PydanticPlan = node.node
+            operator = plan_node.plan_parameters.op_name.lower()
+            if operator in [PlanOperator.HASH_JOIN.lower(), PlanOperator.MERGE_JOIN.lower(), PlanOperator.NESTED_LOOP.lower()]:
+                node_name = "Join"
+            elif "scan" in operator:
+                node_name = "Scan"
+            elif "aggregate" in operator:
+                node_name = "Aggregate"
+            else:
+                node_name = plan_node.plan_parameters.op_name
+        elif node.node.node_type == NodeType.COLUMN or node.node.node_type == NodeType.OUTPUT_COLUMN:
+            node_name = "Column"
+        elif node.node.node_type == NodeType.FILTER_COLUMN or node.node.node_type == NodeType.LOGICAL_PRED:
+            node_name = "Predicate"
+        current_stats = next(filter(lambda x: x.model == model_name and x.explainer_type == explainer_type, all_stats), None)
+        if current_stats is None:
+            current_stats = MostImportantNodeStatsForModel(
+                explainer_type=explainer_type,
+                model=model_name,
+                nodes={},
+                nodes_percentage={},
+                queries_count=0,
+            )
+            all_stats.append(current_stats)
+        if node_name not in current_stats.nodes:
+            current_stats.nodes[node_name] = 0
+        current_stats.nodes[node_name] += 1
+        current_stats.queries_count += 1
+
     most_important_nodes: list[MostImportantNodeStatsForModel] = []
+    already_evaluated_plans_with_base_explainers: list[int] = []
     for run in latest_runs.values():
         print(f"Evaluating explanations of workload {run.workload_id}")
         for explanation in tqdm(run.plan_explanations):
             base_scores = [NodeScore(**score) for score in explanation.base_scores]
             node_id = max(base_scores, key=lambda x: x.score).node_id
-            node = get_parsed_plan(explanation.plan_id, db, ml, None).get_node(node_id)
-            node_name = node.node.node_type if node.node.node_type != NodeType.PLAN else node.node.get_label()
-            current_stats = next(filter(lambda x: x.model == explanation.model_name and x.explainer_type == explanation.explainer_type, most_important_nodes), None)
-            if current_stats is None:
-                current_stats = MostImportantNodeStatsForModel(
-                    explainer_type=explanation.explainer_type,
-                    model=explanation.model_name,
-                    nodes={},
-                    nodes_percentage={},
-                    queries_count=0,
-                )
-                most_important_nodes.append(current_stats)
-            if node_name not in current_stats.nodes:
-                current_stats.nodes[node_name] = 0
-            current_stats.nodes[node_name] += 1
-            current_stats.queries_count += 1
+            parsed_plan = get_parsed_plan(explanation.plan_id, db, ml, None)
+            node = parsed_plan.get_node(node_id)
+            gather_most_important_node_stats(node, most_important_nodes, explanation.explainer_type, explanation.model_name)
 
-        print(f"Evaluating base explanations of workload {run.workload_id}")
-        for table_count in range(1, settings.eval.max_table_count + 1):
-            plans = db.query(Plan).join(Plan.plan_stats).filter(Plan.sql.is_not(None), Plan.workload_run_id == run.workload_id, PlanStats.tables == table_count).order_by(Plan.id_in_run).limit(settings.eval.max_plans_per_table_count).all()
-            for plan in tqdm(plans):
-                parsed_plan = get_parsed_plan(plan.id, db, ml, None)
+            if explanation.plan_id not in already_evaluated_plans_with_base_explainers:
                 for base_explainer_type in [ExplainerType.BASE, ExplainerType.BASE_CARDINALITY, ExplainerType.BASE_NODE_DEPTH]:
                     base_explainer = ml.get_explainer(base_explainer_type)
                     node_id = max(base_explainer.explain(parsed_plan).base_scores, key=lambda x: x.score).node_id
                     node = parsed_plan.get_node(node_id)
-                    node_name = node.node.node_type if node.node.node_type != NodeType.PLAN else node.node.get_label()
-                    current_stats = next(filter(lambda x: x.explainer_type == base_explainer_type, most_important_nodes), None)
-                    if current_stats is None:
-                        current_stats = MostImportantNodeStatsForModel(
-                            explainer_type=base_explainer_type,
-                            nodes={},
-                            nodes_percentage={},
-                            queries_count=0,
-                        )
-                        most_important_nodes.append(current_stats)
-                    if node_name not in current_stats.nodes:
-                        current_stats.nodes[node_name] = 0
-                    current_stats.nodes[node_name] += 1
-                    current_stats.queries_count += 1
+                    gather_most_important_node_stats(node, most_important_nodes, base_explainer_type)
+                already_evaluated_plans_with_base_explainers.append(explanation.plan_id)
 
     most_important_nodes_total: list[MostImportantNodeStatsForModel] = []
     for stats in most_important_nodes:
@@ -310,6 +316,7 @@ def get_most_important_nodes(
             stats_total_0=most_important_nodes_total,
         ),
         os.path.join(settings.eval.results_dir, "all", "most_important_nodes.json"),
+        format=True,
     )
 
 
@@ -381,6 +388,7 @@ def draw_plots_qerror(
             avg_qerror_0=mean([i.avg_qerror for i in valid_queries_stats if settings.eval.main_model_token in i.model]),
         ),
         os.path.join(settings.eval.results_dir, "all", "qerror_stats.json"),
+        format=True,
     )
     for dataset in data_to_draw:
         draw_qerrors(data_to_draw[dataset], settings.eval.results_dir)
