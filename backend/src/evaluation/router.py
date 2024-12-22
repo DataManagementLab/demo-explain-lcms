@@ -242,6 +242,8 @@ def get_most_important_nodes(
                 node_name = "Scan"
             elif "aggregate" in operator:
                 node_name = "Aggregate"
+            elif "gather" in operator:
+                node_name = "Gather"
             else:
                 node_name = plan_node.plan_parameters.op_name
         elif node.node.node_type == NodeType.COLUMN or node.node.node_type == NodeType.OUTPUT_COLUMN:
