@@ -12,6 +12,7 @@
   - [Query](#query)
   - [Evaluation](#evaluation)
   - [Minimal config example](#minimal-config-example)
+  - [Evaluation routes](#evaluation-routes)
 
 
 ## General Information
@@ -115,6 +116,8 @@ Based on:
 - **eval__max_plans_per_table_count** (default *"100*"): maximum number of queries that is captured for evaluation per table count, e.g. with default value will be captured 100 queries with 1 table, 100 queries with 2 tables, etc.
 - **eval__evaluate_fidelity_params** (default *"False"*): if True, different fidelity params will be evaluated (see *fidelity_test_thresholds* in [src/evaluation/router.py](src/evaluation/router.py))
 - **eval__use_binary_fidelity** (default *"False"*): use binary fidelity instead of range one for evaluation
+- **eval__valid_qerror_threshold** (default *"10"*): Threshold of the valid inference result for qerror evaluation
+- **main_model_token** (default *"_0"*): Part of the model name that is used to identify "main" model to combine the evaluations
 
 ### Minimal config example
 
@@ -122,3 +125,11 @@ Based on:
 cors_origins=["http://localhost:5173", "http://127.0.0.1:5173"]
 db_password="mysecretpassword"
 ```
+
+### Evaluation routes
+
+API routes under `/evaluation` are not used in the web app but were used to generate plots and statistics for the paper:
+- `/evaluation/workload/{workload_id}/run_all`: executes explanations and runs fidelity+, fidelity-, characterization score and all correlation evaluation for the workload run under `workload_id`
+- `/draw_plots_combined_different_datsets` (WARNING: call `/evaluation/workload/{workload_id}/run_all` before calling this route): draws combined plots for workload runs that were previously evaluated in `/evaluation/workload/{workload_id}/run_all`
+- `/most_important_nodes` (WARNING: call `/evaluation/workload/{workload_id}/run_all` before calling this route): outputs a file with frequency statistic of the most important nodes for workload runs that were previously evaluated in `/evaluation/workload/{workload_id}/run_all`
+- `/draw_plots_qerrors`: draws qerror plots for the specified workload runs
