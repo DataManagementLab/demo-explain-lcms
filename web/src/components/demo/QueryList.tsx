@@ -21,18 +21,19 @@ interface Props {
   workloadId: number;
   queryId: number | undefined;
   setQueryId: (value: number) => void;
-  page: number;
+  page: number | undefined;
   setPage: (value: number) => void;
 }
 
 export function QueryList({
   minimized,
   workloadId,
-  page,
+  page: pageInput,
   setPage,
   queryId,
   setQueryId,
 }: Props) {
+  const page = pageInput ?? 0;
   const queries = useGetQueries({
     workloadId: workloadId,
     offset: page * pageSize,

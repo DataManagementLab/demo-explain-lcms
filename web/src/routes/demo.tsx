@@ -32,7 +32,6 @@ import { cn } from '@/lib/utils';
 import {
   createFileRoute,
   retainSearchParams,
-  stripSearchParams,
   useNavigate,
 } from '@tanstack/react-router';
 import { ArrowLeftToLine, ArrowRightFromLine, Settings } from 'lucide-react';
@@ -41,7 +40,7 @@ import { z } from 'zod';
 const demoPageParamsSchema = z.object({
   datasetId: z.number().positive().optional(),
   workloadId: z.number().positive().optional(),
-  page: z.number().nonnegative().default(0),
+  page: z.number().nonnegative().optional(),
   queryId: z.number().positive().optional(),
   nodeId: z.number().positive().optional(),
 });
@@ -50,7 +49,7 @@ export const Route = createFileRoute('/demo')({
   component: Demo,
   validateSearch: demoPageParamsSchema,
   search: {
-    middlewares: [stripSearchParams({ page: 0 }), retainSearchParams(true)],
+    middlewares: [retainSearchParams(true)],
   },
 });
 
@@ -170,11 +169,10 @@ function Demo() {
   };
   const setWorkloadId = (value: number | undefined) => {
     setShowExplanations(false);
-
     void navigate({
       search: {
         workloadId: value,
-        // page: 0,
+        page: undefined,
         queryId: undefined,
         nodeId: undefined,
       },
@@ -182,7 +180,7 @@ function Demo() {
   };
   const setPage = (value: number) => {
     setShowExplanations(false);
-    return void navigate({
+    void navigate({
       search: {
         page: value,
         queryId: undefined,
