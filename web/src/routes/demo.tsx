@@ -30,12 +30,30 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useDemoStore } from '@/stores/demoStore';
-import { createFileRoute } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  retainSearchParams,
+  stripSearchParams,
+  useNavigate,
+} from '@tanstack/react-router';
 import { ArrowLeftToLine, ArrowRightFromLine, Settings } from 'lucide-react';
+import { z } from 'zod';
 import { useShallow } from 'zustand/react/shallow';
+
+const demoPageParamsSchema = z.object({
+  datasetId: z.number().positive().optional(),
+  workloadId: z.number().positive().optional(),
+  page: z.number().nonnegative().default(0),
+  queryId: z.number().positive().optional(),
+  nodeId: z.number().positive().optional(),
+});
 
 export const Route = createFileRoute('/demo')({
   component: Demo,
+  validateSearch: demoPageParamsSchema,
+  search: {
+    middlewares: [stripSearchParams({ page: 0 }), retainSearchParams(true)],
+  },
 });
 
 interface BaseExplainerInfo {
@@ -136,22 +154,52 @@ const evaluations = [
 ] satisfies EvaluationType[];
 
 function Demo() {
-  const [
-    datasetId,
-    workloadId,
-    queryId,
-    showExplanations,
-    setSelectedNodeId,
-    toggleExplanaitons,
-  ] = useDemoStore(
-    useShallow((state) => [
-      state.datasetId,
-      state.workloadId,
-      state.queryId,
-      state.showExplanations,
-      state.setSelectedNodeId,
-      state.toggleExplanaitons,
-    ]),
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { datasetId, workloadId, page, queryId, nodeId } = Route.useSearch();
+  const setDatasetId = (value: number | undefined) => {
+    console.log(value);
+    return void navigate({
+      to: '/demo',
+      search: {
+        datasetId: value,
+        workloadId: undefined,
+        page: undefined,
+        queryId: undefined,
+        nodeId: undefined,
+      },
+    }).then();
+  };
+  const setWorkloadId = (value: number | undefined) =>
+    void navigate({
+      search: {
+        workloadId: value,
+        // page: 0,
+        queryId: undefined,
+        nodeId: undefined,
+      },
+    });
+  const setPage = (value: number) => {
+    console.log('Set page');
+    return void navigate({
+      search: {
+        page: value,
+        queryId: undefined,
+        nodeId: undefined,
+      },
+    });
+  };
+  const setQueryId = (value: number | undefined) =>
+    void navigate({
+      search: {
+        queryId: value,
+        nodeId: undefined,
+      },
+    });
+  const setNodeId = (value: number | undefined) =>
+    void navigate({ search: { nodeId: value } });
+
+  const [showExplanations, toggleExplanaitons] = useDemoStore(
+    useShallow((state) => [state.showExplanations, state.toggleExplanaitons]),
   );
   const workloads = useGetWorkloads({ datasetId: datasetId });
   const query = useGetQuery({ queryId: queryId });
@@ -186,8 +234,19 @@ function Demo() {
         )}
       >
         <div className="flex gap-2">
-          <DatasetSelect className="w-9 grow" />
-          <WorkloadSelect className="w-9 grow" />
+          <DatasetSelect
+            className="w-9 grow"
+            datasetId={datasetId}
+            setDatasetId={setDatasetId}
+          />
+          {datasetId != undefined && (
+            <WorkloadSelect
+              className="w-9 grow"
+              datasetId={datasetId}
+              workloadId={workloadId}
+              setWorkloadId={setWorkloadId}
+            />
+          )}
           {!workloads.isSuccess && <div className="w-9 grow px-3"></div>}
           {workloadId != undefined && (
             <Button
@@ -203,7 +262,16 @@ function Demo() {
             </Button>
           )}
         </div>
-        <QueryList minimized={minimized}></QueryList>
+        {workloadId != undefined && (
+          <QueryList
+            minimized={minimized}
+            workloadId={workloadId}
+            queryId={queryId}
+            setQueryId={setQueryId}
+            page={page}
+            setPage={setPage}
+          ></QueryList>
+        )}
       </div>
       <div
         className={cn(
@@ -214,19 +282,27 @@ function Demo() {
         {queryId != undefined && (
           <Card
             className="h-[65vh] w-full"
-            onClick={() => setSelectedNodeId(undefined)}
+            onClick={() => setNodeId(undefined)}
           >
-            {query.isSuccess && <QueryGraph fullPlan={query.data} />}
+            {query.isSuccess && (
+              <QueryGraph
+                fullPlan={query.data}
+                nodeId={nodeId}
+                setNodeId={setNodeId}
+              />
+            )}
           </Card>
         )}
-        <NodeInfoCard />
+        {queryId != undefined && nodeId != undefined && (
+          <NodeInfoCard queryId={queryId} nodeId={nodeId} />
+        )}
       </div>
       {queryId != undefined && (
         <ScrollArea className="col-start-10 col-end-13 h-[calc(100vh-56px-8px-16px)] rounded-md border">
           <div className="flex flex-col gap-1">
-            <SqlCard />
+            <SqlCard queryId={queryId} />
             <Separator />
-            <PredictionCard />
+            <PredictionCard queryId={queryId} />
             <div className="mt-6 grid">
               {!showExplanations ? (
                 <Button
@@ -279,7 +355,12 @@ function Demo() {
                 {selectedExplainerTypes.map((explainerType) => (
                   <React.Fragment key={explainerType}>
                     <Separator />
-                    <ExplanationCard explainerType={explainerType} />
+                    <ExplanationCard
+                      explainerType={explainerType}
+                      queryId={queryId}
+                      nodeId={nodeId}
+                      setNodeId={setNodeId}
+                    />
                   </React.Fragment>
                 ))}
                 <div className="mt-6 grid">
@@ -326,6 +407,7 @@ function Demo() {
                     <FidelityEvaluationCard
                       fidelityType="fidelity-plus"
                       explainerTypes={selectedExplainerTypes}
+                      queryId={queryId}
                     />
                   </>
                 )}
@@ -335,6 +417,7 @@ function Demo() {
                     <FidelityEvaluationCard
                       fidelityType="fidelity-minus"
                       explainerTypes={selectedExplainerTypes}
+                      queryId={queryId}
                     />
                   </>
                 )}
@@ -344,6 +427,7 @@ function Demo() {
                     <FidelityEvaluationCard
                       fidelityType="characterization-score"
                       explainerTypes={selectedExplainerTypes}
+                      queryId={queryId}
                     />
                   </>
                 )}
@@ -363,6 +447,9 @@ function Demo() {
                             baseExplainerInfo.explainerType,
                             ...selectedRealExplainers,
                           ]}
+                          queryId={queryId}
+                          nodeId={nodeId}
+                          setNodeId={setNodeId}
                         ></CorrelationBarsCard>
                       </>
                     )}
@@ -374,6 +461,7 @@ function Demo() {
                         <CorrelationScoreCard
                           correlationType={baseExplainerInfo.pearsonFn}
                           explainerTypes={selectedRealExplainers}
+                          queryId={queryId}
                         />
                       </>
                     )}
@@ -385,6 +473,7 @@ function Demo() {
                         <CorrelationScoreCard
                           correlationType={baseExplainerInfo.spearmanFn}
                           explainerTypes={selectedRealExplainers}
+                          queryId={queryId}
                         />
                       </>
                     )}

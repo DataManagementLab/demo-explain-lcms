@@ -3,8 +3,6 @@ import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetFidelityEvaluations } from '@/api/evaluation';
 import { useGetExplanations } from '@/api/inference';
 import { round } from '@/lib/round';
-import { useDemoStore } from '@/stores/demoStore';
-import { useShallow } from 'zustand/react/shallow';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
@@ -13,13 +11,14 @@ import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 interface Props {
   fidelityType: FidelityType;
   explainerTypes: ExplainerType[];
+  queryId: number;
 }
 
 export function FidelityEvaluationCard({
   fidelityType,
   explainerTypes,
+  queryId,
 }: Props) {
-  const queryId = useDemoStore(useShallow((state) => state.queryId));
   const explanations = useGetExplanations({
     queryId: queryId,
     explainerTypes: explainerTypes,

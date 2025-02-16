@@ -7,7 +7,7 @@ export function combineUseQueries<T>(
   | { data: (T | undefined)[]; isSuccess: false } {
   const isSuccess =
     results.every((result) => result.isSuccess) &&
-    results.every((result) => result.data);
+    results.every((result) => result.data != undefined);
   if (isSuccess) {
     return {
       data: results.map((result) => result.data!),

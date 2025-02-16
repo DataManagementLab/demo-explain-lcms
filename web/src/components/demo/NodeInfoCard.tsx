@@ -7,8 +7,6 @@ import {
 import { useGetFeatures } from '@/api/general';
 import { useGetQuery } from '@/api/queries';
 import { round } from '@/lib/round';
-import { useDemoStore } from '@/stores/demoStore';
-import { useShallow } from 'zustand/react/shallow';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
@@ -43,14 +41,16 @@ function filterFeatures(keys: string[], selectedNode: GraphNode) {
     .filter((value) => value != undefined);
 }
 
-export function NodeInfoCard() {
-  const [queryId, selectedNodeId] = useDemoStore(
-    useShallow((state) => [state.queryId, state.selectedNodeId]),
-  );
+interface Props {
+  queryId: number;
+  nodeId: number;
+}
+
+export function NodeInfoCard({ queryId, nodeId }: Props) {
   const query = useGetQuery({ queryId: queryId });
   const features = useGetFeatures();
   const selectedNode = query.isSuccess
-    ? query.data.graphNodes.find((node) => node.nodeId == selectedNodeId)
+    ? query.data.graphNodes.find((node) => node.nodeId == nodeId)
     : undefined;
 
   const keys = selectedNode

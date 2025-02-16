@@ -3,8 +3,6 @@ import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetExplanations } from '@/api/inference';
 import { useGetQuery } from '@/api/queries';
 import { getBarColor } from '@/lib/barColors';
-import { useDemoStore } from '@/stores/demoStore';
-import { useShallow } from 'zustand/react/shallow';
 
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -16,19 +14,18 @@ import { CorrelationBarSingle } from './CorrelationBarSingle';
 interface Props {
   baseExplainersType: ExplainerType;
   explainerTypes: ExplainerType[];
+  queryId: number;
+  nodeId: number | undefined;
+  setNodeId: (value: number) => void;
 }
 
 export function CorrelationBarsCard({
   baseExplainersType,
   explainerTypes,
+  queryId,
+  nodeId,
+  setNodeId,
 }: Props) {
-  const [queryId, selectedNodeId, setSelectedNodeId] = useDemoStore(
-    useShallow((state) => [
-      state.queryId,
-      state.selectedNodeId,
-      state.setSelectedNodeId,
-    ]),
-  );
   const explanations = useGetExplanations({
     queryId: queryId,
     explainerTypes: explainerTypes,
@@ -60,8 +57,8 @@ export function CorrelationBarsCard({
                   <Label>{explainerTypeToDisplay[explainerTypes[i]]}</Label>
                   <CorrelationBarSingle
                     explanation={explanation}
-                    selectedNodeId={selectedNodeId}
-                    setSelectedNodeId={setSelectedNodeId}
+                    selectedNodeId={nodeId}
+                    setSelectedNodeId={setNodeId}
                   />
                 </div>
               ))}
@@ -74,10 +71,8 @@ export function CorrelationBarsCard({
                       .map((nodeId) => (
                         <TableRow
                           key={nodeId}
-                          onClick={() => setSelectedNodeId(nodeId)}
-                          data-state={
-                            nodeId == selectedNodeId ? 'selected' : ''
-                          }
+                          onClick={() => setNodeId(nodeId)}
+                          data-state={nodeId == nodeId ? 'selected' : ''}
                         >
                           <TableCell>
                             {query.data.graphNodes[nodeId].label}

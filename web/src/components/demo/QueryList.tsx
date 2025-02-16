@@ -2,8 +2,6 @@ import { useRef } from 'react';
 import { useGetQueries } from '@/api/queries';
 import { round } from '@/lib/round';
 import { cn } from '@/lib/utils';
-import { useDemoStore } from '@/stores/demoStore';
-import { useShallow } from 'zustand/react/shallow';
 
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
@@ -20,16 +18,21 @@ const pageSize = 50;
 
 interface Props {
   minimized: boolean;
+  workloadId: number;
+  queryId: number | undefined;
+  setQueryId: (value: number) => void;
+  page: number;
+  setPage: (value: number) => void;
 }
 
-export function QueryList({ minimized }: Props) {
-  const [workloadId, page, setPage] = useDemoStore(
-    useShallow((state) => [
-      state.workloadId,
-      state.queriesPage,
-      state.setQueriesPage,
-    ]),
-  );
+export function QueryList({
+  minimized,
+  workloadId,
+  page,
+  setPage,
+  queryId,
+  setQueryId,
+}: Props) {
   const queries = useGetQueries({
     workloadId: workloadId,
     offset: page * pageSize,
@@ -39,9 +42,6 @@ export function QueryList({ minimized }: Props) {
     ? Math.ceil(queries.data.totalCount / pageSize) - 1
     : 0;
 
-  const [queryId, setQueryId] = useDemoStore(
-    useShallow((state) => [state.queryId, state.setQueryId]),
-  );
   const scrollArea = useRef<HTMLDivElement>(null);
   const scrollToTop = () => {
     if (scrollArea.current) {

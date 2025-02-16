@@ -1,24 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react';
 import { FullPlan } from '@/api/data/queries';
-import { useDemoStore } from '@/stores/demoStore';
 import { useMeasure, useThrottle } from '@uidotdev/usehooks';
 import * as d3 from 'd3';
 import * as d3Graphviz from 'd3-graphviz';
-import { useShallow } from 'zustand/react/shallow';
 
 interface Props {
   fullPlan: FullPlan;
+  nodeId: number | undefined;
+  setNodeId: (value: number) => void;
 }
 
-export function QueryGraph({ fullPlan }: Props) {
+export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
   const graphDiv = useRef<HTMLDivElement>(null);
   const [graphviz, setGraphviz] = useState<
     d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined
   >();
-  const [selectedNodeId, setSelectedNodeId] = useDemoStore(
-    useShallow((state) => [state.selectedNodeId, state.setSelectedNodeId]),
-  );
+
   const [measureRef, _size] = useMeasure();
   const size = useThrottle(_size, 100);
 
@@ -58,11 +56,11 @@ export function QueryGraph({ fullPlan }: Props) {
       .classed('stroke-[2px]', true)
       .classed('stroke-[5px]', false);
 
-    if (selectedNodeId == undefined) {
+    if (nodeId == undefined) {
       return;
     }
     const nodeToSelect = nodes
-      .filter((e) => (e as any).key == selectedNodeId)
+      .filter((e) => (e as any).key == nodeId)
       .selectAll('ellipse');
     nodeToSelect //
       .classed('stroke-[2px]', false)
@@ -94,7 +92,7 @@ export function QueryGraph({ fullPlan }: Props) {
     };
 
     const setNodeClick = (_: string, nodeKey: string) => {
-      setSelectedNodeId(parseInt(nodeKey));
+      setNodeId(parseInt(nodeKey));
     };
 
     nodes.on('mouseover', (_e, d: any) => {
@@ -125,7 +123,7 @@ export function QueryGraph({ fullPlan }: Props) {
 
   useEffect(() => {
     drawSelectedNode();
-  }, [selectedNodeId, graphviz]);
+  }, [nodeId, graphviz]);
 
   return (
     <div className="h-full" ref={measureRef}>

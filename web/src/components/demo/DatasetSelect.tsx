@@ -1,6 +1,4 @@
 import { useGetDatasets } from '@/api/queries';
-import { useDemoStore } from '@/stores/demoStore';
-import { useShallow } from 'zustand/react/shallow';
 
 import {
   Select,
@@ -12,12 +10,11 @@ import {
 
 interface Props {
   className?: string | undefined;
+  datasetId: number | undefined;
+  setDatasetId: (value: number) => void;
 }
 
-export function DatasetSelect({ className }: Props) {
-  const [datasetId, setDatasetId] = useDemoStore(
-    useShallow((state) => [state.datasetId, state.setDatasetId]),
-  );
+export function DatasetSelect({ className, datasetId, setDatasetId }: Props) {
   const datasets = useGetDatasets();
 
   return (

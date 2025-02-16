@@ -1,6 +1,4 @@
 import { useGetWorkloads } from '@/api/queries';
-import { useDemoStore } from '@/stores/demoStore';
-import { useShallow } from 'zustand/react/shallow';
 
 import {
   Select,
@@ -12,16 +10,17 @@ import {
 
 interface Props {
   className?: string | undefined;
+  datasetId: number;
+  workloadId: number | undefined;
+  setWorkloadId: (value: number) => void;
 }
 
-export function WorkloadSelect({ className }: Props) {
-  const [datasetId, workloadId, setWorkloadId] = useDemoStore(
-    useShallow((state) => [
-      state.datasetId,
-      state.workloadId,
-      state.setWorkloadId,
-    ]),
-  );
+export function WorkloadSelect({
+  className,
+  datasetId,
+  workloadId,
+  setWorkloadId,
+}: Props) {
   const workloads = useGetWorkloads({ datasetId: datasetId });
 
   return (
