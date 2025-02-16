@@ -29,7 +29,6 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { useDemoStore } from '@/stores/demoStore';
 import {
   createFileRoute,
   retainSearchParams,
@@ -38,7 +37,6 @@ import {
 } from '@tanstack/react-router';
 import { ArrowLeftToLine, ArrowRightFromLine, Settings } from 'lucide-react';
 import { z } from 'zod';
-import { useShallow } from 'zustand/react/shallow';
 
 const demoPageParamsSchema = z.object({
   datasetId: z.number().positive().optional(),
@@ -155,10 +153,11 @@ const evaluations = [
 
 function Demo() {
   const navigate = useNavigate({ from: Route.fullPath });
+
   const { datasetId, workloadId, page, queryId, nodeId } = Route.useSearch();
   const setDatasetId = (value: number | undefined) => {
-    console.log(value);
-    return void navigate({
+    setShowExplanations(false);
+    void navigate({
       to: '/demo',
       search: {
         datasetId: value,
@@ -167,9 +166,11 @@ function Demo() {
         queryId: undefined,
         nodeId: undefined,
       },
-    }).then();
+    });
   };
-  const setWorkloadId = (value: number | undefined) =>
+  const setWorkloadId = (value: number | undefined) => {
+    setShowExplanations(false);
+
     void navigate({
       search: {
         workloadId: value,
@@ -178,8 +179,9 @@ function Demo() {
         nodeId: undefined,
       },
     });
+  };
   const setPage = (value: number) => {
-    console.log('Set page');
+    setShowExplanations(false);
     return void navigate({
       search: {
         page: value,
@@ -188,19 +190,19 @@ function Demo() {
       },
     });
   };
-  const setQueryId = (value: number | undefined) =>
+  const setQueryId = (value: number | undefined) => {
+    setShowExplanations(false);
     void navigate({
       search: {
         queryId: value,
         nodeId: undefined,
       },
     });
+  };
   const setNodeId = (value: number | undefined) =>
     void navigate({ search: { nodeId: value } });
 
-  const [showExplanations, toggleExplanaitons] = useDemoStore(
-    useShallow((state) => [state.showExplanations, state.toggleExplanaitons]),
-  );
+  const [showExplanations, setShowExplanations] = useState(false);
   const workloads = useGetWorkloads({ datasetId: datasetId });
   const query = useGetQuery({ queryId: queryId });
   const prediction = useGetPrediction({ queryId: queryId });
@@ -309,7 +311,7 @@ function Demo() {
                   variant="outline"
                   size="lg"
                   className="col-start-1 row-start-1 h-9 justify-self-center"
-                  onClick={() => toggleExplanaitons()}
+                  onClick={() => setShowExplanations(true)}
                   disabled={!prediction.isSuccess}
                 >
                   Run Explanations
