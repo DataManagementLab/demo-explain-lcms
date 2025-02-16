@@ -20,7 +20,7 @@ export function PredictionCard({ queryId }: Props) {
 
   return (
     <Card className="border-none">
-      <CardHeader className="p-0 px-6 pb-2 pt-4">
+      <CardHeader className="p-0 px-6 pt-4 pb-2">
         <CardTitle>Prediction</CardTitle>
         <CardDescription>
           {prediction.isSuccess

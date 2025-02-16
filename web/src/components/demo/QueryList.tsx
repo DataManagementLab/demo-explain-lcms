@@ -57,7 +57,7 @@ export function QueryList({
           className="h-[calc(100vh-56px-36px-8px-8px-16px-32px-16px)] rounded-md border"
         >
           <Table>
-            <TableHeader className="sticky top-0 bg-secondary">
+            <TableHeader className="bg-secondary sticky top-0">
               <TableRow>
                 <TableHead className="border-r text-center">ID</TableHead>
                 <TableHead className="border-r text-center">Nodes</TableHead>
@@ -80,7 +80,7 @@ export function QueryList({
                     <TableHead className="border-r text-center">
                       Columns
                     </TableHead>
-                    <TableHead className="border-l border-r text-center">
+                    <TableHead className="border-r border-l text-center">
                       Predicates
                     </TableHead>
                   </>
@@ -100,7 +100,7 @@ export function QueryList({
                   <TableCell className="border-r text-center">
                     {query.idInRun}
                   </TableCell>
-                  <TableCell className="border-l border-r text-center">
+                  <TableCell className="border-r border-l text-center">
                     {query.queryStats.nodes}
                   </TableCell>
                   {!minimized && (
@@ -119,7 +119,7 @@ export function QueryList({
                       <TableCell className="border-r text-center">
                         {query.queryStats.columns}
                       </TableCell>
-                      <TableCell className="border-l border-r text-center">
+                      <TableCell className="border-r border-l text-center">
                         {query.queryStats.predicates}
                       </TableCell>
                     </>
@@ -133,7 +133,7 @@ export function QueryList({
           </Table>
         </ScrollArea>
         <div className="flex items-center justify-end gap-2">
-          <div className="max-h-8 overflow-hidden pr-3 text-sm leading-[1.1] text-muted-foreground">
+          <div className="text-muted-foreground max-h-8 overflow-hidden pr-3 text-sm leading-[1.1]">
             Page {page + 1} of {pageLimit + 1}
           </div>
           <Button

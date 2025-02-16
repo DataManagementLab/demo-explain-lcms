@@ -138,3 +138,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Fix a max width issue inside scroll-area */
+div[data-radix-scroll-area-viewport] > div {
+  display: block !important;
+}

@@ -29,7 +29,7 @@ export function HomeIcon({ isActive }: Props) {
       <div className="flex flex-col gap-0.5">
         <p
           className={cn(
-            'text-center font-semibold leading-none text-foreground/60 transition-colors',
+            'text-foreground/60 text-center leading-none font-semibold transition-colors',
             isHovering && 'text-foreground/80',
             isActive && 'text-foreground',
           )}
@@ -38,7 +38,7 @@ export function HomeIcon({ isActive }: Props) {
         </p>
         <p
           className={cn(
-            'text-center font-semibold leading-none text-foreground/60 transition-colors',
+            'text-foreground/60 text-center leading-none font-semibold transition-colors',
             isHovering && 'text-foreground/80',
             isActive && 'text-foreground',
           )}

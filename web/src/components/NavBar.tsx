@@ -6,7 +6,7 @@ import { HomeIcon } from './HomeIcon';
 
 export function NavBar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-border/40 bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
+    <header className="border-border/40 bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-50 w-full backdrop-blur-sm">
       <div className="container flex h-14 max-w-(--breakpoint-2xl) items-center">
         <div className="mr-4 hidden md:flex">
           <Link to="/demo" className="mr-4 flex items-center lg:mr-6">

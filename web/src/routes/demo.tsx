@@ -332,7 +332,7 @@ function Demo() {
                 <PopoverContent>
                   <div className="flex flex-col">
                     <h4>Explainers</h4>
-                    <Separator className="mb-2 mt-0.5"></Separator>
+                    <Separator className="mt-0.5 mb-2"></Separator>
                     <div className="flex flex-col gap-1">
                       {selectedExplainers.map((explainer) => (
                         <LabeledSwitch
@@ -380,7 +380,7 @@ function Demo() {
                     <PopoverContent>
                       <div className="flex flex-col">
                         <h4>Explainers</h4>
-                        <Separator className="mb-2 mt-0.5"></Separator>
+                        <Separator className="mt-0.5 mb-2"></Separator>
                         <div className="flex flex-col gap-1">
                           {selectedEvaluations.map((evaluation) => (
                             <LabeledSwitch
