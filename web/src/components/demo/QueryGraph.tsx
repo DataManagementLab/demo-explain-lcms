@@ -107,6 +107,8 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
       setNodeClick(d.attributes.id, d.key);
       e.stopPropagation();
     });
+
+    drawSelectedNode();
   };
 
   useEffect(() => {
