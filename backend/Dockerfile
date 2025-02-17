@@ -1,7 +1,7 @@
 FROM python:3.11 AS pytorch-base
 RUN pip install --upgrade setuptools
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir torch==2.1.2 torchdata==0.7.1 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir dgl -f https://data.dgl.ai/wheels/torch-2.1/repo.html
 RUN apt-get update
 RUN apt-get install -y graphviz graphviz-dev

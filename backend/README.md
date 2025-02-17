@@ -52,13 +52,19 @@ Based on:
 5.  *(Optional)* Install psql `apt-get install postgresql-client-16` and copy **zs_queries.backup** into [./src](./src/)
 6. Setup Postgres database
     ```console
-    docker run --name expl-zs-postgres-dev -e     POSTGRES_PASSWORD=mysecretpassword -d postgres
+   docker run --name expl-zs-postgres-dev --expose 5432 --env POSTGRES_USER=postgres --env POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_DB=postgres -p 5432:5432 -d -h 127.0.0.1 postgres
     ```
 7. Create a minimal **.env** file in [./src/.env](./src/.env) (see [Minimal config example](#minimal-config-example))
 8. Install graphviz:
     ```console
     apt-get update
     apt-get install graphviz graphviz-dev
+    ```
+   In case of installation errors (MacOS), try:
+    ```
+    export C_INCLUDE_PATH="$(brew --prefix graphviz)/include/"
+    export LIBRARY_PATH="$(brew --prefix graphviz)/lib/"
+    pip install --use-pep517 --config-setting="--global-option=build_ext" pygraphviz
     ```
 9. Create and activate python virtual environment:
     ```console
@@ -69,8 +75,8 @@ Based on:
     ```console
     pip install --upgrade setuptools
     pip install --upgrade pip
-    pip install torch==2.1.2 torchvision==0.16.2    torchaudio==2.1.2 --index-url https://download.pytorch.   org/whl/rocm5.6
-    pip install --no-cache-dir dgl -f https://data.dgl.ai/    wheels/torch-2.1/repo.html
+    pip install torch==2.1.2 torchdata==0.7.1 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/rocm5.6
+    pip install --no-cache-dir dgl -f https://data.dgl.ai/
     pip install -r ./requirements/dev.txt
     ```
 11. Run backend:
