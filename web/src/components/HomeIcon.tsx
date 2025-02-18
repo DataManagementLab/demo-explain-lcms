@@ -29,21 +29,12 @@ export function HomeIcon({ isActive }: Props) {
       <div className="flex flex-col gap-0.5">
         <p
           className={cn(
-            'text-center font-semibold leading-none text-foreground/60 transition-colors',
+            'text-center font-semibold leading-none text-foreground/60 transition-colors text-4xl',
             isHovering && 'text-foreground/80',
             isActive && 'text-foreground',
           )}
         >
-          Black box
-        </p>
-        <p
-          className={cn(
-            'text-center font-semibold leading-none text-foreground/60 transition-colors',
-            isHovering && 'text-foreground/80',
-            isActive && 'text-foreground',
-          )}
-        >
-          opener
+          Black Box Opener
         </p>
       </div>
     </div>
