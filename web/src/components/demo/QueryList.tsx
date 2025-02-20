@@ -55,7 +55,7 @@ export function QueryList({
       <div className="flex flex-col gap-4">
         <ScrollArea
           ref={scrollArea}
-          className="h-[calc(100vh-56px-36px-8px-8px-16px-32px-16px)] rounded-md border"
+          className="h-[calc(var(--main-height)-36px-8px-16px-32px)] rounded-md border"
         >
           <Table>
             <TableHeader className="bg-secondary sticky top-0">
@@ -91,7 +91,7 @@ export function QueryList({
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="overflow-y-auto">
+            <TableBody className="bg-background overflow-y-auto">
               {queries.data.queries.map((query) => (
                 <TableRow
                   key={query.id}

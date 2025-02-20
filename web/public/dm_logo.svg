@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="245.32742mm"
+   height="102.61791mm"
+   viewBox="0 0 245.32742 102.61791"
+   version="1.1"
+   id="svg1162"
+   sodipodi:docname="dm_logo.svg"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <style
+     id="style1725" />
+  <defs
+     id="defs1156" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.23"
+     inkscape:cx="78.26087"
+     inkscape:cy="458.69565"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1200"
+     inkscape:window-height="934"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1159">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(51.765117,-20.092411)">
+    <g
+       inkscape:export-ydpi="448.45148"
+       inkscape:export-xdpi="448.45148"
+       inkscape:export-filename="D:\GDrive\Arbeit\Design\logo_neu.png"
+       transform="matrix(2.8061874,0,0,3.2910788,-34.310105,-1703.3643)"
+       id="g1093"
+       style="font-style:normal;font-weight:normal;font-size:6.10192px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.508493"
+       aria-label="D">
+      <path
+         sodipodi:nodetypes="cccccsssccsssc"
+         inkscape:connector-curvature="0"
+         id="path1091"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:48.8406px;line-height:1.25;font-family:Linear;-inkscape-font-specification:Linear;fill:#000000;stroke-width:0.508493"
+         d="m -6.2201876,554.64026 v -30.96495 m 2.8327551,28.13219 v -25.29943 l -2.8327551,-2.83276 H 10.387724 c 8.449425,0 14.017254,6.05624 14.017254,15.3848 0,8.59594 -4.102611,15.58015 -14.017254,15.58015 H -6.2201876 m 2.8327551,-2.83276 H 10.290043 c 5.030582,0 11.28218,-2.97927 11.28218,-12.74739 0,-7.03305 -4.00493,-12.55204 -11.28218,-12.55204 H -3.3874325" />
+    </g>
+    <g
+       inkscape:export-filename="D:\GDrive\Arbeit\Design\logo_neu.png"
+       inkscape:export-ydpi="448.45148"
+       inkscape:export-xdpi="448.45148"
+       transform="matrix(1.4352339,0,0,1.6832332,-1878.3645,269.42773)"
+       id="g1099">
+      <path
+         style="fill:none;stroke:#b3b3b3;stroke-width:5.87286;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="M 1440.6797,-90.100471 1394.2922,-117.41595 1346.2,-90.100471"
+         id="path1095"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccc"
+         inkscape:export-filename="D:\GDrive\Arbeit\Design\logo_neu.png"
+         inkscape:export-xdpi="94.176392"
+         inkscape:export-ydpi="94.176392" />
+      <path
+         style="fill:none;stroke:#000000;stroke-width:5.87286;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 1346.2,-90.100471 v -55.081489 l 48.0922,27.76601 46.3875,-27.71905 v 55.034529"
+         id="path1097"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccc"
+         inkscape:export-filename="D:\GDrive\Arbeit\Design\logo_neu.png"
+         inkscape:export-xdpi="94.176392"
+         inkscape:export-ydpi="94.176392" />
+    </g>
+  </g>
+</svg>

@@ -5,11 +5,9 @@ import { createRootRoute, Outlet } from '@tanstack/react-router';
 
 export const Route = createRootRoute({
   component: () => (
-    <div className="flex flex-col">
+    <div className="flex flex-col px-8 pb-[var(--main-bottom-padding)]">
       <NavBar></NavBar>
-      <div className="px-4 pt-2 pb-4">
-        <Outlet />
-      </div>
+      <Outlet />
       {/* <TanStackRouterDevtools /> */}
     </div>
   ),

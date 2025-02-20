@@ -9,18 +9,21 @@ export function HomeIcon({ isActive }: Props) {
   const [ref, isHovering] = useHover();
 
   return (
-    <div ref={ref} className="flex items-center gap-1.5">
+    <div
+      ref={ref}
+      className="flex items-center gap-1.5 text-lg leading-none font-bold"
+    >
       <div className="grid">
         <img
           className={cn(
-            'invisible col-start-1 row-start-1 h-9 w-9',
+            'invisible col-start-1 row-start-1 size-12',
             isHovering && 'visible',
           )}
           src="package_opened_small.png"
         />
         <img
           className={cn(
-            'visible col-start-1 row-start-1 h-9 w-9',
+            'visible col-start-1 row-start-1 size-12',
             isHovering && 'invisible',
           )}
           src="package_small.png"
@@ -34,7 +37,7 @@ export function HomeIcon({ isActive }: Props) {
             isActive && 'text-foreground',
           )}
         >
-          Black box
+          Black Box
         </p>
         <p
           className={cn(
@@ -43,7 +46,7 @@ export function HomeIcon({ isActive }: Props) {
             isActive && 'text-foreground',
           )}
         >
-          opener
+          Opener
         </p>
       </div>
     </div>
