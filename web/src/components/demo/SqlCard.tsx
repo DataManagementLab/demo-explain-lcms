@@ -40,7 +40,7 @@ export function SqlCard({ queryId }: Props) {
         </Button>
       </CardHeader>
       {showContent && query.isSuccess && (
-        <CardContent>
+        <CardContent className="flex max-h-40 flex-col overflow-hidden">
           <SyntaxHighlighter language="pgsql" style={vs}>
             {format(query.data.sql, { language: 'postgresql' })}
           </SyntaxHighlighter>
