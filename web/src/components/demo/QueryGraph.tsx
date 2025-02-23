@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react';
 import { FullPlan } from '@/api/data/queries';
-import { useMeasure, useThrottle } from '@uidotdev/usehooks';
+import { useDebounce, useMeasure } from '@uidotdev/usehooks';
 import * as d3 from 'd3';
 import * as d3Graphviz from 'd3-graphviz';
 
@@ -18,7 +18,7 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
   >();
 
   const [measureRef, _size] = useMeasure();
-  const size = useThrottle(_size, 100);
+  const size = useDebounce(_size, 100);
 
   const drawGraph = () => {
     if (!graphDiv.current || !graphviz) {

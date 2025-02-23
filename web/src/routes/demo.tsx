@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import { JSX, useState } from 'react';
 import {
   CorrelationType,
   EvaluationType,
   evaluationTypeToDisplay,
+  isCorrelationType,
+  isFidelityType,
 } from '@/api/data/evaluation';
 import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetPrediction } from '@/api/inference';
@@ -35,10 +37,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSelectedInfo } from '@/lib/useSelectedInfo';
 import { cn } from '@/lib/utils';
-import { TabsContent } from '@radix-ui/react-tabs';
 import {
   createFileRoute,
   retainSearchParams,
@@ -122,12 +122,18 @@ const explanationSections = [
 ] as const;
 type ExplanationSection = (typeof explanationSections)[number];
 
+function insertSeparators(elements: JSX.Element[]) {
+  return elements.flatMap((value, index) =>
+    index == elements.length - 1 ? value : [value, <Separator key={index} />],
+  );
+}
+
 function Demo() {
   const navigate = useNavigate({ from: Route.fullPath });
 
   const { datasetId, workloadId, page, queryId, nodeId } = Route.useSearch();
   const setDatasetId = (value: number | undefined) => {
-    setShowExplanations(false);
+    resetState();
     void navigate({
       to: '/demo',
       search: {
@@ -140,7 +146,7 @@ function Demo() {
     });
   };
   const setWorkloadId = (value: number | undefined) => {
-    setShowExplanations(false);
+    resetState();
     void navigate({
       search: {
         workloadId: value,
@@ -151,7 +157,7 @@ function Demo() {
     });
   };
   const setPage = (value: number) => {
-    setShowExplanations(false);
+    resetState();
     void navigate({
       search: {
         page: value,
@@ -161,7 +167,7 @@ function Demo() {
     });
   };
   const setQueryId = (value: number | undefined) => {
-    setShowExplanations(false);
+    resetState();
     void navigate({
       search: {
         queryId: value,
@@ -172,7 +178,7 @@ function Demo() {
   const setNodeId = (value: number | undefined) =>
     void navigate({ search: { nodeId: value } });
 
-  const [showExplanations, setShowExplanations] = useState(true);
+  const [showExplanations, setShowExplanations] = useState(false);
   const workloads = useGetWorkloads({ datasetId: datasetId });
   const query = useGetQuery({ queryId: queryId });
   const prediction = useGetPrediction({ queryId: queryId });
@@ -199,6 +205,11 @@ function Demo() {
 
   const [selectedExplanationSection, setSelectedExplanationSection] =
     useState<ExplanationSection>('Explanations');
+
+  const resetState = () => {
+    setShowExplanations(false);
+    setSelectedExplanationSection('Explanations');
+  };
 
   return (
     <div className="grid grid-cols-12 grid-rows-1 gap-x-4 overflow-hidden">
@@ -280,7 +291,7 @@ function Demo() {
           <SqlCard queryId={queryId} />
           <PredictionCard queryId={queryId} />
           <Card className="flex grow flex-col overflow-hidden">
-            <CardContent className="flex grow flex-col overflow-hidden p-0 py-2">
+            <CardContent className="flex grow flex-col overflow-hidden px-0 py-4">
               {/* <Tabs> */}
               <div className="grid px-4">
                 {!showExplanations ? (
@@ -310,18 +321,6 @@ function Demo() {
                       ))}
                     </SelectContent>
                   </Select>
-                  // <TabsList
-                  //   defaultValue="explanations"
-                  //   className="col-start-1 row-start-1 w-2/3 justify-self-center"
-                  // >
-                  //   <TabsTrigger value="explanations">
-                  //     Explanations
-                  //   </TabsTrigger>
-                  //   <TabsTrigger value="correlations">
-                  //     Correlations
-                  //   </TabsTrigger>
-                  //   <TabsTrigger value="evaluations">Evaluations</TabsTrigger>
-                  // </TabsList>
                 )}
                 <Popover>
                   <PopoverTrigger asChild>
@@ -352,110 +351,67 @@ function Demo() {
                 </Popover>
               </div>
               {showExplanations && (
-                <ScrollArea className="h-[calc(var(--main-height)-194px-16px-36px-24px-24px-10px)]">
+                <ScrollArea>
                   {selectedExplanationSection == 'Explanations' &&
-                    selectedExplainerTypes.map((explainerType) => (
-                      <React.Fragment key={explainerType}>
+                    insertSeparators(
+                      selectedExplainerTypes.map((explainerType) => (
                         <ExplanationCard
+                          key={`explanation-${explainerType}`}
                           explainerType={explainerType}
                           queryId={queryId}
                           nodeId={nodeId}
                           setNodeId={setNodeId}
                         />
-                        <Separator />
-                      </React.Fragment>
-                    ))}
+                      )),
+                    )}
                   {selectedExplanationSection == 'Correlations' &&
-                    baseExplainerInfos.map((baseExplainerInfo) => (
-                      <React.Fragment key={baseExplainerInfo.explainerType}>
-                        {(selectedEvaluationTypes.includes(
-                          baseExplainerInfo.pearsonFn,
-                        ) ||
-                          selectedEvaluationTypes.includes(
-                            baseExplainerInfo.spearmanFn,
-                          )) && (
-                          <>
-                            <Separator />
-                            <CorrelationBarsCard
-                              baseExplainersType={
-                                baseExplainerInfo.explainerType
-                              }
-                              explainerTypes={[
-                                baseExplainerInfo.explainerType,
-                                ...selectedRealExplainers,
-                              ]}
-                              queryId={queryId}
-                              nodeId={nodeId}
-                              setNodeId={setNodeId}
-                            ></CorrelationBarsCard>
-                          </>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  {selectedExplanationSection == 'Evaluations' && (
-                    <>
-                      {selectedEvaluationTypes.includes('fidelity-plus') && (
-                        <>
-                          <Separator />
+                    insertSeparators(
+                      baseExplainerInfos
+                        .filter(
+                          (baseExplainerInfo) =>
+                            selectedEvaluationTypes.includes(
+                              baseExplainerInfo.pearsonFn,
+                            ) ||
+                            selectedEvaluationTypes.includes(
+                              baseExplainerInfo.spearmanFn,
+                            ),
+                        )
+                        .map((baseExplainerInfo) => (
+                          <CorrelationBarsCard
+                            key={`correlation-${baseExplainerInfo.explainerType}`}
+                            baseExplainersType={baseExplainerInfo.explainerType}
+                            explainerTypes={[
+                              baseExplainerInfo.explainerType,
+                              ...selectedRealExplainers,
+                            ]}
+                            queryId={queryId}
+                            nodeId={nodeId}
+                            setNodeId={setNodeId}
+                          ></CorrelationBarsCard>
+                        )),
+                    )}
+                  {selectedExplanationSection == 'Evaluations' &&
+                    insertSeparators(
+                      selectedEvaluationTypes.map((evaluationType) =>
+                        isCorrelationType(evaluationType) ? (
+                          <CorrelationScoreCard
+                            key={evaluationType}
+                            correlationType={evaluationType}
+                            explainerTypes={selectedRealExplainers}
+                            queryId={queryId}
+                          ></CorrelationScoreCard>
+                        ) : isFidelityType(evaluationType) ? (
                           <FidelityEvaluationCard
-                            fidelityType="fidelity-plus"
+                            key={evaluationType}
+                            fidelityType={evaluationType}
                             explainerTypes={selectedExplainerTypes}
                             queryId={queryId}
-                          />
-                        </>
-                      )}
-                      {selectedEvaluationTypes.includes('fidelity-minus') && (
-                        <>
-                          <Separator />
-                          <FidelityEvaluationCard
-                            fidelityType="fidelity-minus"
-                            explainerTypes={selectedExplainerTypes}
-                            queryId={queryId}
-                          />
-                        </>
-                      )}
-                      {selectedEvaluationTypes.includes(
-                        'characterization-score',
-                      ) && (
-                        <>
-                          <Separator />
-                          <FidelityEvaluationCard
-                            fidelityType="characterization-score"
-                            explainerTypes={selectedExplainerTypes}
-                            queryId={queryId}
-                          />
-                        </>
-                      )}
-                      {baseExplainerInfos.map((baseExplainerInfo) => (
-                        <React.Fragment key={baseExplainerInfo.explainerType}>
-                          {selectedEvaluationTypes.includes(
-                            baseExplainerInfo.pearsonFn,
-                          ) && (
-                            <>
-                              <Separator />
-                              <CorrelationScoreCard
-                                correlationType={baseExplainerInfo.pearsonFn}
-                                explainerTypes={selectedRealExplainers}
-                                queryId={queryId}
-                              />
-                            </>
-                          )}
-                          {selectedEvaluationTypes.includes(
-                            baseExplainerInfo.spearmanFn,
-                          ) && (
-                            <>
-                              <Separator />
-                              <CorrelationScoreCard
-                                correlationType={baseExplainerInfo.spearmanFn}
-                                explainerTypes={selectedRealExplainers}
-                                queryId={queryId}
-                              />
-                            </>
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </>
-                  )}
+                          ></FidelityEvaluationCard>
+                        ) : (
+                          <></>
+                        ),
+                      ),
+                    )}
                 </ScrollArea>
               )}
             </CardContent>
