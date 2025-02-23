@@ -89,7 +89,7 @@ export function CorrelationBarSingle({
 
     d3.select(graphDiv.current)
       .selectAll('[clickNode]')
-      .on('click', (_e, d) => setSelectedNodeId(d));
+      .on('click', (_e, d) => setSelectedNodeId(d as number));
   };
 
   const selectNode = () => {
