@@ -5,7 +5,7 @@ import { HomeIcon } from './HomeIcon';
 
 export function NavBar() {
   return (
-    <header className="flex h-[var(--header-height)] items-center">
+    <header className="flex min-h-24 items-center">
       <Link to="/demo">
         {({ isActive }) => <HomeIcon isActive={isActive} />}
       </Link>

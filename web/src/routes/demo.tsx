@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   CorrelationType,
   EvaluationType,
@@ -12,23 +12,33 @@ import { CorrelationScoreCard } from '@/components/demo/CorrelationScoreCard';
 import { DatasetSelect } from '@/components/demo/DatasetSelect';
 import { ExplanationCard } from '@/components/demo/ExplanationCard';
 import { FidelityEvaluationCard } from '@/components/demo/FidelityEvaluationCard';
-import { LabeledSwitch } from '@/components/demo/LabeledSwitch';
 import { NodeInfoCard } from '@/components/demo/NodeInfoCard';
 import { PredictionCard } from '@/components/demo/PredictionCard';
 import { QueryGraph } from '@/components/demo/QueryGraph';
 import { QueryList } from '@/components/demo/QueryList';
 import { SqlCard } from '@/components/demo/SqlCard';
+import { TogglesForSelectedInfo } from '@/components/demo/TogglesForSelectedInfo';
 import { WorkloadSelect } from '@/components/demo/WorkloadSelect';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSelectedInfo } from '@/lib/useSelectedInfo';
 import { cn } from '@/lib/utils';
+import { TabsContent } from '@radix-ui/react-tabs';
 import {
   createFileRoute,
   retainSearchParams,
@@ -93,51 +103,6 @@ const explainerTypes = [
   ...realExplainers,
 ] satisfies ExplainerType[];
 
-interface SelectedInfo<T> {
-  item: T;
-  isSelected: boolean;
-}
-
-type SelectedInfoKey = 'selectedExplainers' | 'selectedEvaluations';
-
-function useSelectedInfo<T>(key: SelectedInfoKey, initialItems: T[]) {
-  const storedSelectedStr = localStorage.getItem(key);
-  const storedSelected = storedSelectedStr
-    ? (JSON.parse(storedSelectedStr) as SelectedInfo<T>[])
-    : undefined;
-  const [selected, setSelected] = useState(
-    storedSelected != undefined && storedSelected.length == initialItems.length
-      ? storedSelected
-      : initialItems.map(
-          (item) =>
-            ({
-              item: item,
-              isSelected: true,
-            }) satisfies SelectedInfo<T>,
-        ),
-  );
-
-  useEffect(
-    () => localStorage.setItem(key, JSON.stringify(selected)),
-    [selected],
-  );
-
-  const setSelectedItem = (item: T, value: boolean) => {
-    return setSelected(
-      selected.map((i) =>
-        i.item != item
-          ? i
-          : {
-              item: item,
-              isSelected: value,
-            },
-      ),
-    );
-  };
-
-  return [selected, setSelectedItem] as const;
-}
-
 const evaluations = [
   'fidelity-plus',
   'fidelity-minus',
@@ -149,6 +114,13 @@ const evaluations = [
   'pearson-node-depth',
   'spearman-node-depth',
 ] satisfies EvaluationType[];
+
+const explanationSections = [
+  'Explanations',
+  'Correlations',
+  'Evaluations',
+] as const;
+type ExplanationSection = (typeof explanationSections)[number];
 
 function Demo() {
   const navigate = useNavigate({ from: Route.fullPath });
@@ -200,7 +172,7 @@ function Demo() {
   const setNodeId = (value: number | undefined) =>
     void navigate({ search: { nodeId: value } });
 
-  const [showExplanations, setShowExplanations] = useState(false);
+  const [showExplanations, setShowExplanations] = useState(true);
   const workloads = useGetWorkloads({ datasetId: datasetId });
   const query = useGetQuery({ queryId: queryId });
   const prediction = useGetPrediction({ queryId: queryId });
@@ -225,54 +197,60 @@ function Demo() {
     .filter((e) => e.isSelected)
     .map((e) => e.item);
 
+  const [selectedExplanationSection, setSelectedExplanationSection] =
+    useState<ExplanationSection>('Explanations');
+
   return (
-    <div className="grid grid-cols-12 gap-x-4">
-      <div
+    <div className="grid grid-cols-12 grid-rows-1 gap-x-4 overflow-hidden">
+      <Card
         className={cn(
-          'col-start-1 col-end-5 flex flex-col gap-2',
+          'col-start-1 col-end-5 flex flex-col overflow-hidden',
           minimized && 'col-end-3',
         )}
       >
-        <div className="flex gap-2">
-          <DatasetSelect
-            className="w-9 grow"
-            datasetId={datasetId}
-            setDatasetId={setDatasetId}
-          />
-          {datasetId != undefined && (
-            <WorkloadSelect
+        <CardContent className="flex flex-col gap-2 overflow-hidden px-0 py-2">
+          <div className="flex gap-2 px-2">
+            <DatasetSelect
               className="w-9 grow"
               datasetId={datasetId}
-              workloadId={workloadId}
-              setWorkloadId={setWorkloadId}
+              setDatasetId={setDatasetId}
             />
-          )}
-          {!workloads.isSuccess && <div className="w-9 grow px-3"></div>}
+            {datasetId != undefined && (
+              <WorkloadSelect
+                className="w-9 grow"
+                datasetId={datasetId}
+                workloadId={workloadId}
+                setWorkloadId={setWorkloadId}
+              />
+            )}
+            {!workloads.isSuccess && <div className="w-9 grow px-3"></div>}
+            {workloadId != undefined && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMinimized(!minimized)}
+              >
+                {minimized ? (
+                  <ArrowRightFromLine className="size-4" />
+                ) : (
+                  <ArrowLeftToLine className="size-4" />
+                )}
+              </Button>
+            )}
+          </div>
+
           {workloadId != undefined && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setMinimized(!minimized)}
-            >
-              {minimized ? (
-                <ArrowRightFromLine className="h-4 w-4" />
-              ) : (
-                <ArrowLeftToLine className="h-4 w-4" />
-              )}
-            </Button>
+            <QueryList
+              minimized={minimized}
+              workloadId={workloadId}
+              queryId={queryId}
+              setQueryId={setQueryId}
+              page={page}
+              setPage={setPage}
+            ></QueryList>
           )}
-        </div>
-        {workloadId != undefined && (
-          <QueryList
-            minimized={minimized}
-            workloadId={workloadId}
-            queryId={queryId}
-            setQueryId={setQueryId}
-            page={page}
-            setPage={setPage}
-          ></QueryList>
-        )}
-      </div>
+        </CardContent>
+      </Card>
       <div
         className={cn(
           'col-start-5 col-end-10 flex flex-col gap-4',
@@ -281,7 +259,7 @@ function Demo() {
       >
         {queryId != undefined && (
           <Card
-            className="h-[65vh] w-full"
+            className="min-h-[65vh] w-full"
             onClick={() => setNodeId(undefined)}
           >
             {query.isSuccess && (
@@ -298,191 +276,191 @@ function Demo() {
         )}
       </div>
       {queryId != undefined && (
-        <ScrollArea className="col-start-10 col-end-13 h-[var(--main-height)] rounded-md border">
-          <div className="flex flex-col gap-1">
-            <SqlCard queryId={queryId} />
-            <Separator />
-            <PredictionCard queryId={queryId} />
-            <div className="mt-6 grid">
-              {!showExplanations ? (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="col-start-1 row-start-1 h-9 justify-self-center"
-                  onClick={() => setShowExplanations(true)}
-                  disabled={!prediction.isSuccess}
-                >
-                  Run Explanations
-                </Button>
-              ) : (
-                <h3 className="col-start-1 row-start-1 self-center justify-self-center text-xl">
-                  Explanations
-                </h3>
-              )}
-              <Popover>
-                <PopoverTrigger asChild>
+        <div className="col-start-10 col-end-13 flex grow flex-col gap-4 overflow-hidden">
+          <SqlCard queryId={queryId} />
+          <PredictionCard queryId={queryId} />
+          <Card className="flex grow flex-col overflow-hidden">
+            <CardContent className="flex grow flex-col overflow-hidden p-0 py-2">
+              {/* <Tabs> */}
+              <div className="grid px-4">
+                {!showExplanations ? (
                   <Button
-                    variant="outline"
-                    className="col-start-1 row-start-1 mr-2 justify-self-end"
-                    size="icon"
+                    size="lg"
+                    className="col-start-1 row-start-1 h-9 justify-self-center"
+                    onClick={() => setShowExplanations(true)}
+                    disabled={!prediction.isSuccess}
                   >
-                    <Settings className="h-4 w-4" />
+                    Run Explanations
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent>
-                  <div className="flex flex-col">
-                    <h4>Explainers</h4>
-                    <Separator className="mt-0.5 mb-2"></Separator>
-                    <div className="flex flex-col gap-1">
-                      {selectedExplainers.map((explainer) => (
-                        <LabeledSwitch
-                          key={explainer.item}
-                          id={explainer.item}
-                          label={explainerTypeToDisplay[explainer.item]}
-                          checked={explainer.isSelected}
-                          onCheckedChange={(value) => {
-                            toggleSelectedExplainer(explainer.item, value);
-                          }}
-                        />
+                ) : (
+                  <Select
+                    value={selectedExplanationSection}
+                    onValueChange={(value) =>
+                      setSelectedExplanationSection(value as ExplanationSection)
+                    }
+                  >
+                    <SelectTrigger className="col-start-1 row-start-1 mb-2 w-1/2 self-center justify-self-center">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {explanationSections.map((section) => (
+                        <SelectItem value={section} key={section}>
+                          {section}
+                        </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                  // <TabsList
+                  //   defaultValue="explanations"
+                  //   className="col-start-1 row-start-1 w-2/3 justify-self-center"
+                  // >
+                  //   <TabsTrigger value="explanations">
+                  //     Explanations
+                  //   </TabsTrigger>
+                  //   <TabsTrigger value="correlations">
+                  //     Correlations
+                  //   </TabsTrigger>
+                  //   <TabsTrigger value="evaluations">Evaluations</TabsTrigger>
+                  // </TabsList>
+                )}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="col-start-1 row-start-1 justify-self-end"
+                      size="icon"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <TogglesForSelectedInfo
+                        title="Explainers"
+                        selectedInfos={selectedExplainers}
+                        toggleSelectedInfo={toggleSelectedExplainer}
+                        displayStrings={explainerTypeToDisplay}
+                      ></TogglesForSelectedInfo>
+                      <TogglesForSelectedInfo
+                        title="Evaluations"
+                        selectedInfos={selectedEvaluations}
+                        toggleSelectedInfo={toggleSelectedEvaluation}
+                        displayStrings={evaluationTypeToDisplay}
+                      ></TogglesForSelectedInfo>
                     </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-            {showExplanations && (
-              <>
-                {selectedExplainerTypes.map((explainerType) => (
-                  <React.Fragment key={explainerType}>
-                    <Separator />
-                    <ExplanationCard
-                      explainerType={explainerType}
-                      queryId={queryId}
-                      nodeId={nodeId}
-                      setNodeId={setNodeId}
-                    />
-                  </React.Fragment>
-                ))}
-                <div className="mt-6 grid">
-                  <h3 className="col-start-1 row-start-1 self-center justify-self-center text-xl">
-                    Evaluations
-                  </h3>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="col-start-1 row-start-1 mr-2 justify-self-end"
-                        size="icon"
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <div className="flex flex-col">
-                        <h4>Explainers</h4>
-                        <Separator className="mt-0.5 mb-2"></Separator>
-                        <div className="flex flex-col gap-1">
-                          {selectedEvaluations.map((evaluation) => (
-                            <LabeledSwitch
-                              key={evaluation.item}
-                              id={evaluation.item}
-                              label={evaluationTypeToDisplay[evaluation.item]}
-                              checked={evaluation.isSelected}
-                              onCheckedChange={(value) => {
-                                toggleSelectedEvaluation(
-                                  evaluation.item,
-                                  value,
-                                );
-                              }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                {selectedEvaluationTypes.includes('fidelity-plus') && (
-                  <>
-                    <Separator />
-                    <FidelityEvaluationCard
-                      fidelityType="fidelity-plus"
-                      explainerTypes={selectedExplainerTypes}
-                      queryId={queryId}
-                    />
-                  </>
-                )}
-                {selectedEvaluationTypes.includes('fidelity-minus') && (
-                  <>
-                    <Separator />
-                    <FidelityEvaluationCard
-                      fidelityType="fidelity-minus"
-                      explainerTypes={selectedExplainerTypes}
-                      queryId={queryId}
-                    />
-                  </>
-                )}
-                {selectedEvaluationTypes.includes('characterization-score') && (
-                  <>
-                    <Separator />
-                    <FidelityEvaluationCard
-                      fidelityType="characterization-score"
-                      explainerTypes={selectedExplainerTypes}
-                      queryId={queryId}
-                    />
-                  </>
-                )}
-                {baseExplainerInfos.map((baseExplainerInfo) => (
-                  <React.Fragment key={baseExplainerInfo.explainerType}>
-                    {(selectedEvaluationTypes.includes(
-                      baseExplainerInfo.pearsonFn,
-                    ) ||
-                      selectedEvaluationTypes.includes(
-                        baseExplainerInfo.spearmanFn,
-                      )) && (
-                      <>
-                        <Separator />
-                        <CorrelationBarsCard
-                          baseExplainersType={baseExplainerInfo.explainerType}
-                          explainerTypes={[
-                            baseExplainerInfo.explainerType,
-                            ...selectedRealExplainers,
-                          ]}
+                  </PopoverContent>
+                </Popover>
+              </div>
+              {showExplanations && (
+                <ScrollArea className="h-[calc(var(--main-height)-194px-16px-36px-24px-24px-10px)]">
+                  {selectedExplanationSection == 'Explanations' &&
+                    selectedExplainerTypes.map((explainerType) => (
+                      <React.Fragment key={explainerType}>
+                        <ExplanationCard
+                          explainerType={explainerType}
                           queryId={queryId}
                           nodeId={nodeId}
                           setNodeId={setNodeId}
-                        ></CorrelationBarsCard>
-                      </>
-                    )}
-                    {selectedEvaluationTypes.includes(
-                      baseExplainerInfo.pearsonFn,
-                    ) && (
-                      <>
-                        <Separator />
-                        <CorrelationScoreCard
-                          correlationType={baseExplainerInfo.pearsonFn}
-                          explainerTypes={selectedRealExplainers}
-                          queryId={queryId}
                         />
-                      </>
-                    )}
-                    {selectedEvaluationTypes.includes(
-                      baseExplainerInfo.spearmanFn,
-                    ) && (
-                      <>
                         <Separator />
-                        <CorrelationScoreCard
-                          correlationType={baseExplainerInfo.spearmanFn}
-                          explainerTypes={selectedRealExplainers}
-                          queryId={queryId}
-                        />
-                      </>
-                    )}
-                  </React.Fragment>
-                ))}
-              </>
-            )}
-          </div>
-        </ScrollArea>
+                      </React.Fragment>
+                    ))}
+                  {selectedExplanationSection == 'Correlations' &&
+                    baseExplainerInfos.map((baseExplainerInfo) => (
+                      <React.Fragment key={baseExplainerInfo.explainerType}>
+                        {(selectedEvaluationTypes.includes(
+                          baseExplainerInfo.pearsonFn,
+                        ) ||
+                          selectedEvaluationTypes.includes(
+                            baseExplainerInfo.spearmanFn,
+                          )) && (
+                          <>
+                            <Separator />
+                            <CorrelationBarsCard
+                              baseExplainersType={
+                                baseExplainerInfo.explainerType
+                              }
+                              explainerTypes={[
+                                baseExplainerInfo.explainerType,
+                                ...selectedRealExplainers,
+                              ]}
+                              queryId={queryId}
+                              nodeId={nodeId}
+                              setNodeId={setNodeId}
+                            ></CorrelationBarsCard>
+                          </>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  {selectedExplanationSection == 'Evaluations' && (
+                    <>
+                      {selectedEvaluationTypes.includes('fidelity-plus') && (
+                        <>
+                          <Separator />
+                          <FidelityEvaluationCard
+                            fidelityType="fidelity-plus"
+                            explainerTypes={selectedExplainerTypes}
+                            queryId={queryId}
+                          />
+                        </>
+                      )}
+                      {selectedEvaluationTypes.includes('fidelity-minus') && (
+                        <>
+                          <Separator />
+                          <FidelityEvaluationCard
+                            fidelityType="fidelity-minus"
+                            explainerTypes={selectedExplainerTypes}
+                            queryId={queryId}
+                          />
+                        </>
+                      )}
+                      {selectedEvaluationTypes.includes(
+                        'characterization-score',
+                      ) && (
+                        <>
+                          <Separator />
+                          <FidelityEvaluationCard
+                            fidelityType="characterization-score"
+                            explainerTypes={selectedExplainerTypes}
+                            queryId={queryId}
+                          />
+                        </>
+                      )}
+                      {baseExplainerInfos.map((baseExplainerInfo) => (
+                        <React.Fragment key={baseExplainerInfo.explainerType}>
+                          {selectedEvaluationTypes.includes(
+                            baseExplainerInfo.pearsonFn,
+                          ) && (
+                            <>
+                              <Separator />
+                              <CorrelationScoreCard
+                                correlationType={baseExplainerInfo.pearsonFn}
+                                explainerTypes={selectedRealExplainers}
+                                queryId={queryId}
+                              />
+                            </>
+                          )}
+                          {selectedEvaluationTypes.includes(
+                            baseExplainerInfo.spearmanFn,
+                          ) && (
+                            <>
+                              <Separator />
+                              <CorrelationScoreCard
+                                correlationType={baseExplainerInfo.spearmanFn}
+                                explainerTypes={selectedRealExplainers}
+                                queryId={queryId}
+                              />
+                            </>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </>
+                  )}
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

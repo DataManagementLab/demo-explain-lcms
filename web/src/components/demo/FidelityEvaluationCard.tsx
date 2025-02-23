@@ -31,22 +31,20 @@ export function FidelityEvaluationCard({
 
   return (
     <Card className="border-none">
-      <CardHeader className="p-0 px-6 pt-4 pb-2">
+      <CardHeader>
         <CardTitle>{fidelityTypeToDisplay[fidelityType]}</CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
+      <CardContent>
         {evaluations.isSuccess &&
         explainerTypes.length == evaluations.data.length ? (
           <Table>
             <TableBody>
               {explainerTypes.map((explainerType, i) => (
-                <TableRow className="hover:bg-background" key={explainerType}>
+                <TableRow className="hover:bg-transparent" key={explainerType}>
                   <TableCell className="font-medium">
                     {explainerTypeToDisplay[explainerType]}
                   </TableCell>
-                  <TableCell className="font-medium">
-                    {round(evaluations.data[i].score)}
-                  </TableCell>
+                  <TableCell>{round(evaluations.data[i].score)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

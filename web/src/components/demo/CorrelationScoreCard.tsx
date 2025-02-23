@@ -35,18 +35,18 @@ export function CorrelationScoreCard({
 
   return (
     <Card className="border-none">
-      <CardHeader className="p-0 px-6 pt-4 pb-2">
+      <CardHeader>
         <CardTitle>
           {correlationTypeToDisplay[correlationType]} Correlation Score
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
+      <CardContent>
         {evaluations.isSuccess ? (
           <Table>
             <TableBody>
               {evaluations.data.map((correlation, i) => (
-                <TableRow className="hover:bg-background" key={i}>
-                  <TableCell>
+                <TableRow className="hover:bg-transparent" key={i}>
+                  <TableCell className="font-medium">
                     {explainerTypeToDisplay[explainerTypes[i]]}
                   </TableCell>
                   <TableCell>{round(correlation.score)}</TableCell>

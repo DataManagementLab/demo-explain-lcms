@@ -40,7 +40,7 @@ export function ExplanationCard({
 
   return (
     <Card className="border-none">
-      <CardHeader className="p-0 px-6 pt-4 pb-2">
+      <CardHeader>
         <CardTitle>{explainerTypeToDisplay[explainerType]}</CardTitle>
         <CardDescription>
           {explanation.isSuccess
@@ -48,7 +48,7 @@ export function ExplanationCard({
             : ''}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 p-4 pt-0">
+      <CardContent className="flex flex-col gap-2">
         {explanation.isSuccess && query.isSuccess ? (
           <Table>
             <TableBody className="overflow-y-auto">

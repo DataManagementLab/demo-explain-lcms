@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
+import { Separator } from '../ui/separator';
 import {
   Table,
   TableBody,
@@ -52,13 +53,10 @@ export function QueryList({
 
   return (
     queries.isSuccess && (
-      <div className="flex flex-col gap-4">
-        <ScrollArea
-          ref={scrollArea}
-          className="h-[calc(var(--main-height)-36px-8px-16px-32px)] rounded-md border"
-        >
+      <div className="flex flex-col overflow-hidden">
+        <ScrollArea ref={scrollArea}>
           <Table>
-            <TableHeader className="bg-secondary sticky top-0">
+            <TableHeader className="bg-card sticky top-0">
               <TableRow>
                 <TableHead className="border-r text-center">ID</TableHead>
                 <TableHead className="border-r text-center">Nodes</TableHead>
@@ -91,7 +89,7 @@ export function QueryList({
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="bg-background overflow-y-auto">
+            <TableBody className="bg-card overflow-y-auto">
               {queries.data.queries.map((query) => (
                 <TableRow
                   key={query.id}
@@ -133,7 +131,8 @@ export function QueryList({
             </TableBody>
           </Table>
         </ScrollArea>
-        <div className="flex items-center justify-end gap-2">
+        <Separator></Separator>
+        <div className="flex items-center justify-end gap-2 px-2 pt-2">
           <div className="text-muted-foreground max-h-8 overflow-hidden pr-3 text-sm leading-[1.1]">
             Page {page + 1} of {pageLimit + 1}
           </div>

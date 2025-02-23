@@ -75,13 +75,19 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
 
     const graphElement = d3.selectAll('#graph0');
     const nodes = graphElement.selectAll('.node');
+    // const edges = graphElement.selectAll('.edge');
 
     nodes
       .selectAll('ellipse')
-      .classed(
-        'transition-stroke fill-background stroke-black/60 stroke-[2px]',
-        true,
-      );
+      .classed('transition-stroke stroke-black/60 stroke-[2px]', true);
+
+    // nodes
+    //   .selectAll('text')
+    //   .classed('text-primary-foreground', true)
+    //   .attr('font-family', null);
+
+    // edges.selectAll('path').classed('stroke-primary', true);
+    // edges.selectAll('polygon').classed('fill-primary stroke-primary', true);
 
     const setNodeHover = (enter: boolean, nodeId: string) => {
       nodes

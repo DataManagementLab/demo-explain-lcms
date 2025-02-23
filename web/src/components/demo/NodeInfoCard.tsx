@@ -79,24 +79,24 @@ export function NodeInfoCard({ queryId, nodeId }: Props) {
 
   return (
     selectedNode && (
-      <Card>
+      <Card className="flex grow flex-col overflow-hidden">
         <CardHeader>
           <CardTitle>
             {`${selectedNode.label} (${nodeTypeToDisplay.get(selectedNode.nodeInfo.nodeType)})`}
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-x-2">
+        <CardContent className="grid grow grid-cols-2 grid-rows-1 gap-x-2 overflow-hidden">
           {nodeFeatures && nodeOtherAttributes && (
             <>
-              <div className="flex flex-col gap-3">
+              <div className="flex grow flex-col gap-3">
                 <Label>Features</Label>
-                <ScrollArea className="h-[calc(var(--main-height)-65vh-16px-64px-14px-12px-24px)] rounded-md border">
+                <ScrollArea className="grow rounded-md border">
                   <Table>
                     <TableBody>
                       {nodeFeatures.map((value) => (
                         <TableRow
                           key={value.key}
-                          className="hover:bg-background"
+                          className="hover:bg-transparent"
                         >
                           <TableCell className="font-medium">
                             {nodeFieldToDisplay.get(value.key)}
@@ -108,15 +108,15 @@ export function NodeInfoCard({ queryId, nodeId }: Props) {
                   </Table>
                 </ScrollArea>
               </div>
-              <div className="flex flex-col gap-3">
+              <div className="flex grow flex-col gap-3">
                 <Label>Other attributes</Label>
-                <ScrollArea className="h-[calc(var(--main-height)-65vh-16px-64px-14px-12px-24px)] rounded-md border">
+                <ScrollArea className="grow rounded-md border">
                   <Table>
                     <TableBody>
                       {nodeOtherAttributes.map((value) => (
                         <TableRow
                           key={value.key}
-                          className="hover:bg-background"
+                          className="hover:bg-transparent"
                         >
                           <TableCell className="font-medium">
                             {nodeFieldToDisplay.get(value.key)}
