@@ -28,18 +28,41 @@ export function useGetWorkloads({ datasetId }: Partial<GetWorkloadsParams>) {
   });
 }
 
+export const sortKeys = [
+  'id',
+  'nodes',
+  'plans',
+  'joins',
+  'tables',
+  'columns',
+  'predicates',
+  'runtime',
+] as const;
+
+export type SortKey = (typeof sortKeys)[number];
+
 interface GetQueriesParams {
   workloadId: number;
   offset: number;
   limit: number;
+  sortKey: SortKey;
+  sortAscending: boolean;
 }
 
-function getQueries({ workloadId, offset, limit }: GetQueriesParams) {
+function getQueries({
+  workloadId,
+  offset,
+  limit,
+  sortKey,
+  sortAscending,
+}: GetQueriesParams) {
   return api
     .get<QueriesPage>(`workloads/${workloadId}/queries`, {
       searchParams: {
         offset: offset,
         limit: limit,
+        order_by: sortKey,
+        ascending: sortAscending,
       },
     })
     .json();
@@ -49,12 +72,15 @@ export function useGetQueries({
   workloadId,
   offset,
   limit,
+  sortKey,
+  sortAscending,
 }: PickPartial<GetQueriesParams, 'workloadId'>) {
   return useQuery({
-    queryKey: ['queries', workloadId, offset, limit],
+    queryKey: ['queries', workloadId, offset, limit, sortKey, sortAscending],
     queryFn:
       workloadId != undefined
-        ? () => getQueries({ workloadId, offset, limit })
+        ? () =>
+            getQueries({ workloadId, offset, limit, sortKey, sortAscending })
         : skipToken,
     placeholderData: (prevData, prevQuery) =>
       prevQuery && prevQuery.queryKey[1] == workloadId ? prevData : undefined,

@@ -8,7 +8,7 @@ import {
 } from '@/api/data/evaluation';
 import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
 import { useGetPrediction } from '@/api/inference';
-import { useGetQuery, useGetWorkloads } from '@/api/queries';
+import { SortKey, sortKeys, useGetQuery, useGetWorkloads } from '@/api/queries';
 import { CorrelationBarsCard } from '@/components/demo/CorrelationBarsCard';
 import { CorrelationScoreCard } from '@/components/demo/CorrelationScoreCard';
 import { DatasetSelect } from '@/components/demo/DatasetSelect';
@@ -53,6 +53,8 @@ const demoPageParamsSchema = z.object({
   page: z.number().nonnegative().optional(),
   queryId: z.number().positive().optional(),
   nodeId: z.number().positive().optional(),
+  sort: z.enum(sortKeys).optional(),
+  asc: z.boolean().optional(),
 });
 
 export const Route = createFileRoute('/demo')({
@@ -131,7 +133,15 @@ function insertSeparators(elements: JSX.Element[]) {
 function Demo() {
   const navigate = useNavigate({ from: Route.fullPath });
 
-  const { datasetId, workloadId, page, queryId, nodeId } = Route.useSearch();
+  const {
+    datasetId,
+    workloadId,
+    page,
+    queryId,
+    nodeId,
+    sort: sortKey,
+    asc: sortAscending,
+  } = Route.useSearch();
   const setDatasetId = (value: number | undefined) => {
     resetState();
     void navigate({
@@ -142,6 +152,8 @@ function Demo() {
         page: undefined,
         queryId: undefined,
         nodeId: undefined,
+        sort: undefined,
+        asc: undefined,
       },
     });
   };
@@ -153,6 +165,8 @@ function Demo() {
         page: undefined,
         queryId: undefined,
         nodeId: undefined,
+        sort: undefined,
+        asc: undefined,
       },
     });
   };
@@ -177,6 +191,19 @@ function Demo() {
   };
   const setNodeId = (value: number | undefined) =>
     void navigate({ search: { nodeId: value } });
+
+  const setSort = (sortKey: SortKey, sortAscending: boolean) => {
+    resetState();
+    void navigate({
+      search: {
+        page: undefined,
+        queryId: undefined,
+        nodeId: undefined,
+        sort: sortKey,
+        asc: sortAscending,
+      },
+    });
+  };
 
   const [showExplanations, setShowExplanations] = useState(false);
   const workloads = useGetWorkloads({ datasetId: datasetId });
@@ -258,6 +285,9 @@ function Demo() {
               setQueryId={setQueryId}
               page={page}
               setPage={setPage}
+              sortKey={sortKey}
+              sortAscending={sortAscending}
+              setSort={setSort}
             ></QueryList>
           )}
         </CardContent>

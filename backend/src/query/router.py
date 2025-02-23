@@ -1,13 +1,15 @@
+from enum import StrEnum
 import time
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import Column
 
 from ml.dependencies import MLHelper
 from query.db import db_depends
 from query.dependecies import get_explainer_for_parsed_plan, get_parsed_plan, get_parsed_plan_for_inference, get_predictor, inference_mutex
-from query.models import Dataset, Plan, WorkloadRun
+from query.models import Dataset, Plan, PlanStats, WorkloadRun
 from query.schemas import DatasetResponse, ExplanationResponse, FullQueryResponse, GraphNodeResponse, PredictionResponse, QueriesPageResponse, QueryResponse, WorkloadRunResponse
-from query.service import get_query_stats, get_workload_run_queries_count
+from query.service import get_workload_run_queries_count
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
 from zero_shot_learned_db.explanations.load import ParsedPlan
 from pydantic.alias_generators import to_camel
@@ -37,20 +39,46 @@ def get_workloads(dataset_id: int, db: db_depends):
     ]
 
 
+class OrderByArg(StrEnum):
+    ID = "id"
+    NODES = "nodes"
+    PLANS = "plans"
+    JOINS = "joins"
+    TABLES = "tables"
+    COLUMNS = "columns"
+    PREDICATES = "predicates"
+    RUNTIME = "runtime"
+
+
+order_by_columns: dict[OrderByArg, Column] = {
+    OrderByArg.ID: Plan.id_in_run,
+    OrderByArg.RUNTIME: Plan.plan_runtime,
+    OrderByArg.NODES: PlanStats.nodes,
+    OrderByArg.PLANS: PlanStats.plans,
+    OrderByArg.JOINS: PlanStats.joins,
+    OrderByArg.TABLES: PlanStats.tables,
+    OrderByArg.COLUMNS: PlanStats.columns,
+    OrderByArg.PREDICATES: PlanStats.predicates,
+}
+
+
 @router.get("/workloads/{workload_id}/queries", response_model=QueriesPageResponse)
-def get_workload_queries(workload_id: int, db: db_depends, offset: int = 0, limit: int = 20):
+def get_workload_queries(workload_id: int, db: db_depends, offset: int = 0, limit: int = 20, order_by: OrderByArg = OrderByArg.ID, ascending: bool = True):
     workload_run = db.query(WorkloadRun).filter(WorkloadRun.id == workload_id).first()
     if workload_run is None:
         raise HTTPException(422, f"Workload with id == {workload_id} was not found")
-    plans = db.query(Plan).filter(Plan.workload_run_id == workload_id, Plan.id_in_run.is_not(None)).order_by(Plan.id_in_run).offset(offset).limit(limit).all()
+    order_by_column = order_by_columns[order_by]
+    if not ascending:
+        order_by_column = order_by_column.desc()
+    plans = db.query(Plan, PlanStats).join(Plan.plan_stats).filter(Plan.workload_run_id == workload_id, Plan.id_in_run.is_not(None)).order_by(order_by_column).offset(offset).limit(limit).tuples().all()
     return QueriesPageResponse(
         queries=[
             QueryResponse(
-                id=plan.id,
-                id_in_run=plan.id_in_run,
-                plan_runtime=plan.plan_runtime,
-                sql=plan.sql,
-                query_stats=get_query_stats(plan.id, db),
+                id=plan[0].id,
+                id_in_run=plan[0].id_in_run,
+                plan_runtime=plan[0].plan_runtime,
+                sql=plan[0].sql,
+                query_stats=plan[1],
             )
             for plan in plans
         ],
