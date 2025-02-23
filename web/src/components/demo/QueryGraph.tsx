@@ -25,6 +25,9 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
       return;
     }
 
+    // Clean graph
+    graphviz.renderDot('graph {}');
+
     const margin = { top: 16, right: 16, bottom: 16, left: 16 };
     const height = graphDiv.current.clientHeight - margin.left - margin.right;
     const width = graphDiv.current.clientWidth - margin.top - margin.bottom;
@@ -36,6 +39,9 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
       .attributer(function (d) {
         if (d.tag == 'polygon' && d.parent.attributes.class == 'graph') {
           d.attributes.fill = 'transparent';
+        }
+        if (d.tag == 'svg') {
+          d.attributes.class = 'absolute';
         }
       })
       .renderDot(fullPlan.dotGraph)
@@ -135,7 +141,10 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
 
   return (
     <div className="h-full" ref={measureRef}>
-      <div className="h-full" ref={graphDiv}></div>
+      <div
+        className="h-full overflow-hidden contain-layout contain-paint"
+        ref={graphDiv}
+      ></div>
     </div>
   );
 }

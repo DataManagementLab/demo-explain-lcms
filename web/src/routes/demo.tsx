@@ -239,11 +239,11 @@ function Demo() {
   };
 
   return (
-    <div className="grid grid-cols-12 grid-rows-1 gap-x-4 overflow-hidden">
+    <div className="grid grid-cols-24 grid-rows-1 gap-x-4 overflow-hidden">
       <Card
         className={cn(
-          'col-start-1 col-end-5 flex flex-col overflow-hidden',
-          minimized && 'col-end-3',
+          'col-start-1 col-end-12 flex flex-col overflow-hidden',
+          minimized && 'col-end-6',
         )}
       >
         <CardContent className="flex flex-col gap-2 overflow-hidden px-0 py-2">
@@ -294,8 +294,8 @@ function Demo() {
       </Card>
       <div
         className={cn(
-          'col-start-5 col-end-10 flex flex-col gap-4',
-          minimized && 'col-start-3',
+          'col-start-12 col-end-20 flex flex-col gap-4',
+          minimized && 'col-start-6',
         )}
       >
         {queryId != undefined && (
@@ -312,13 +312,15 @@ function Demo() {
             )}
           </Card>
         )}
-        {queryId != undefined && nodeId != undefined && (
-          <NodeInfoCard queryId={queryId} nodeId={nodeId} />
-        )}
+        {queryId != undefined &&
+          (nodeId != undefined ? (
+            <NodeInfoCard queryId={queryId} nodeId={nodeId} />
+          ) : (
+            <SqlCard queryId={queryId} />
+          ))}
       </div>
       {queryId != undefined && (
-        <div className="col-start-10 col-end-13 flex grow flex-col gap-4 overflow-hidden">
-          <SqlCard queryId={queryId} />
+        <div className="col-start-20 col-end-25 flex grow flex-col gap-4 overflow-hidden">
           <PredictionCard queryId={queryId} />
           <Card className="flex grow flex-col overflow-hidden">
             <CardContent className="flex grow flex-col overflow-hidden px-0 py-4">
