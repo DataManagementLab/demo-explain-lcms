@@ -239,13 +239,13 @@ function Demo() {
   };
 
   return (
-    <div className="grid grid-cols-24 grid-rows-1 gap-x-4 overflow-hidden">
-      <Card
-        className={cn(
-          'col-start-1 col-end-12 flex flex-col overflow-hidden',
-          minimized && 'col-end-6',
-        )}
-      >
+    <div
+      className={cn(
+        'grid grid-rows-1 gap-x-4 overflow-hidden',
+        minimized ? 'grid-demo-collapsed' : 'grid-demo',
+      )}
+    >
+      <Card className="flex flex-col overflow-hidden">
         <CardContent className="flex flex-col gap-2 overflow-hidden px-0 py-2">
           <div className="flex gap-2 px-2">
             <DatasetSelect
@@ -292,17 +292,9 @@ function Demo() {
           )}
         </CardContent>
       </Card>
-      <div
-        className={cn(
-          'col-start-12 col-end-20 flex flex-col gap-4',
-          minimized && 'col-start-6',
-        )}
-      >
+      <div className="flex flex-col gap-4">
         {queryId != undefined && (
-          <Card
-            className="min-h-[65vh] w-full"
-            onClick={() => setNodeId(undefined)}
-          >
+          <Card className="h-full w-full" onClick={() => setNodeId(undefined)}>
             {query.isSuccess && (
               <QueryGraph
                 fullPlan={query.data}
@@ -312,19 +304,20 @@ function Demo() {
             )}
           </Card>
         )}
-        {queryId != undefined &&
-          (nodeId != undefined ? (
-            <NodeInfoCard queryId={queryId} nodeId={nodeId} />
-          ) : (
-            <SqlCard queryId={queryId} />
-          ))}
+        <div className="flex h-70 flex-col overflow-hidden">
+          {queryId != undefined &&
+            (nodeId != undefined ? (
+              <NodeInfoCard queryId={queryId} nodeId={nodeId} />
+            ) : (
+              <SqlCard queryId={queryId} />
+            ))}
+        </div>
       </div>
       {queryId != undefined && (
-        <div className="col-start-20 col-end-25 flex grow flex-col gap-4 overflow-hidden">
+        <div className="flex grow flex-col gap-4 overflow-hidden">
           <PredictionCard queryId={queryId} />
           <Card className="flex grow flex-col overflow-hidden">
             <CardContent className="flex grow flex-col overflow-hidden px-0 py-4">
-              {/* <Tabs> */}
               <div className="grid px-4">
                 {!showExplanations ? (
                   <Button

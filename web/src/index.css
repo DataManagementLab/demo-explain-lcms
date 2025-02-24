@@ -107,6 +107,13 @@
   }
 }
 
+@utility grid-demo-collapsed {
+  grid-template-columns: 360px minmax(0px, 100vw) 380px;
+}
+@utility grid-demo {
+  grid-template-columns: 752px minmax(0px, 100vw) 380px;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

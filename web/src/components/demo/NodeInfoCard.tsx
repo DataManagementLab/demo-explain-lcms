@@ -80,7 +80,7 @@ export function NodeInfoCard({ queryId, nodeId }: Props) {
   return (
     selectedNode && (
       <Card className="flex grow flex-col overflow-hidden">
-        <CardHeader>
+        <CardHeader className="pb-4">
           <CardTitle>
             {`${selectedNode.label} (${nodeTypeToDisplay.get(selectedNode.nodeInfo.nodeType)})`}
           </CardTitle>
