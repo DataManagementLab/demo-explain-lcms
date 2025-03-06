@@ -5,7 +5,7 @@ import { createRootRoute, Outlet } from '@tanstack/react-router';
 
 export const Route = createRootRoute({
   component: () => (
-    <div className="flex flex-col overflow-hidden px-8 pb-8 font-sans">
+    <div className="flex flex-col overflow-hidden px-8 pb-8 font-sans bg-gray-100 ">
       <NavBar></NavBar>
       <Outlet />
       {/* <TanStackRouterDevtools /> */}

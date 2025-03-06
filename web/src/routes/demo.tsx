@@ -22,7 +22,7 @@ import { SqlCard } from '@/components/demo/SqlCard';
 import { TogglesForSelectedInfo } from '@/components/demo/TogglesForSelectedInfo';
 import { WorkloadSelect } from '@/components/demo/WorkloadSelect';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {
   Popover,
   PopoverContent,
@@ -294,7 +294,10 @@ function Demo() {
       </Card>
       <div className="flex flex-col gap-4">
         {queryId != undefined && (
-          <Card className="h-full w-full" onClick={() => setNodeId(undefined)}>
+          <Card className="h-full w-full flex flex-col" onClick={() => setNodeId(undefined)}>
+            <CardHeader className="flex-shrink-0">
+              <CardTitle>Query Graph</CardTitle>
+            </CardHeader>
             {query.isSuccess && (
               <QueryGraph
                 fullPlan={query.data}
