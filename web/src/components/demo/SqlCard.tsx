@@ -18,7 +18,7 @@ export function SqlCard({ queryId }: Props) {
   return (
     <Card className="flex grow flex-col overflow-hidden">
       <CardHeader>
-        <CardTitle>SQL</CardTitle>
+        <CardTitle>SQL Query</CardTitle>
       </CardHeader>
       {query.isSuccess && (
         <CardContent className="flex flex-col overflow-hidden">

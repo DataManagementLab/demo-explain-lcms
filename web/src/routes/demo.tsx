@@ -293,20 +293,6 @@ function Demo() {
         </CardContent>
       </Card>
       <div className="flex flex-col gap-4">
-        {queryId != undefined && (
-          <Card className="h-full w-full flex flex-col" onClick={() => setNodeId(undefined)}>
-            <CardHeader className="flex-shrink-0">
-              <CardTitle>Query Graph</CardTitle>
-            </CardHeader>
-            {query.isSuccess && (
-              <QueryGraph
-                fullPlan={query.data}
-                nodeId={nodeId}
-                setNodeId={setNodeId}
-              />
-            )}
-          </Card>
-        )}
         <div className="flex h-70 flex-col overflow-hidden">
           {queryId != undefined &&
             (nodeId != undefined ? (
@@ -315,6 +301,20 @@ function Demo() {
               <SqlCard queryId={queryId} />
             ))}
         </div>
+        {queryId != undefined && (
+            <Card className="h-full w-full flex flex-col" onClick={() => setNodeId(undefined)}>
+              <CardHeader className="flex-shrink-0">
+                <CardTitle>Query Graph</CardTitle>
+              </CardHeader>
+              {query.isSuccess && (
+                  <QueryGraph
+                      fullPlan={query.data}
+                      nodeId={nodeId}
+                      setNodeId={setNodeId}
+                  />
+              )}
+            </Card>
+        )}
       </div>
       {queryId != undefined && (
         <div className="flex grow flex-col gap-4 overflow-hidden">

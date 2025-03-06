@@ -28,7 +28,7 @@ export function HomeIcon({ isActive }: Props) {
       </div>
       <p
         className={cn(
-          'text-foreground/60 text-center text-3xl leading-none font-semibold transition-colors',
+          'text-foreground/60 text-center text-4xl leading-none font-semibold transition-colors',
           isHovering && 'text-foreground/80',
           isActive && 'text-foreground',
         )}
