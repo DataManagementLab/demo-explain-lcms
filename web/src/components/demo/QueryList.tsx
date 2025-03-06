@@ -83,23 +83,22 @@ export function QueryList({
                   <HeaderButton text="ID" sortKey="id"></HeaderButton>
                 </TableHead>
                 <TableHead className="border-r text-center">
+                  <HeaderButton
+                    text="Runtime(s)"
+                    sortKey="runtime"
+                  ></HeaderButton>
+                </TableHead>
+                <TableHead className="border-l text-center">
+                  <HeaderButton text="Operators" sortKey="plans"></HeaderButton>
+                </TableHead>
+                <TableHead className={cn('border-r border-l text-center')}>
                   <HeaderButton text="Nodes" sortKey="nodes"></HeaderButton>
                 </TableHead>
                 {!minimized && (
-                  <TableHead className="border-l text-center">
-                    <HeaderButton text="Plans" sortKey="plans"></HeaderButton>
-                  </TableHead>
-                )}
-                <TableHead
-                  className={cn(
-                    'border-r text-center',
-                    minimized && 'border-l',
-                  )}
-                >
-                  <HeaderButton text="Joins" sortKey="joins"></HeaderButton>
-                </TableHead>
-                {!minimized && (
                   <>
+                    <TableHead className="border-l text-center">
+                      <HeaderButton text="Joins" sortKey="joins"></HeaderButton>
+                    </TableHead>
                     <TableHead className="border-l text-center">
                       <HeaderButton
                         text="Tables"
@@ -120,12 +119,6 @@ export function QueryList({
                     </TableHead>
                   </>
                 )}
-                <TableHead className="border-l text-center">
-                  <HeaderButton
-                    text="Runtime (s)"
-                    sortKey="runtime"
-                  ></HeaderButton>
-                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="bg-card overflow-y-auto">
@@ -136,16 +129,19 @@ export function QueryList({
                   data-state={queryId == query.id ? 'selected' : ''}
                 >
                   <TableCell className="border-r text-center">
+                    {' '}
                     {query.idInRun}
+                  </TableCell>
+                  <TableCell className="border-r border-l text-center">
+                    {' '}
+                    {round(query.planRuntime / 1000)}
+                  </TableCell>
+                  <TableCell className="border-r border-l text-center">
+                    {query.queryStats.plans}
                   </TableCell>
                   <TableCell className="border-r border-l text-center">
                     {query.queryStats.nodes}
                   </TableCell>
-                  {!minimized && (
-                    <TableCell className="border-l text-center">
-                      {query.queryStats.plans}
-                    </TableCell>
-                  )}
                   <TableCell className="border-r text-center">
                     {query.queryStats.joins}
                   </TableCell>
@@ -162,9 +158,6 @@ export function QueryList({
                       </TableCell>
                     </>
                   )}
-                  <TableCell className="border-l text-center">
-                    {round(query.planRuntime / 1000)}
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
