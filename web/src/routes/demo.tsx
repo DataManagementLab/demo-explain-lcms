@@ -7,7 +7,6 @@ import {
   isFidelityType,
 } from '@/api/data/evaluation';
 import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
-import { useGetPrediction } from '@/api/inference';
 import { SortKey, sortKeys, useGetQuery, useGetWorkloads } from '@/api/queries';
 import { CorrelationBarsCard } from '@/components/demo/CorrelationBarsCard';
 import { CorrelationScoreCard } from '@/components/demo/CorrelationScoreCard';
@@ -22,7 +21,7 @@ import { SqlCard } from '@/components/demo/SqlCard';
 import { TogglesForSelectedInfo } from '@/components/demo/TogglesForSelectedInfo';
 import { WorkloadSelect } from '@/components/demo/WorkloadSelect';
 import { Button } from '@/components/ui/button';
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Popover,
   PopoverContent,
@@ -205,10 +204,8 @@ function Demo() {
     });
   };
 
-  const [showExplanations, setShowExplanations] = useState(false);
   const workloads = useGetWorkloads({ datasetId: datasetId });
   const query = useGetQuery({ queryId: queryId });
-  const prediction = useGetPrediction({ queryId: queryId });
   const [minimized, setMinimized] = useState(true);
 
   const [selectedExplainers, toggleSelectedExplainer] = useSelectedInfo(
@@ -218,6 +215,7 @@ function Demo() {
   const selectedExplainerTypes = selectedExplainers
     .filter((e) => e.isSelected)
     .map((e) => e.item);
+
   const selectedRealExplainers = selectedExplainerTypes.filter((e) =>
     realExplainers.includes(e),
   );
@@ -234,7 +232,6 @@ function Demo() {
     useState<ExplanationSection>('Explanations');
 
   const resetState = () => {
-    setShowExplanations(false);
     setSelectedExplanationSection('Explanations');
   };
 
@@ -302,18 +299,21 @@ function Demo() {
             ))}
         </div>
         {queryId != undefined && (
-            <Card className="h-full w-full flex flex-col" onClick={() => setNodeId(undefined)}>
-              <CardHeader className="flex-shrink-0">
-                <CardTitle>Query Graph</CardTitle>
-              </CardHeader>
-              {query.isSuccess && (
-                  <QueryGraph
-                      fullPlan={query.data}
-                      nodeId={nodeId}
-                      setNodeId={setNodeId}
-                  />
-              )}
-            </Card>
+          <Card
+            className="flex h-full w-full flex-col"
+            onClick={() => setNodeId(undefined)}
+          >
+            <CardHeader className="flex-shrink-0">
+              <CardTitle>Query Graph</CardTitle>
+            </CardHeader>
+            {query.isSuccess && (
+              <QueryGraph
+                fullPlan={query.data}
+                nodeId={nodeId}
+                setNodeId={setNodeId}
+              />
+            )}
+          </Card>
         )}
       </div>
       {queryId != undefined && (
@@ -322,16 +322,7 @@ function Demo() {
           <Card className="flex grow flex-col overflow-hidden">
             <CardContent className="flex grow flex-col overflow-hidden px-0 py-4">
               <div className="grid px-4">
-                {!showExplanations ? (
-                  <Button
-                    size="lg"
-                    className="col-start-1 row-start-1 h-9 justify-self-center bg-green-400 text-color-black"
-                    onClick={() => setShowExplanations(true)}
-                    disabled={!prediction.isSuccess}
-                  >
-                    Explain Prediction
-                  </Button>
-                ) : (
+                {
                   <Select
                     value={selectedExplanationSection}
                     onValueChange={(value) =>
@@ -349,7 +340,7 @@ function Demo() {
                       ))}
                     </SelectContent>
                   </Select>
-                )}
+                }
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -378,7 +369,7 @@ function Demo() {
                   </PopoverContent>
                 </Popover>
               </div>
-              {showExplanations && (
+              {
                 <ScrollArea>
                   {selectedExplanationSection == 'Explanations' &&
                     insertSeparators(
@@ -441,7 +432,7 @@ function Demo() {
                       ),
                     )}
                 </ScrollArea>
-              )}
+              }
             </CardContent>
           </Card>
         </div>
