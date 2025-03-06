@@ -325,11 +325,11 @@ function Demo() {
                 {!showExplanations ? (
                   <Button
                     size="lg"
-                    className="col-start-1 row-start-1 h-9 justify-self-center"
+                    className="col-start-1 row-start-1 h-9 justify-self-center bg-green-400 text-color-black"
                     onClick={() => setShowExplanations(true)}
                     disabled={!prediction.isSuccess}
                   >
-                    Run Explanations
+                    Explain Prediction
                   </Button>
                 ) : (
                   <Select
