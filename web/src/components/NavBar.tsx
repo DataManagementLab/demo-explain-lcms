@@ -17,7 +17,7 @@ export function NavBar() {
         ></ExternalLink>
         <ExternalLink
           href="https://www.informatik.tu-darmstadt.de/systems/systems_tuda"
-          imgSrc="dm_logo.svg"
+          imgSrc="logo_new.png"
         ></ExternalLink>
         <ExternalLink
           href="https://github.com/DataManagementLab/thesis-XAI-learnedcostmodels"

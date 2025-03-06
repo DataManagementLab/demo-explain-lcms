@@ -11,7 +11,7 @@ export function ExternalLink({ href, imgSrc }: Props) {
       rel="noopener noreferrer"
       className="hover:bg-muted rounded-md p-2 transition-colors"
     >
-      <img className="h-9" src={imgSrc} />
+      <img className="h-8" src={imgSrc} />
     </a>
   );
 }

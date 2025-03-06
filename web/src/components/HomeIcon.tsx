@@ -13,14 +13,14 @@ export function HomeIcon({ isActive }: Props) {
       <div className="grid">
         <img
           className={cn(
-            'invisible col-start-1 row-start-1 size-10',
+            'invisible col-start-1 row-start-1 size-15',
             isHovering && 'visible',
           )}
           src="package_opened_small.png"
         />
         <img
           className={cn(
-            'visible col-start-1 row-start-1 size-10',
+            'visible col-start-1 row-start-1 size-15',
             isHovering && 'invisible',
           )}
           src="package_small.png"
@@ -28,7 +28,7 @@ export function HomeIcon({ isActive }: Props) {
       </div>
       <p
         className={cn(
-          'text-foreground/60 text-center text-xl leading-none font-semibold transition-colors',
+          'text-foreground/60 text-center text-3xl leading-none font-semibold transition-colors',
           isHovering && 'text-foreground/80',
           isActive && 'text-foreground',
         )}
