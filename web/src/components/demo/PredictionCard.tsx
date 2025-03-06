@@ -4,7 +4,7 @@ import { round } from '@/lib/round';
 import {
   Card,
   CardContent,
-  CardDescription,
+  /*CardDescription*/
   CardHeader,
   CardTitle,
 } from '../ui/card';
@@ -21,27 +21,27 @@ export function PredictionCard({ queryId }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Prediction</CardTitle>
-        <CardDescription>
+        <CardTitle>Cost Prediction</CardTitle>
+        {/*<CardDescription>
           {prediction.isSuccess
             ? `${round(prediction.data.executionTime)} s`
             : ''}
-        </CardDescription>
+        </CardDescription>*/}
       </CardHeader>
       <CardContent className="flex flex-col">
         {prediction.isSuccess ? (
           <Table>
             <TableBody>
               <TableRow className="hover:bg-transparent">
-                <TableCell className="font-medium">Actual Runtime</TableCell>
+                <TableCell className="font-medium">Actual Runtime (s)</TableCell>
                 <TableCell>{round(prediction.data.label)}</TableCell>
               </TableRow>
               <TableRow className="hover:bg-transparent">
-                <TableCell className="font-medium">Prediction</TableCell>
+                <TableCell className="font-medium">Predicted Runtime (s)</TableCell>
                 <TableCell>{round(prediction.data.prediction)}</TableCell>
               </TableRow>
               <TableRow className="hover:bg-transparent">
-                <TableCell className="font-medium">QError</TableCell>
+                <TableCell className="font-medium">Q-Error</TableCell>
                 <TableCell>{round(prediction.data.qerror)}</TableCell>
               </TableRow>
             </TableBody>
