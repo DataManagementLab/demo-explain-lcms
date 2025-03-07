@@ -9,7 +9,6 @@ import { Button } from '../ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '../ui/card';
@@ -42,11 +41,6 @@ export function ExplanationCard({
     <Card className="border-none">
       <CardHeader>
         <CardTitle>{explainerTypeToDisplay[explainerType]}</CardTitle>
-        <CardDescription>
-          {explanation.isSuccess
-            ? `${round(explanation.data.executionTime)} s`
-            : ''}
-        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         {explanation.isSuccess && query.isSuccess ? (
