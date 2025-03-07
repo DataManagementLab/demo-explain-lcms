@@ -285,34 +285,38 @@ function Demo() {
 
   function renderNodeInfoOrSqlCard() {
     return (
-      <div className="flex flex-col gap-4">
-        <div className="flex h-70 flex-col overflow-hidden">
-          {queryId != undefined &&
-            (nodeId != undefined ? (
-              <NodeInfoCard queryId={queryId} nodeId={nodeId} />
-            ) : (
-              <SqlCard queryId={queryId} />
-            ))}
-        </div>
-        {queryId != undefined && (
-          <Card
-            className="flex h-full w-full flex-col"
-            onClick={() => setNodeId(undefined)}
-          >
-            <CardHeader className="flex-shrink-0">
-              <CardTitle>Query Graph</CardTitle>
-            </CardHeader>
-            {query.isSuccess && (
-              <QueryGraph
-                fullPlan={query.data}
-                nodeId={nodeId}
-                setNodeId={setNodeId}
-              />
-            )}
-          </Card>
-        )}
+      <div className="flex h-50 w-full flex-col overflow-hidden">
+        {queryId != undefined &&
+          (nodeId != undefined ? (
+            <NodeInfoCard queryId={queryId} nodeId={nodeId} />
+          ) : (
+            <SqlCard queryId={queryId} />
+          ))}
       </div>
     );
+  }
+
+  function renderQueryGraphCard(queryId: number) {
+    if (queryId != undefined) {
+      return (
+        <Card
+          className="flex h-full w-full flex-col"
+          onClick={() => setNodeId(undefined)}
+        >
+          <CardHeader className="flex-shrink-0">
+            <CardTitle>Query Graph</CardTitle>
+          </CardHeader>
+          {query.isSuccess && (
+            <QueryGraph
+              fullPlan={query.data}
+              nodeId={nodeId}
+              setNodeId={setNodeId}
+            />
+          )}
+        </Card>
+      );
+    }
+    return null;
   }
 
   function renderPredictionCard(queryId: number) {
@@ -449,14 +453,19 @@ function Demo() {
       )}
     >
       {renderSelectionCard()}
-      {renderNodeInfoOrSqlCard()}
-
-      {queryId != undefined && (
-        <div className="flex grow flex-col gap-4 overflow-hidden">
-          {renderPredictionCard(queryId)}
-          {renderExplanationCard(queryId)}
+      <div className="glex-grow flex flex-col gap-4">
+        <div className="flex grow flex-row gap-4">
+          {renderNodeInfoOrSqlCard()}
+          {queryId != undefined && renderPredictionCard(queryId)}
         </div>
-      )}
+
+        {queryId != undefined && (
+          <div className="flex grow flex-row gap-4 overflow-hidden">
+            {renderQueryGraphCard(queryId)}
+            {renderExplanationCard(queryId)}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

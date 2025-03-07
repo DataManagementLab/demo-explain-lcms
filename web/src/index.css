@@ -108,10 +108,10 @@
 }
 
 @utility grid-demo-collapsed {
-  grid-template-columns: 360px minmax(0px, 100vw) 380px;
+  grid-template-columns: 360px minmax(0px, 100vw) 0px;
 }
 @utility grid-demo {
-  grid-template-columns: 752px minmax(0px, 100vw) 380px;
+  grid-template-columns: 752px minmax(0px, 100vw) 0px;
 }
 
 @layer base {
