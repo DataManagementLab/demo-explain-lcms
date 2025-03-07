@@ -28,13 +28,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useSelectedInfo } from '@/lib/useSelectedInfo';
 import { cn } from '@/lib/utils';
@@ -117,9 +110,9 @@ const evaluations = [
 ] satisfies EvaluationType[];
 
 const explanationSections = [
-  'Explanations',
-  'Correlations',
-  'Evaluations',
+  'Node Ranking',
+  'Runtime Correlation',
+  'Explainer Evaluation',
 ] as const;
 type ExplanationSection = (typeof explanationSections)[number];
 
@@ -229,10 +222,10 @@ function Demo() {
     .map((e) => e.item);
 
   const [selectedExplanationSection, setSelectedExplanationSection] =
-    useState<ExplanationSection>('Explanations');
+    useState<ExplanationSection>('Node Ranking');
 
   const resetState = () => {
-    setSelectedExplanationSection('Explanations');
+    setSelectedExplanationSection('Node Ranking');
   };
 
   return (
@@ -320,27 +313,8 @@ function Demo() {
         <div className="flex grow flex-col gap-4 overflow-hidden">
           <PredictionCard queryId={queryId} />
           <Card className="flex grow flex-col overflow-hidden">
-            <CardContent className="flex grow flex-col overflow-hidden px-0 py-4">
-              <div className="grid px-4">
-                {
-                  <Select
-                    value={selectedExplanationSection}
-                    onValueChange={(value) =>
-                      setSelectedExplanationSection(value as ExplanationSection)
-                    }
-                  >
-                    <SelectTrigger className="col-start-1 row-start-1 mb-2 w-1/2 self-center justify-self-center">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {explanationSections.map((section) => (
-                        <SelectItem value={section} key={section}>
-                          {section}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                }
+            <CardHeader>
+              <CardTitle>Explanations
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -354,24 +328,42 @@ function Demo() {
                   <PopoverContent>
                     <div className="grid grid-cols-2 gap-4">
                       <TogglesForSelectedInfo
-                        title="Explainers"
-                        selectedInfos={selectedExplainers}
-                        toggleSelectedInfo={toggleSelectedExplainer}
-                        displayStrings={explainerTypeToDisplay}
+                          title="Explainers"
+                          selectedInfos={selectedExplainers}
+                          toggleSelectedInfo={toggleSelectedExplainer}
+                          displayStrings={explainerTypeToDisplay}
                       ></TogglesForSelectedInfo>
                       <TogglesForSelectedInfo
-                        title="Evaluations"
-                        selectedInfos={selectedEvaluations}
-                        toggleSelectedInfo={toggleSelectedEvaluation}
-                        displayStrings={evaluationTypeToDisplay}
+                          title="Evaluations"
+                          selectedInfos={selectedEvaluations}
+                          toggleSelectedInfo={toggleSelectedEvaluation}
+                          displayStrings={evaluationTypeToDisplay}
                       ></TogglesForSelectedInfo>
                     </div>
                   </PopoverContent>
-                </Popover>
+                </Popover></CardTitle>
+            </CardHeader>
+            <CardContent className="flex grow flex-col overflow-hidden px-0 py-0">
+              <div className="grid px-4 py-0 gap-4">
+                <div className="flex w-full mb-0 text-sm border-b border-gray-300">
+                  {explanationSections.map((section) => (
+                      <button
+                          key={section}
+                          className={`flex-grow px-4 py-2 border-t border-l border-r border-gray-300 rounded-t-md ${
+                              selectedExplanationSection === section
+                                  ? 'bg-card-foreground text-white border-b-0'
+                                  : 'bg-white text-gray-700'
+                          }`}
+                          onClick={() => setSelectedExplanationSection(section)}
+                      >
+                        {section}
+                      </button>
+                  ))}
+                </div>
               </div>
               {
                 <ScrollArea>
-                  {selectedExplanationSection == 'Explanations' &&
+                  {selectedExplanationSection == 'Node Ranking' &&
                     insertSeparators(
                       selectedExplainerTypes.map((explainerType) => (
                         <ExplanationCard
@@ -383,7 +375,7 @@ function Demo() {
                         />
                       )),
                     )}
-                  {selectedExplanationSection == 'Correlations' &&
+                  {selectedExplanationSection == 'Runtime Correlation' &&
                     insertSeparators(
                       baseExplainerInfos
                         .filter(
@@ -409,7 +401,7 @@ function Demo() {
                           ></CorrelationBarsCard>
                         )),
                     )}
-                  {selectedExplanationSection == 'Evaluations' &&
+                  {selectedExplanationSection == 'Explainer Evaluation' &&
                     insertSeparators(
                       selectedEvaluationTypes.map((evaluationType) =>
                         isCorrelationType(evaluationType) ? (

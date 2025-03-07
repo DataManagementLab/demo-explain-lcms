@@ -1,19 +1,19 @@
 {
   "datasets": [
     {
-      "name": "IMDB",
+      "name": " 🎥 IMDB",
       "directory": "imdb",
       "zsmodels": ["imdb_0", "imdb_1", "imdb_2"],
       "runs": ["workload_100k_s1_c8220.json", "job-light_c8220.json"]
     },
     {
-      "name": "Baseball",
+      "name": "⚾️ Baseball",
       "directory": "baseball",
       "zsmodels": ["baseball_0", "baseball_1", "baseball_2"],
       "runs": ["workload_100k_s1_c8220.json"]
     },
     {
-      "name": "TPC H",
+      "name": "📦 TPC H",
       "directory": "tpc_h",
       "zsmodels": ["tpc_h_0", "tpc_h_1", "tpc_h_2"],
       "runs": ["workload_100k_s1_c8220.json"]
