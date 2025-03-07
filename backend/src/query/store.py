@@ -70,27 +70,27 @@ def store_all_workload_queries_in_db(settings: Settings):
     base_runs_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_dir)
     base_runs_raw_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_raw_dir)
     for saved_dataset in runs_config.datasets:
-        for run_file_name in saved_dataset.runs:
+        for run_file_path, run_file_name in zip(saved_dataset.runs, saved_dataset.runs_names):
             with next(get_db()) as db:
-                run = db.query(Dataset).join(WorkloadRun.dataset).filter(Dataset.directory == saved_dataset.directory, WorkloadRun.file_name == run_file_name).first()
+                run = db.query(Dataset).join(WorkloadRun.dataset).filter(Dataset.directory == saved_dataset.directory, WorkloadRun.file_name == run_file_path).first()
                 if run is not None:
                     continue
 
-            run_file = os.path.join(base_runs_dir, saved_dataset.directory, run_file_name)
-            raw_run_file = os.path.join(base_runs_raw_dir, saved_dataset.directory, run_file_name)
+            run_file = os.path.join(base_runs_dir, saved_dataset.directory, run_file_path)
+            raw_run_file = os.path.join(base_runs_raw_dir, saved_dataset.directory, run_file_path)
             print("Store Started", saved_dataset.name, run_file_name)
             start_time = time.time()
-            store_workload_queries_in_db(load_workload_run(run_file), saved_dataset, run_file_name, load_model_from_file(RawRun, raw_run_file))
+            store_workload_queries_in_db(load_workload_run(run_file), saved_dataset, run_file_path,  run_file_name, load_model_from_file(RawRun, raw_run_file))
             store_time = time.time() - start_time
             print("Store Finished", saved_dataset.name, run_file_name, "in", "{0:.2f}".format(store_time) + "s")
 
 
-def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_dataset: SavedDataset, run_file_name: str, raw_run: RawRun):
+def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_dataset: SavedDataset, run_file_path: str, run_file_name: str, raw_run: RawRun):
     with next(get_db()) as db:
         dataset = db.query(Dataset).filter(Dataset.directory == saved_dataset.directory).first()
     if dataset is None:
         dataset = Dataset(name=saved_dataset.name, directory=saved_dataset.directory)
-    db_workload_run = create_db_model(WorkloadRun, json_workload_run, file_name=run_file_name)
+    db_workload_run = create_db_model(WorkloadRun, json_workload_run, file_name=run_file_name, file_path=run_file_path)
     db_workload_run.dataset = dataset
     run_kwargs = create_db_model(RunKwargs, json_workload_run.run_kwargs)
     db_workload_run.run_kwargs = run_kwargs

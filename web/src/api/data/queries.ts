@@ -7,6 +7,7 @@ export interface Dataset {
 
 export interface Workload {
   id: number;
+  filePath: string;
   fileName: string;
   queriesCount: number;
 }

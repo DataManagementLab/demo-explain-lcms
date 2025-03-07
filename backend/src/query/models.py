@@ -291,8 +291,8 @@ class DatabaseStats(Base):
 
 class WorkloadRun(Base):
     __tablename__ = "workload_runs"
-
     id: Mapped[int] = mapped_column(primary_key=True)
+    file_path: Mapped[str]
     file_name: Mapped[str]
     dataset_id: Mapped[int] = mapped_column(ForeignKey("datasets.id"))
     dataset: Mapped["Dataset"] = relationship(back_populates="runs")

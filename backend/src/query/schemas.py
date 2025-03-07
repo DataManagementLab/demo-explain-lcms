@@ -4,6 +4,7 @@ from query.schemas_nodes import ColumnStats, FilterColumn, LogicalPredicate, Out
 
 class WorkloadRunResponse(CustomModel):
     id: int
+    file_path: str
     file_name: str
     queries_count: int
 

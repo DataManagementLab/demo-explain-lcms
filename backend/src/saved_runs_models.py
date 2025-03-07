@@ -6,6 +6,7 @@ class SavedDataset(BaseModel):
     directory: str
     zsmodels: list[str]
     runs: list[str]
+    runs_names: list[str]
 
 
 class SavedRunsConfig(BaseModel):

@@ -32,6 +32,7 @@ def get_workloads(dataset_id: int, db: db_depends):
     return [
         WorkloadRunResponse(
             id=run.id,
+            file_path=run.file_path,
             file_name=run.file_name,
             queries_count=get_workload_run_queries_count(run.id, db),
         )
