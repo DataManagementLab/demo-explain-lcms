@@ -35,13 +35,13 @@ export enum ExplainerType {
 }
 
 export const explainerTypeToDisplay = {
-  [ExplainerType.baseRuntime]: 'Runtime Importance',
-  [ExplainerType.baseCardinality]: 'Cardinality Importance',
-  [ExplainerType.baseNodeDepth]: 'Node Depth Importance',
+  [ExplainerType.baseRuntime]: 'Actual Runtime',
+  [ExplainerType.baseCardinality]: 'Cardinality',
+  [ExplainerType.baseNodeDepth]: 'Node Depth',
   [ExplainerType.gradient]: 'Gradient',
-  [ExplainerType.guidedBackpropagation]: 'Guided Backpropagation',
+  [ExplainerType.guidedBackpropagation]: 'GuidedBackprop',
   [ExplainerType.gnnExplainer]: 'GNNExplainer',
-  [ExplainerType.gnnExplainerOnlyPlans]: 'GNNExplainer (Only Plans)',
-  [ExplainerType.differenceExplainer]: 'Difference',
-  [ExplainerType.differenceExplainerOnlyPlans]: 'Difference (Only Plans)',
+  [ExplainerType.gnnExplainerOnlyPlans]: 'GNNExplainer (Only Operators)',
+  [ExplainerType.differenceExplainer]: 'DiffMask',
+  [ExplainerType.differenceExplainerOnlyPlans]: 'DiffMask (Only Operators)',
 } satisfies Record<ExplainerType, string>;
