@@ -236,6 +236,9 @@ function Demo() {
       )}
     >
       <Card className="flex flex-col overflow-hidden">
+        <CardHeader  className="flex-shrink-0">
+          <CardTitle>Query Selection</CardTitle>
+        </CardHeader>
         <CardContent className="flex flex-col gap-2 overflow-hidden px-0 py-2">
           <div className="flex gap-2 px-2">
             <DatasetSelect
