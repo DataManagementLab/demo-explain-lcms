@@ -42,7 +42,13 @@ export function PredictionCard({ queryId }: Props) {
               </TableRow>
               <TableRow className="hover:bg-transparent">
                 <TableCell className="font-medium">Q-Error</TableCell>
-                <TableCell>{round(prediction.data.qerror)}</TableCell>
+                  <TableCell  className="font-bold"
+                      style={{
+                          color: `rgb(${Math.min(255, (prediction.data.qerror - 1) * 255)}, ${Math.max(0, 255 - (prediction.data.qerror - 1) * 255)}, 0)`,
+                      }}
+                  >
+                      {prediction.data.qerror.toFixed(2)}
+                  </TableCell>
               </TableRow>
             </TableBody>
           </Table>
