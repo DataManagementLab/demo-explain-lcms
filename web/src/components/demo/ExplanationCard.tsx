@@ -6,12 +6,7 @@ import { useGetQuery } from '@/api/queries';
 import { round } from '@/lib/round';
 
 import { Button } from '../ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 

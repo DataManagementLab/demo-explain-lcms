@@ -46,12 +46,12 @@ export function CorrelationBarSingle({
     let barWidth = 0;
 
     const sortedNodes = explanation
-      .toSorted((a) =>  a.nodeId)
+      .toSorted((a) => a.nodeId)
       .map((nodeScore) => nodeScore.nodeId);
 
     for (const nodeId of sortedNodes) {
       const importance = explanation.find((i) => i.nodeId == nodeId);
-      const name = "TODO";
+      const name = 'TODO';
       if (barWidth >= width || !importance) {
         continue;
       }
@@ -77,20 +77,18 @@ export function CorrelationBarSingle({
         .datum(importance.nodeId);
 
       if (item_width >= 30) {
-        bar.append('text')
-            .attr('x', barWidth + item_width / 2)
-            .attr('y', height / 2)
-            .attr('dy', '.35em')
-            .attr('text-anchor', 'middle')
-            .attr('fill', 'white')
-            .attr('font-size', '10px')  // Adjust the font size here
-            .text(name);
+        bar
+          .append('text')
+          .attr('x', barWidth + item_width / 2)
+          .attr('y', height / 2)
+          .attr('dy', '.35em')
+          .attr('text-anchor', 'middle')
+          .attr('fill', 'white')
+          .attr('font-size', '10px') // Adjust the font size here
+          .text(name);
       }
       barWidth += item_width;
-
     }
-
-
 
     if (barWidth < width) {
       bar

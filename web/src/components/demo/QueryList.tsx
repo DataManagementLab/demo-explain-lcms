@@ -129,11 +129,9 @@ export function QueryList({
                   data-state={queryId == query.id ? 'selected' : ''}
                 >
                   <TableCell className="border-r text-center">
-                    {' '}
                     {query.idInRun}
                   </TableCell>
                   <TableCell className="border-r border-l text-center">
-                    {' '}
                     {round(query.planRuntime / 1000)}
                   </TableCell>
                   <TableCell className="border-r border-l text-center">
