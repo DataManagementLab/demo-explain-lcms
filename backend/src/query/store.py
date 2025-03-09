@@ -72,7 +72,7 @@ def store_all_workload_queries_in_db(settings: Settings):
     for saved_dataset in runs_config.datasets:
         for run_file_path, run_file_name in zip(saved_dataset.runs, saved_dataset.runs_names):
             with next(get_db()) as db:
-                run = db.query(Dataset).join(WorkloadRun.dataset).filter(Dataset.directory == saved_dataset.directory, WorkloadRun.file_name == run_file_path).first()
+                run = db.query(Dataset).join(WorkloadRun.dataset).filter(Dataset.directory == saved_dataset.directory, WorkloadRun.file_path == run_file_path).first()
                 if run is not None:
                     continue
 
@@ -80,7 +80,7 @@ def store_all_workload_queries_in_db(settings: Settings):
             raw_run_file = os.path.join(base_runs_raw_dir, saved_dataset.directory, run_file_path)
             print("Store Started", saved_dataset.name, run_file_name)
             start_time = time.time()
-            store_workload_queries_in_db(load_workload_run(run_file), saved_dataset, run_file_path,  run_file_name, load_model_from_file(RawRun, raw_run_file))
+            store_workload_queries_in_db(load_workload_run(run_file), saved_dataset, run_file_path, run_file_name, load_model_from_file(RawRun, raw_run_file))
             store_time = time.time() - start_time
             print("Store Finished", saved_dataset.name, run_file_name, "in", "{0:.2f}".format(store_time) + "s")
 
