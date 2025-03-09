@@ -5,8 +5,10 @@ import { skipToken, useQueries } from '@tanstack/react-query';
 import {
   CorrelationEvaluation,
   CorrelationType,
+  correlationTypes,
   FidelityEvaluation,
   FidelityType,
+  fidelityTypes,
 } from './data/evaluation';
 import { Explanation, ExplanationBase } from './data/inference';
 
@@ -15,7 +17,7 @@ interface EvaluationPrams {
   explanation: ExplanationBase;
 }
 
-function get_fidelity(
+function getFidelity(
   { queryId, explanation }: EvaluationPrams,
   type: FidelityType,
 ) {
@@ -27,12 +29,35 @@ function get_fidelity(
     .json();
 }
 
+interface EvaluationPramsFidelitySingle {
+  queryId?: number;
+  explanation: Explanation | undefined;
+}
+
+export function useGetFidelityEvaluationsAllTypes({
+  queryId,
+  explanation,
+}: EvaluationPramsFidelitySingle) {
+  return useQueries({
+    queries: fidelityTypes.map(
+      (fidelityType) =>
+        ({
+          queryKey: [queryId, explanation, fidelityType],
+          queryFn:
+            explanation != undefined && queryId != undefined
+              ? () => getFidelity({ queryId, explanation }, fidelityType)
+              : skipToken,
+        }) as const,
+    ),
+    combine: combineUseQueries,
+  });
+}
+
 interface EvaluationPramsFidelity {
   queryId?: number;
   explanations: (Explanation | undefined)[];
   type: FidelityType;
 }
-
 export function useGetFidelityEvaluations({
   queryId,
   explanations,
@@ -45,7 +70,7 @@ export function useGetFidelityEvaluations({
           queryKey: [queryId, explanation, type],
           queryFn:
             explanation != undefined && queryId != undefined
-              ? () => get_fidelity({ queryId, explanation }, type)
+              ? () => getFidelity({ queryId, explanation }, type)
               : skipToken,
         }) as const,
     ),
@@ -53,7 +78,7 @@ export function useGetFidelityEvaluations({
   });
 }
 
-function get_correlation(
+function getCorrelation(
   { queryId, explanation }: EvaluationPrams,
   type: CorrelationType,
 ) {
@@ -65,6 +90,29 @@ function get_correlation(
     .json();
 }
 
+interface EvaluationPramsCorrelationSingle {
+  queryId?: number;
+  explanation: Explanation | undefined;
+}
+
+export function useGetCorrelationEvaluationsAllTypes({
+  queryId,
+  explanation,
+}: EvaluationPramsCorrelationSingle) {
+  return useQueries({
+    queries: correlationTypes.map(
+      (correlationType) =>
+        ({
+          queryKey: [queryId, explanation, correlationType],
+          queryFn:
+            explanation != undefined && queryId != undefined
+              ? () => getCorrelation({ queryId, explanation }, correlationType)
+              : skipToken,
+        }) as const,
+    ),
+    combine: combineUseQueries,
+  });
+}
 interface EvaluationPramsCorrelation {
   queryId?: number;
   explanations: (Explanation | undefined)[];
@@ -83,7 +131,7 @@ export function useGetCorrelaitonEvaluations({
           queryKey: [queryId, explanation, type],
           queryFn:
             explanation != undefined && queryId != undefined
-              ? () => get_correlation({ queryId, explanation }, type)
+              ? () => getCorrelation({ queryId, explanation }, type)
               : skipToken,
         }) as const,
     ),

@@ -1,42 +1,31 @@
 import { JSX, useState } from 'react';
-import {
-  CorrelationType,
-  EvaluationType,
-  evaluationTypeToDisplay,
-  isCorrelationType,
-  isFidelityType,
-} from '@/api/data/evaluation';
-import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
+import { CorrelationType } from '@/api/data/evaluation';
+import { ExplainerType, explainerTypes } from '@/api/data/inference';
 import { SortKey, sortKeys, useGetQuery, useGetWorkloads } from '@/api/queries';
 import { CorrelationBarsCard } from '@/components/demo/CorrelationBarsCard';
-import { CorrelationScoreCard } from '@/components/demo/CorrelationScoreCard';
 import { DatasetSelect } from '@/components/demo/DatasetSelect';
+import { ExplainerSelect } from '@/components/demo/ExplainerSelect';
 import { ExplanationCard } from '@/components/demo/ExplanationCard';
-import { FidelityEvaluationCard } from '@/components/demo/FidelityEvaluationCard';
 import { NodeInfoCard } from '@/components/demo/NodeInfoCard';
 import { PredictionCard } from '@/components/demo/PredictionCard';
 import { QueryGraph } from '@/components/demo/QueryGraph';
 import { QueryList } from '@/components/demo/QueryList';
+import { SingleExplainerEvaluationCard } from '@/components/demo/SingleExplainerEvaluationCard';
 import { SqlCard } from '@/components/demo/SqlCard';
-import { TogglesForSelectedInfo } from '@/components/demo/TogglesForSelectedInfo';
 import { WorkloadSelect } from '@/components/demo/WorkloadSelect';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useSelectedInfo } from '@/lib/useSelectedInfo';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { TabsContent } from '@radix-ui/react-tabs';
 import {
   createFileRoute,
   retainSearchParams,
   useNavigate,
 } from '@tanstack/react-router';
-import { ArrowLeftToLine, ArrowRightFromLine, Settings } from 'lucide-react';
+import { ArrowLeftToLine, ArrowRightFromLine } from 'lucide-react';
 import { z } from 'zod';
 
 const demoPageParamsSchema = z.object({
@@ -47,6 +36,7 @@ const demoPageParamsSchema = z.object({
   nodeId: z.number().positive().optional(),
   sort: z.enum(sortKeys).optional(),
   asc: z.boolean().optional(),
+  explainer: z.enum(explainerTypes).optional(),
 });
 
 export const Route = createFileRoute('/demo')({
@@ -65,49 +55,21 @@ interface BaseExplainerInfo {
 
 const baseExplainerInfos = [
   {
-    explainerType: ExplainerType.baseRuntime,
+    explainerType: 'BaseExplainer',
     pearsonFn: 'pearson',
     spearmanFn: 'spearman',
   },
   {
-    explainerType: ExplainerType.baseCardinality,
+    explainerType: 'BaseExplainerCardinality',
     pearsonFn: 'pearson-cardinality',
     spearmanFn: 'spearman-cardinality',
   },
   {
-    explainerType: ExplainerType.baseNodeDepth,
+    explainerType: 'BaseExplainerNodeDepth',
     pearsonFn: 'pearson-node-depth',
     spearmanFn: 'spearman-node-depth',
   },
 ] satisfies BaseExplainerInfo[];
-
-const baseExplainerTypes = baseExplainerInfos.map((info) => info.explainerType);
-
-const realExplainers = [
-  ExplainerType.gradient,
-  ExplainerType.guidedBackpropagation,
-  ExplainerType.gnnExplainer,
-  ExplainerType.gnnExplainerOnlyPlans,
-  ExplainerType.differenceExplainer,
-  ExplainerType.differenceExplainerOnlyPlans,
-] satisfies ExplainerType[] as ExplainerType[];
-
-const explainerTypes = [
-  ...baseExplainerTypes,
-  ...realExplainers,
-] satisfies ExplainerType[];
-
-const evaluations = [
-  'fidelity-plus',
-  'fidelity-minus',
-  'characterization-score',
-  'pearson',
-  'spearman',
-  'pearson-cardinality',
-  'spearman-cardinality',
-  'pearson-node-depth',
-  'spearman-node-depth',
-] satisfies EvaluationType[];
 
 const explanationSections = [
   'Node Ranking',
@@ -133,6 +95,7 @@ function Demo() {
     nodeId,
     sort: sortKey,
     asc: sortAscending,
+    explainer: explainerParam,
   } = Route.useSearch();
   const setDatasetId = (value: number | undefined) => {
     resetState();
@@ -197,29 +160,14 @@ function Demo() {
     });
   };
 
+  const setExplainer = (value: ExplainerType | undefined) => {
+    resetState();
+    void navigate({ search: { explainer: value } });
+  };
+
   const workloads = useGetWorkloads({ datasetId: datasetId });
   const query = useGetQuery({ queryId: queryId });
   const [minimized, setMinimized] = useState(true);
-
-  const [selectedExplainers, toggleSelectedExplainer] = useSelectedInfo(
-    'selectedExplainers',
-    explainerTypes,
-  );
-  const selectedExplainerTypes = selectedExplainers
-    .filter((e) => e.isSelected)
-    .map((e) => e.item);
-
-  const selectedRealExplainers = selectedExplainerTypes.filter((e) =>
-    realExplainers.includes(e),
-  );
-
-  const [selectedEvaluations, toggleSelectedEvaluation] = useSelectedInfo(
-    'selectedEvaluations',
-    evaluations,
-  );
-  const selectedEvaluationTypes = selectedEvaluations
-    .filter((e) => e.isSelected)
-    .map((e) => e.item);
 
   const [selectedExplanationSection, setSelectedExplanationSection] =
     useState<ExplanationSection>('Node Ranking');
@@ -227,6 +175,8 @@ function Demo() {
   const resetState = () => {
     setSelectedExplanationSection('Node Ranking');
   };
+
+  const explainer = explainerParam ?? 'GradientExplainer';
 
   return (
     <div
@@ -316,118 +266,66 @@ function Demo() {
         <div className="flex grow flex-col gap-4 overflow-hidden">
           <PredictionCard queryId={queryId} />
           <Card className="flex grow flex-col overflow-hidden">
-            <CardHeader>
-              <CardTitle>
-                Explanations
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="col-start-1 row-start-1 justify-self-end"
-                      size="icon"
-                    >
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent>
-                    <div className="grid grid-cols-2 gap-4">
-                      <TogglesForSelectedInfo
-                        title="Explainers"
-                        selectedInfos={selectedExplainers}
-                        toggleSelectedInfo={toggleSelectedExplainer}
-                        displayStrings={explainerTypeToDisplay}
-                      ></TogglesForSelectedInfo>
-                      <TogglesForSelectedInfo
-                        title="Evaluations"
-                        selectedInfos={selectedEvaluations}
-                        toggleSelectedInfo={toggleSelectedEvaluation}
-                        displayStrings={evaluationTypeToDisplay}
-                      ></TogglesForSelectedInfo>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </CardTitle>
+            <CardHeader className="flex flex-col gap-3">
+              <CardTitle>Explanations</CardTitle>
+              <ExplainerSelect
+                explainer={explainer}
+                setExplainer={setExplainer}
+              />
             </CardHeader>
             <CardContent className="flex grow flex-col overflow-hidden px-0 py-0">
-              <div className="grid gap-4 px-4 py-0">
-                <div className="mb-0 flex w-full border-b border-gray-300 text-sm">
-                  {explanationSections.map((section) => (
-                    <button
-                      key={section}
-                      className={`flex-grow rounded-t-md border-t border-r border-l border-gray-300 px-4 py-2 ${
-                        selectedExplanationSection === section
-                          ? 'bg-card-foreground border-b-0 text-white'
-                          : 'bg-white text-gray-700'
-                      }`}
-                      onClick={() => setSelectedExplanationSection(section)}
-                    >
-                      {section}
-                    </button>
-                  ))}
-                </div>
-              </div>
               {
                 <ScrollArea>
-                  {selectedExplanationSection == 'Node Ranking' &&
-                    insertSeparators(
-                      selectedExplainerTypes.map((explainerType) => (
-                        <ExplanationCard
-                          key={`explanation-${explainerType}`}
-                          explainerType={explainerType}
-                          queryId={queryId}
-                          nodeId={nodeId}
-                          setNodeId={setNodeId}
-                        />
-                      )),
-                    )}
-                  {selectedExplanationSection == 'Runtime Correlation' &&
-                    insertSeparators(
-                      baseExplainerInfos
-                        .filter(
-                          (baseExplainerInfo) =>
-                            selectedEvaluationTypes.includes(
-                              baseExplainerInfo.pearsonFn,
-                            ) ||
-                            selectedEvaluationTypes.includes(
-                              baseExplainerInfo.spearmanFn,
-                            ),
-                        )
-                        .map((baseExplainerInfo) => (
+                  <Tabs
+                    defaultValue="Node Ranking"
+                    value={selectedExplanationSection}
+                    onValueChange={(value) =>
+                      setSelectedExplanationSection(value as ExplanationSection)
+                    }
+                  >
+                    <TabsList className="mx-4 grid h-16 grid-cols-3 gap-x-2 px-2">
+                      {explanationSections.map((section) => (
+                        <TabsTrigger
+                          className="text-wrap whitespace-normal"
+                          value={section}
+                        >
+                          {section}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                    <TabsContent value="Node Ranking">
+                      <ExplanationCard
+                        key={`explanation-${explainer}`}
+                        explainerType={explainer}
+                        queryId={queryId}
+                        nodeId={nodeId}
+                        setNodeId={setNodeId}
+                      />
+                    </TabsContent>
+                    <TabsContent value="Runtime Correlation">
+                      {insertSeparators(
+                        baseExplainerInfos.map((baseExplainerInfo) => (
                           <CorrelationBarsCard
                             key={`correlation-${baseExplainerInfo.explainerType}`}
                             baseExplainersType={baseExplainerInfo.explainerType}
                             explainerTypes={[
                               baseExplainerInfo.explainerType,
-                              ...selectedRealExplainers,
+                              explainer,
                             ]}
                             queryId={queryId}
                             nodeId={nodeId}
                             setNodeId={setNodeId}
                           ></CorrelationBarsCard>
                         )),
-                    )}
-                  {selectedExplanationSection == 'Explainer Evaluation' &&
-                    insertSeparators(
-                      selectedEvaluationTypes.map((evaluationType) =>
-                        isCorrelationType(evaluationType) ? (
-                          <CorrelationScoreCard
-                            key={evaluationType}
-                            correlationType={evaluationType}
-                            explainerTypes={selectedRealExplainers}
-                            queryId={queryId}
-                          ></CorrelationScoreCard>
-                        ) : isFidelityType(evaluationType) ? (
-                          <FidelityEvaluationCard
-                            key={evaluationType}
-                            fidelityType={evaluationType}
-                            explainerTypes={selectedExplainerTypes}
-                            queryId={queryId}
-                          ></FidelityEvaluationCard>
-                        ) : (
-                          <></>
-                        ),
-                      ),
-                    )}
+                      )}
+                    </TabsContent>
+                    <TabsContent value="Explainer Evaluation">
+                      <SingleExplainerEvaluationCard
+                        queryId={queryId}
+                        explainerType={explainer}
+                      ></SingleExplainerEvaluationCard>
+                    </TabsContent>
+                  </Tabs>
                 </ScrollArea>
               }
             </CardContent>

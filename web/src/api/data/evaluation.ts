@@ -10,7 +10,7 @@ export interface FidelityEvaluation extends ScoreEvaluation {
   maskedOutput: PredictionBase;
 }
 
-const fidelityTypes = [
+export const fidelityTypes = [
   'fidelity-plus',
   'fidelity-minus',
   'characterization-score',
@@ -29,7 +29,7 @@ export interface CorrelationEvaluation extends ScoreEvaluation {
   explanation: ExplanationBase;
 }
 
-const correlationTypes = [
+export const correlationTypes = [
   'pearson',
   'spearman',
   'pearson-cardinality',
@@ -62,3 +62,5 @@ export function isCorrelationType(str: string): str is CorrelationType {
 export function isFidelityType(str: string): str is FidelityType {
   return fidelityTypes.includes(str as FidelityType);
 }
+
+export const evaluationTypes = [...fidelityTypes, ...correlationTypes] as const;

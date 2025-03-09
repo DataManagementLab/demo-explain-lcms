@@ -1,0 +1,44 @@
+import {
+  ExplainerType,
+  explainerTypes,
+  explainerTypeToDisplay,
+  isExplainerType,
+} from '@/api/data/inference';
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
+
+interface Props {
+  className?: string;
+  explainer: ExplainerType | undefined;
+  setExplainer: (value: ExplainerType) => void;
+}
+
+export function ExplainerSelect({ className, explainer, setExplainer }: Props) {
+  return (
+    <div className={className}>
+      <Select
+        value={explainer}
+        onValueChange={(value) =>
+          setExplainer(isExplainerType(value) ? value : 'BaseExplainer')
+        }
+      >
+        <SelectTrigger className="w-full font-bold">
+          <SelectValue placeholder="Select Explainer" />
+        </SelectTrigger>
+        <SelectContent>
+          {explainerTypes.map((explainerType) => (
+            <SelectItem value={explainerType} key={explainerType}>
+              {explainerTypeToDisplay[explainerType]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}

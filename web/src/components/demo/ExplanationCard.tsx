@@ -1,12 +1,10 @@
-import { useState } from 'react';
-import { ExplainerType, explainerTypeToDisplay } from '@/api/data/inference';
+import { ExplainerType } from '@/api/data/inference';
 import { nodeTypeToDisplay } from '@/api/data/nodeInfo';
 import { useGetExplanation } from '@/api/inference';
 import { useGetQuery } from '@/api/queries';
 import { round } from '@/lib/round';
 
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
@@ -25,7 +23,6 @@ export function ExplanationCard({
   nodeId,
   setNodeId,
 }: Props) {
-  const [showMore, setShowMore] = useState(false);
   const explanation = useGetExplanation({
     queryId: queryId,
     explainerType: explainerType,
@@ -34,9 +31,6 @@ export function ExplanationCard({
 
   return (
     <Card className="border-none">
-      <CardHeader>
-        <CardTitle>{explainerTypeToDisplay[explainerType]}</CardTitle>
-      </CardHeader>
       <CardContent className="flex flex-col gap-2">
         {explanation.isSuccess && query.isSuccess ? (
           <Table>
@@ -44,12 +38,7 @@ export function ExplanationCard({
               {explanation.data.scaledImportance
                 .filter((a) => round(a.score) > 0)
                 .toSorted((a, b) => b.score - a.score)
-                .slice(
-                  0,
-                  showMore
-                    ? explanation.data.scaledImportance.length
-                    : collapsedTableLength,
-                )
+
                 .map((importance) => (
                   <TableRow
                     key={importance.nodeId}
@@ -76,15 +65,6 @@ export function ExplanationCard({
             ))}
           </>
         )}
-
-        <Button
-          className="items-start"
-          variant="link"
-          size="sm"
-          onClick={() => setShowMore(!showMore)}
-        >
-          {showMore ? 'Show less' : 'Show More'}
-        </Button>
       </CardContent>
     </Card>
   );

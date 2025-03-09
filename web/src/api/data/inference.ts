@@ -22,26 +22,32 @@ export interface Explanation extends ExplanationBase {
   executionTime: number;
 }
 
-export enum ExplainerType {
-  baseRuntime = 'BaseExplainer',
-  baseCardinality = 'BaseExplainerCardinality',
-  baseNodeDepth = 'BaseExplainerNodeDepth',
-  gradient = 'GradientExplainer',
-  guidedBackpropagation = 'GuidedBPExplainer',
-  gnnExplainer = 'GNNExplainer',
-  gnnExplainerOnlyPlans = 'GNNExplainerOnlyPlans',
-  differenceExplainer = 'DifferenceExplainer',
-  differenceExplainerOnlyPlans = 'DifferenceExplainerOnlyPlans',
-}
+export const explainerTypes = [
+  'BaseExplainer',
+  'BaseExplainerCardinality',
+  'BaseExplainerNodeDepth',
+  'GradientExplainer',
+  'GuidedBPExplainer',
+  'GNNExplainer',
+  'GNNExplainerOnlyPlans',
+  'DifferenceExplainer',
+  'DifferenceExplainerOnlyPlans',
+] as const;
+
+export type ExplainerType = (typeof explainerTypes)[number];
 
 export const explainerTypeToDisplay = {
-  [ExplainerType.baseRuntime]: 'Actual Runtime',
-  [ExplainerType.baseCardinality]: 'Cardinality',
-  [ExplainerType.baseNodeDepth]: 'Node Depth',
-  [ExplainerType.gradient]: 'Gradient',
-  [ExplainerType.guidedBackpropagation]: 'GuidedBackprop',
-  [ExplainerType.gnnExplainer]: 'GNNExplainer',
-  [ExplainerType.gnnExplainerOnlyPlans]: 'GNNExplainer (Only Operators)',
-  [ExplainerType.differenceExplainer]: 'DiffMask',
-  [ExplainerType.differenceExplainerOnlyPlans]: 'DiffMask (Only Operators)',
+  BaseExplainer: 'Actual Runtime',
+  BaseExplainerCardinality: 'Cardinality',
+  BaseExplainerNodeDepth: 'Node Depth',
+  GradientExplainer: 'Gradient',
+  GuidedBPExplainer: 'GuidedBackprop',
+  GNNExplainer: 'GNNExplainer',
+  GNNExplainerOnlyPlans: 'GNNExplainer (Only Operators)',
+  DifferenceExplainer: 'DiffMask',
+  DifferenceExplainerOnlyPlans: 'DiffMask (Only Operators)',
 } satisfies Record<ExplainerType, string>;
+
+export function isExplainerType(str: string): str is ExplainerType {
+  return explainerTypes.includes(str as ExplainerType);
+}
