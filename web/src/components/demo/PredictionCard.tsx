@@ -3,8 +3,7 @@ import { round } from '@/lib/round';
 
 import {
   Card,
-  CardContent,
-  /*CardDescription*/
+  CardContent /*CardDescription*/,
   CardHeader,
   CardTitle,
 } from '../ui/card';
@@ -19,7 +18,7 @@ export function PredictionCard({ queryId }: Props) {
   const prediction = useGetPrediction({ queryId: queryId });
 
   return (
-    <Card>
+    <Card className="max-h-44 min-h-44">
       <CardHeader>
         <CardTitle>Cost Prediction</CardTitle>
         {/*<CardDescription>
@@ -33,31 +32,35 @@ export function PredictionCard({ queryId }: Props) {
           <Table>
             <TableBody>
               <TableRow className="hover:bg-transparent">
-                <TableCell className="font-medium">Actual Runtime (s)</TableCell>
+                <TableCell className="font-medium">
+                  Actual Runtime (s)
+                </TableCell>
                 <TableCell>{round(prediction.data.label)}</TableCell>
               </TableRow>
               <TableRow className="hover:bg-transparent">
-                <TableCell className="font-medium">Predicted Runtime (s)</TableCell>
+                <TableCell className="font-medium">
+                  Predicted Runtime (s)
+                </TableCell>
                 <TableCell>{round(prediction.data.prediction)}</TableCell>
               </TableRow>
               <TableRow className="hover:bg-transparent">
                 <TableCell className="font-medium">Q-Error</TableCell>
-                  <TableCell  className="font-bold"
-                      style={{
-                          color: `rgb(${Math.min(255, (prediction.data.qerror - 1) * 255)}, ${Math.max(0, 255 - (prediction.data.qerror - 1) * 255)}, 0)`,
-                      }}
-                  >
-                      {prediction.data.qerror.toFixed(2)}
-                  </TableCell>
+                <TableCell
+                  className="font-bold"
+                  style={{
+                    color: `rgb(${Math.min(255, (prediction.data.qerror - 1) * 255)}, ${Math.max(0, 255 - (prediction.data.qerror - 1) * 255)}, 0)`,
+                  }}
+                >
+                  {prediction.data.qerror.toFixed(2)}
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
         ) : (
           <>
-            <Skeleton className="my-2.5 h-6" />
-            <Skeleton className="my-2.5 h-6" />
-            <Skeleton className="my-2.5 h-6" />
-            <div className="pt-0.5"></div>
+            <Skeleton className="my-2 h-6" />
+            <Skeleton className="my-2 h-6" />
+            <Skeleton className="my-2 h-6" />
           </>
         )}
       </CardContent>
