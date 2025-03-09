@@ -19,7 +19,7 @@ export function PredictionCard({ queryId }: Props) {
   const prediction = useGetPrediction({ queryId: queryId });
 
   return (
-    <Card className="flex flex-col w-120 gap-4">
+    <Card>
       <CardHeader>
         <CardTitle>Cost Prediction</CardTitle>
         {/*<CardDescription>
