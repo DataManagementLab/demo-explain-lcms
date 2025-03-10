@@ -66,27 +66,25 @@ export function CorrelationBarsCard({
               {showLegend && (
                 <Table>
                   <TableBody>
-                    {query.data.graphNodes
-                      .map((node) => node.nodeId)
-                      .map((nodeId) => (
-                        <TableRow
-                          key={nodeId}
-                          onClick={() => setNodeId(nodeId)}
-                          data-state={nodeId == nodeId ? 'selected' : ''}
-                        >
-                          <TableCell>
-                            {query.data.graphNodes[nodeId].label}
-                          </TableCell>
-                          <TableCell>
-                            <div
-                              className="h-6 w-6"
-                              style={{
-                                backgroundColor: getBarColor(nodeId),
-                              }}
-                            ></div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                    {query.data.graphNodes.map((node) => (
+                      <TableRow
+                        key={node.nodeId}
+                        onClick={() => setNodeId(node.nodeId)}
+                        data-state={node.nodeId == nodeId ? 'selected' : ''}
+                      >
+                        <TableCell>
+                          {query.data.graphNodes[node.nodeId].label}
+                        </TableCell>
+                        <TableCell>
+                          <div
+                            className="h-6 w-6"
+                            style={{
+                              backgroundColor: getBarColor(node.nodeId),
+                            }}
+                          ></div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               )}
