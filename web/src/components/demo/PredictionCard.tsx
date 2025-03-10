@@ -1,4 +1,5 @@
 import { useGetPrediction } from '@/api/inference';
+import { getGreenRedRGB } from '@/lib/getGreenRedRGB';
 import { round } from '@/lib/round';
 
 import {
@@ -21,11 +22,6 @@ export function PredictionCard({ queryId }: Props) {
     <Card className="max-h-44 min-h-44">
       <CardHeader>
         <CardTitle>Cost Prediction</CardTitle>
-        {/*<CardDescription>
-          {prediction.isSuccess
-            ? `${round(prediction.data.executionTime)} s`
-            : ''}
-        </CardDescription>*/}
       </CardHeader>
       <CardContent className="flex flex-col">
         {prediction.isSuccess ? (
@@ -48,10 +44,10 @@ export function PredictionCard({ queryId }: Props) {
                 <TableCell
                   className="font-bold"
                   style={{
-                    color: `rgb(${Math.min(255, (prediction.data.qerror - 1) * 255)}, ${Math.max(0, 255 - (prediction.data.qerror - 1) * 255)}, 0)`,
+                    color: getGreenRedRGB(prediction.data.qerror - 1),
                   }}
                 >
-                  {prediction.data.qerror.toFixed(2)}
+                  {round(prediction.data.qerror)}
                 </TableCell>
               </TableRow>
             </TableBody>

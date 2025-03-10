@@ -11,6 +11,7 @@ import {
   useGetFidelityEvaluationsAllTypes,
 } from '@/api/evaluation';
 import { useGetExplanation } from '@/api/inference';
+import { getGreenRedRGB } from '@/lib/getGreenRedRGB';
 import { round } from '@/lib/round';
 
 import { Card, CardContent } from '../ui/card';
@@ -52,7 +53,14 @@ export function SingleExplainerEvaluationCard({
                   <TableCell className="font-medium">
                     {fidelityTypeToDisplay[fidelityType]}
                   </TableCell>
-                  <TableCell>
+                  <TableCell
+                    className="font-medium"
+                    style={{
+                      color: getGreenRedRGB(
+                        1 - fidelityEvaluations.data[i].score,
+                      ),
+                    }}
+                  >
                     {round(fidelityEvaluations.data[i].score)}
                   </TableCell>
                 </TableRow>
@@ -65,7 +73,14 @@ export function SingleExplainerEvaluationCard({
                   <TableCell className="font-medium">
                     {correlationTypeToDisplay[correlationType]}
                   </TableCell>
-                  <TableCell>
+                  <TableCell
+                    className="font-bold"
+                    style={{
+                      color: getGreenRedRGB(
+                        1 - correlationEvaluations.data[i].score,
+                      ),
+                    }}
+                  >
                     {round(correlationEvaluations.data[i].score)}
                   </TableCell>
                 </TableRow>
