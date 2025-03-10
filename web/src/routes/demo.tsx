@@ -1,33 +1,19 @@
-import { JSX, useState } from 'react';
-import { CorrelationType } from '@/api/data/evaluation';
+import { useState } from 'react';
 import { ExplainerType, explainerTypes } from '@/api/data/inference';
-import { useGetExplanation } from '@/api/inference';
-import { SortKey, sortKeys, useGetQuery, useGetWorkloads } from '@/api/queries';
-import { CorrelationBarsCard } from '@/components/demo/CorrelationBarsCard';
-import { DatasetSelect } from '@/components/demo/DatasetSelect';
-import { ExplainerSelect } from '@/components/demo/ExplainerSelect';
-import { ExplanationCard } from '@/components/demo/ExplanationCard';
-import { LabeledSwitch } from '@/components/demo/LabeledSwitch';
-import { NodeInfoCard } from '@/components/demo/NodeInfoCard';
+import { SortKey, sortKeys } from '@/api/queries';
+import { DemoExplanationContent } from '@/components/demo/DemoExplanationContent';
+import { DemoGraphContent } from '@/components/demo/DemoGraphContent';
+import { DemoSelects } from '@/components/demo/DemoSelects';
 import { PredictionCard } from '@/components/demo/PredictionCard';
-import { QueryGraph } from '@/components/demo/QueryGraph';
 import { QueryList } from '@/components/demo/QueryList';
-import { SingleExplainerEvaluationCard } from '@/components/demo/SingleExplainerEvaluationCard';
-import { SqlCard } from '@/components/demo/SqlCard';
-import { WorkloadSelect } from '@/components/demo/WorkloadSelect';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ExplanationSection } from '@/lib/ExplanationSection';
 import { cn } from '@/lib/utils';
-import { TabsContent } from '@radix-ui/react-tabs';
 import {
   createFileRoute,
   retainSearchParams,
   useNavigate,
 } from '@tanstack/react-router';
-import { ArrowLeftToLine, ArrowRightFromLine } from 'lucide-react';
 import { z } from 'zod';
 
 const demoPageParamsSchema = z.object({
@@ -49,43 +35,6 @@ export const Route = createFileRoute('/demo')({
     middlewares: [retainSearchParams(true)],
   },
 });
-
-interface BaseExplainerInfo {
-  explainerType: ExplainerType;
-  pearsonFn: CorrelationType;
-  spearmanFn: CorrelationType;
-}
-
-const baseExplainerInfos = [
-  {
-    explainerType: 'BaseExplainer',
-    pearsonFn: 'pearson',
-    spearmanFn: 'spearman',
-  },
-  {
-    explainerType: 'BaseExplainerCardinality',
-    pearsonFn: 'pearson-cardinality',
-    spearmanFn: 'spearman-cardinality',
-  },
-  {
-    explainerType: 'BaseExplainerNodeDepth',
-    pearsonFn: 'pearson-node-depth',
-    spearmanFn: 'spearman-node-depth',
-  },
-] satisfies BaseExplainerInfo[];
-
-const explanationSections = [
-  'Node Ranking',
-  'Runtime Correlation',
-  'Explainer Evaluation',
-] as const;
-type ExplanationSection = (typeof explanationSections)[number];
-
-function insertSeparators(elements: JSX.Element[]) {
-  return elements.flatMap((value, index) =>
-    index == elements.length - 1 ? value : [value, <Separator key={index} />],
-  );
-}
 
 function Demo() {
   const navigate = useNavigate({ from: Route.fullPath });
@@ -173,8 +122,6 @@ function Demo() {
     void navigate({ search: { drawImportance: value } });
   };
 
-  const workloads = useGetWorkloads({ datasetId: datasetId });
-  const query = useGetQuery({ queryId: queryId });
   const [minimized, setMinimized] = useState(true);
 
   const [selectedExplanationSection, setSelectedExplanationSection] =
@@ -186,11 +133,6 @@ function Demo() {
 
   const explainer = explainerParam ?? 'GradientExplainer';
   const drawImportance = drawImportanceParam ?? false;
-
-  const explanation = useGetExplanation({
-    queryId: queryId,
-    explainerType: explainer,
-  });
 
   return (
     <div
@@ -204,36 +146,14 @@ function Demo() {
           <CardTitle>Query Selection</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 overflow-hidden px-0 py-2">
-          <div className="flex items-end gap-2 px-2">
-            <DatasetSelect
-              className="w-9 grow"
-              datasetId={datasetId}
-              setDatasetId={setDatasetId}
-            />
-            {datasetId != undefined && (
-              <WorkloadSelect
-                className="w-9 grow"
-                datasetId={datasetId}
-                workloadId={workloadId}
-                setWorkloadId={setWorkloadId}
-              />
-            )}
-            {!workloads.isSuccess && <div className="w-9 grow px-3"></div>}
-            {workloadId != undefined && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMinimized(!minimized)}
-              >
-                {minimized ? (
-                  <ArrowRightFromLine className="size-4" />
-                ) : (
-                  <ArrowLeftToLine className="size-4" />
-                )}
-              </Button>
-            )}
-          </div>
-
+          <DemoSelects
+            datasetId={datasetId}
+            setDatasetId={setDatasetId}
+            workloadId={workloadId}
+            setWorkloadId={setWorkloadId}
+            minimized={minimized}
+            setMinimized={setMinimized}
+          />
           {workloadId != undefined && (
             <QueryList
               minimized={minimized}
@@ -249,123 +169,28 @@ function Demo() {
           )}
         </CardContent>
       </Card>
-      <div className="flex flex-col gap-4">
-        <div className="flex max-h-44 min-h-44 flex-col overflow-hidden">
-          {queryId != undefined &&
-            (nodeId != undefined ? (
-              <NodeInfoCard queryId={queryId} nodeId={nodeId} />
-            ) : (
-              <SqlCard queryId={queryId} />
-            ))}
-        </div>
-        {queryId != undefined && (
-          <Card
-            className="flex h-full w-full flex-col"
-            onClick={() => setNodeId(undefined)}
-          >
-            <CardHeader className="mb-8 flex flex-row">
-              <CardTitle>Query Graph</CardTitle>
-              <div className="grow"></div>
-              <LabeledSwitch
-                label="Display Node Ranking"
-                checked={drawImportance}
-                onCheckedChange={setDrawImportance}
-              ></LabeledSwitch>
-            </CardHeader>
-            <CardContent className="grow">
-              {query.isSuccess &&
-                (!drawImportance || explanation.isSuccess) && (
-                  <QueryGraph
-                    fullPlan={query.data}
-                    nodeId={nodeId}
-                    setNodeId={setNodeId}
-                    importanceScores={
-                      drawImportance && explanation.isSuccess
-                        ? explanation.data.scaledImportance
-                        : undefined
-                    }
-                  />
-                )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+
+      <DemoGraphContent
+        queryId={queryId}
+        nodeId={nodeId}
+        setNodeId={setNodeId}
+        drawImportance={drawImportance}
+        setDrawImportance={setDrawImportance}
+        explainer={explainer}
+      />
+
       {queryId != undefined && (
         <div className="flex grow flex-col gap-4 overflow-hidden">
           <PredictionCard queryId={queryId} />
-          <Card className="flex grow flex-col overflow-hidden">
-            <CardHeader className="flex flex-col gap-3">
-              <CardTitle>Explanations</CardTitle>
-              <ExplainerSelect
-                explainer={explainer}
-                setExplainer={setExplainer}
-              />
-            </CardHeader>
-            <CardContent className="flex grow flex-col overflow-hidden px-0 py-0">
-              {
-                <ScrollArea>
-                  <Tabs
-                    defaultValue="Node Ranking"
-                    value={selectedExplanationSection}
-                    onValueChange={(value) =>
-                      setSelectedExplanationSection(value as ExplanationSection)
-                    }
-                  >
-                    <TabsList className="mx-4 grid h-16 grid-cols-3 gap-x-2 px-2">
-                      {explanationSections.map((section) => (
-                        <TabsTrigger
-                          key={section}
-                          className="text-wrap whitespace-normal"
-                          value={section}
-                          disabled={
-                            (explainer == 'BaseExplainer' ||
-                              explainer == 'BaseExplainerCardinality' ||
-                              explainer == 'BaseExplainerNodeDepth') &&
-                            (section == 'Runtime Correlation' ||
-                              section == 'Explainer Evaluation')
-                          }
-                        >
-                          {section}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                    <TabsContent value="Node Ranking">
-                      <ExplanationCard
-                        key={`explanation-${explainer}`}
-                        explainerType={explainer}
-                        queryId={queryId}
-                        nodeId={nodeId}
-                        setNodeId={setNodeId}
-                      />
-                    </TabsContent>
-                    <TabsContent value="Runtime Correlation">
-                      {insertSeparators(
-                        baseExplainerInfos.map((baseExplainerInfo) => (
-                          <CorrelationBarsCard
-                            key={`correlation-${baseExplainerInfo.explainerType}`}
-                            baseExplainersType={baseExplainerInfo.explainerType}
-                            explainerTypes={[
-                              baseExplainerInfo.explainerType,
-                              explainer,
-                            ]}
-                            queryId={queryId}
-                            nodeId={nodeId}
-                            setNodeId={setNodeId}
-                          ></CorrelationBarsCard>
-                        )),
-                      )}
-                    </TabsContent>
-                    <TabsContent value="Explainer Evaluation">
-                      <SingleExplainerEvaluationCard
-                        queryId={queryId}
-                        explainerType={explainer}
-                      ></SingleExplainerEvaluationCard>
-                    </TabsContent>
-                  </Tabs>
-                </ScrollArea>
-              }
-            </CardContent>
-          </Card>
+          <DemoExplanationContent
+            explainer={explainer}
+            setExplainer={setExplainer}
+            explanationSection={selectedExplanationSection}
+            setExplanationSection={setSelectedExplanationSection}
+            queryId={queryId}
+            nodeId={nodeId}
+            setNodeId={setNodeId}
+          />
         </div>
       )}
     </div>
