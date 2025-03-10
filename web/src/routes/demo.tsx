@@ -204,7 +204,7 @@ function Demo() {
           <CardTitle>Query Selection</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 overflow-hidden px-0 py-2">
-          <div className="flex gap-2 px-2">
+          <div className="flex items-end gap-2 px-2">
             <DatasetSelect
               className="w-9 grow"
               datasetId={datasetId}
