@@ -47,7 +47,8 @@ export function DemoGraphContent({
             <CardTitle>Query Graph</CardTitle>
             <div className="grow"></div>
             <LabeledSwitch
-              label="Display Node Ranking"
+              leftLabel="Node Types"
+              rightLabel="Node Importance"
               checked={drawImportance}
               onCheckedChange={setDrawImportance}
             ></LabeledSwitch>
