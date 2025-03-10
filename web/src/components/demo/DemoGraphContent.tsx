@@ -2,11 +2,12 @@ import { ExplainerType } from '@/api/data/inference';
 import { useGetExplanation } from '@/api/inference';
 import { useGetQuery } from '@/api/queries';
 
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '../ui/card';
 import { LabeledSwitch } from './LabeledSwitch';
 import { NodeInfoCard } from './NodeInfoCard';
 import { QueryGraph } from './QueryGraph';
 import { SqlCard } from './SqlCard';
+import {NodeTypeLegend} from "@/components/demo/NodeLegend.tsx";
 
 interface Props {
   queryId: number | undefined;
@@ -16,7 +17,6 @@ interface Props {
   setDrawImportance: (value: boolean) => void;
   explainer: ExplainerType;
 }
-
 export function DemoGraphContent({
   queryId,
   nodeId,
@@ -67,6 +67,11 @@ export function DemoGraphContent({
               />
             )}
           </CardContent>
+          <CardFooter className="flex items-center justify-center w-full -mb-2">
+            <div className="flex justify-end flex-row p-0">
+              <NodeTypeLegend drawImportance = {drawImportance} />
+            </div>
+          </CardFooter>
         </Card>
       )}
     </div>

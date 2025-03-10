@@ -19,6 +19,12 @@ interface Props {
   setExplainer: (value: ExplainerType) => void;
 }
 
+const explainerBackgrounds: Record<string, string> = {
+  'BaseExplainer': 'bg-blue-100',
+  'BaseExplainerCardinality': 'bg-blue-100',
+  'BaseExplainerNodeDepth': 'bg-blue-100',
+};
+
 export function ExplainerSelect({ className, explainer, setExplainer }: Props) {
   return (
     <div className={className}>
@@ -33,7 +39,11 @@ export function ExplainerSelect({ className, explainer, setExplainer }: Props) {
         </SelectTrigger>
         <SelectContent>
           {explainerTypes.map((explainerType) => (
-            <SelectItem value={explainerType} key={explainerType}>
+            <SelectItem
+              value={explainerType}
+              key={explainerType}
+              className={explainerBackgrounds[explainerType] || ''}
+            >
               {explainerTypeToDisplay[explainerType]}
             </SelectItem>
           ))}

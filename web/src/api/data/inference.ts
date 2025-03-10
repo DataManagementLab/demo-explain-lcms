@@ -38,9 +38,9 @@ export type ExplainerType = (typeof explainerTypes)[number];
 
 export const explainerTypeToDisplay = {
   BaseExplainer: 'Actual Runtime',
-  BaseExplainerCardinality: 'Cardinality',
+  BaseExplainerCardinality: 'Actual Cardinality',
   BaseExplainerNodeDepth: 'Node Depth',
-  GradientExplainer: 'Gradient',
+  GradientExplainer: 'SensitivityAnalysis',
   GuidedBPExplainer: 'GuidedBackprop',
   GNNExplainer: 'GNNExplainer',
   GNNExplainerOnlyPlans: 'GNNExplainer (Only Operators)',
