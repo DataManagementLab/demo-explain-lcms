@@ -42,10 +42,7 @@ export function DemoGraphContent({
           ))}
       </div>
       {queryId != undefined && (
-        <Card
-          className="flex h-full w-full flex-col"
-          onClick={() => setNodeId(undefined)}
-        >
+        <Card className="flex h-full w-full flex-col">
           <CardHeader className="mb-8 flex flex-row">
             <CardTitle>Query Graph</CardTitle>
             <div className="grow"></div>
@@ -55,7 +52,7 @@ export function DemoGraphContent({
               onCheckedChange={setDrawImportance}
             ></LabeledSwitch>
           </CardHeader>
-          <CardContent className="grow">
+          <CardContent className="grow" onClick={() => setNodeId(undefined)}>
             {query.isSuccess && (!drawImportance || explanation.isSuccess) && (
               <QueryGraph
                 fullPlan={query.data}
