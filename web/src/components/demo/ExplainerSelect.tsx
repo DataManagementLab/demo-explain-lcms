@@ -15,7 +15,7 @@ import {
 
 interface Props {
   className?: string;
-  explainer: ExplainerType | undefined;
+  explainer: ExplainerType;
   setExplainer: (value: ExplainerType) => void;
 }
 

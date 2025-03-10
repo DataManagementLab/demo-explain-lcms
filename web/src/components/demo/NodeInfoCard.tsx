@@ -2,6 +2,7 @@ import {
   GraphNode,
   nodeFieldSkipToken,
   nodeFieldToDisplay,
+  NodeType,
   nodeTypeToDisplay,
 } from '@/api/data/nodeInfo';
 import { useGetFeatures } from '@/api/general';
@@ -82,7 +83,7 @@ export function NodeInfoCard({ queryId, nodeId }: Props) {
       <Card className="flex grow flex-col overflow-hidden">
         <CardHeader className="pb-4">
           <CardTitle>
-            {`${selectedNode.label} (${nodeTypeToDisplay.get(selectedNode.nodeInfo.nodeType)})`}
+            {`${selectedNode.label} (${nodeTypeToDisplay[selectedNode.nodeInfo.nodeType]})`}
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grow grid-cols-2 grid-rows-1 gap-x-2 overflow-hidden">
@@ -123,7 +124,7 @@ export function NodeInfoCard({ queryId, nodeId }: Props) {
                           </TableCell>
                           <TableCell>
                             {value.key == 'nodeType'
-                              ? nodeTypeToDisplay.get(value.value)
+                              ? nodeTypeToDisplay[value.value as NodeType]
                               : value.value}
                           </TableCell>
                         </TableRow>

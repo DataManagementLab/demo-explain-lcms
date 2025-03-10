@@ -47,10 +47,12 @@ export function ExplanationCard({
                   >
                     <TableCell className="font-medium">
                       {query.data.graphNodes[importance.nodeId].label} (
-                      {nodeTypeToDisplay.get(
-                        query.data.graphNodes[importance.nodeId].nodeInfo
-                          .nodeType,
-                      )}
+                      {
+                        nodeTypeToDisplay[
+                          query.data.graphNodes[importance.nodeId].nodeInfo
+                            .nodeType
+                        ]
+                      }
                       )
                     </TableCell>
                     <TableCell>{round(importance.score)}</TableCell>

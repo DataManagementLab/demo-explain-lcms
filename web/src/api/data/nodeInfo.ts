@@ -1,20 +1,22 @@
-enum NodeType {
-  column = 'column',
-  filterColumn = 'filter_column',
-  outputColumn = 'output_column',
-  table = 'table',
-  plan = 'plan',
-  logicalPred = 'logical_pred_',
-}
+export const nodeTypes = [
+  'column',
+  'filter_column',
+  'output_column',
+  'table',
+  'plan',
+  'logical_pred_',
+] as const;
 
-export const nodeTypeToDisplay = new Map([
-  [NodeType.column, 'Column'],
-  [NodeType.filterColumn, 'Filter'],
-  [NodeType.outputColumn, 'Output'],
-  [NodeType.table, 'Table'],
-  [NodeType.plan, 'Plan'],
-  [NodeType.logicalPred, 'Predicate'],
-]);
+export type NodeType = (typeof nodeTypes)[number];
+
+export const nodeTypeToDisplay = {
+  column: 'Column',
+  filter_column: 'Filter',
+  output_column: 'Output',
+  table: 'Table',
+  plan: 'Plan',
+  logical_pred_: 'Predicate',
+} satisfies Record<NodeType, string>;
 
 type NodeInfo = {
   nodeType: NodeType;

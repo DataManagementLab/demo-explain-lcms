@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react';
+import { NodeScore } from '@/api/data/inference';
+import { NodeType } from '@/api/data/nodeInfo';
 import { FullPlan } from '@/api/data/queries';
 import { useDebounce, useMeasure } from '@uidotdev/usehooks';
 import * as d3 from 'd3';
@@ -9,9 +11,34 @@ interface Props {
   fullPlan: FullPlan;
   nodeId: number | undefined;
   setNodeId: (value: number) => void;
+  importanceScores: NodeScore[] | undefined;
 }
 
-export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
+const nodeTypeToColor = {
+  column: '#D5E8D4',
+  filter_column: '#F8CECC',
+  output_column: '#FFF2CC',
+  table: '#DAE8FC',
+  plan: '#F5F5F5',
+  logical_pred_: '#F8CECC',
+} satisfies Record<NodeType, string>;
+
+function getImportanceColor(score: number) {
+  if (score < 0.33) {
+    // White to Yellow
+    return `rgb(${255}, ${255}, ${Math.round(255 - score * 255)})`;
+  } else {
+    // Yellow to Red
+    return `rgb(${255}, ${Math.round(255 - score * 255)}, ${0})`;
+  }
+}
+
+export function QueryGraph({
+  fullPlan,
+  nodeId,
+  setNodeId,
+  importanceScores,
+}: Props) {
   const graphDiv = useRef<HTMLDivElement>(null);
   const [graphviz, setGraphviz] = useState<
     d3Graphviz.Graphviz<d3.BaseType, any, d3.BaseType, any> | undefined
@@ -47,7 +74,6 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
       .renderDot(fullPlan.dotGraph)
       .on('end', () => {
         setGraphInteractions();
-        // this.drawImportance();
       });
   };
 
@@ -81,19 +107,10 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
 
     const graphElement = d3.selectAll('#graph0');
     const nodes = graphElement.selectAll('.node');
-    // const edges = graphElement.selectAll('.edge');
 
     nodes
       .selectAll('ellipse')
       .classed('transition-stroke stroke-black/60 stroke-[2px]', true);
-
-    // nodes
-    //   .selectAll('text')
-    //   .classed('text-primary-foreground', true)
-    //   .attr('font-family', null);
-
-    // edges.selectAll('path').classed('stroke-primary', true);
-    // edges.selectAll('polygon').classed('fill-primary stroke-primary', true);
 
     const setNodeHover = (enter: boolean, nodeId: string) => {
       nodes
@@ -121,6 +138,33 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
     });
 
     drawSelectedNode();
+    drawNodeColors();
+  };
+
+  const drawNodeColors = () => {
+    if (!graphviz) {
+      return;
+    }
+    const graphElement = d3.selectAll('#graph0');
+    const nodes = graphElement.selectAll('.node');
+    const ellipses = nodes.select('ellipse');
+
+    if (importanceScores) {
+      ellipses.attr('fill', (e: any) =>
+        getImportanceColor(
+          importanceScores.find((s) => s.nodeId == e.key)?.score ?? 0,
+        ),
+      );
+    } else {
+      ellipses.attr(
+        'fill',
+        (e: any) =>
+          nodeTypeToColor[
+            fullPlan.graphNodes.find((node) => node.nodeId == e.key)?.nodeInfo
+              .nodeType ?? 'plan'
+          ],
+      );
+    }
   };
 
   useEffect(() => {
@@ -138,6 +182,10 @@ export function QueryGraph({ fullPlan, nodeId, setNodeId }: Props) {
   useEffect(() => {
     drawSelectedNode();
   }, [nodeId, graphviz]);
+
+  useEffect(() => {
+    drawNodeColors();
+  }, [importanceScores, graphviz]);
 
   return (
     <div className="h-full" ref={measureRef}>

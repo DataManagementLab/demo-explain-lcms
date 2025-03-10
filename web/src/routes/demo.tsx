@@ -1,11 +1,13 @@
 import { JSX, useState } from 'react';
 import { CorrelationType } from '@/api/data/evaluation';
 import { ExplainerType, explainerTypes } from '@/api/data/inference';
+import { useGetExplanation } from '@/api/inference';
 import { SortKey, sortKeys, useGetQuery, useGetWorkloads } from '@/api/queries';
 import { CorrelationBarsCard } from '@/components/demo/CorrelationBarsCard';
 import { DatasetSelect } from '@/components/demo/DatasetSelect';
 import { ExplainerSelect } from '@/components/demo/ExplainerSelect';
 import { ExplanationCard } from '@/components/demo/ExplanationCard';
+import { LabeledSwitch } from '@/components/demo/LabeledSwitch';
 import { NodeInfoCard } from '@/components/demo/NodeInfoCard';
 import { PredictionCard } from '@/components/demo/PredictionCard';
 import { QueryGraph } from '@/components/demo/QueryGraph';
@@ -37,6 +39,7 @@ const demoPageParamsSchema = z.object({
   sort: z.enum(sortKeys).optional(),
   asc: z.boolean().optional(),
   explainer: z.enum(explainerTypes).optional(),
+  drawImportance: z.boolean().optional(),
 });
 
 export const Route = createFileRoute('/demo')({
@@ -96,6 +99,7 @@ function Demo() {
     sort: sortKey,
     asc: sortAscending,
     explainer: explainerParam,
+    drawImportance: drawImportanceParam,
   } = Route.useSearch();
   const setDatasetId = (value: number | undefined) => {
     resetState();
@@ -160,9 +164,13 @@ function Demo() {
     });
   };
 
-  const setExplainer = (value: ExplainerType | undefined) => {
+  const setExplainer = (value: ExplainerType) => {
     resetState();
     void navigate({ search: { explainer: value } });
+  };
+
+  const setDrawImportance = (value: boolean) => {
+    void navigate({ search: { drawImportance: value } });
   };
 
   const workloads = useGetWorkloads({ datasetId: datasetId });
@@ -177,6 +185,12 @@ function Demo() {
   };
 
   const explainer = explainerParam ?? 'GradientExplainer';
+  const drawImportance = drawImportanceParam ?? false;
+
+  const explanation = useGetExplanation({
+    queryId: queryId,
+    explainerType: explainer,
+  });
 
   return (
     <div
@@ -249,16 +263,30 @@ function Demo() {
             className="flex h-full w-full flex-col"
             onClick={() => setNodeId(undefined)}
           >
-            <CardHeader className="flex-shrink-0">
+            <CardHeader className="mb-8 flex flex-row">
               <CardTitle>Query Graph</CardTitle>
+              <div className="grow"></div>
+              <LabeledSwitch
+                label="Display Node Ranking"
+                checked={drawImportance}
+                onCheckedChange={setDrawImportance}
+              ></LabeledSwitch>
             </CardHeader>
-            {query.isSuccess && (
-              <QueryGraph
-                fullPlan={query.data}
-                nodeId={nodeId}
-                setNodeId={setNodeId}
-              />
-            )}
+            <CardContent className="grow">
+              {query.isSuccess &&
+                (!drawImportance || explanation.isSuccess) && (
+                  <QueryGraph
+                    fullPlan={query.data}
+                    nodeId={nodeId}
+                    setNodeId={setNodeId}
+                    importanceScores={
+                      drawImportance && explanation.isSuccess
+                        ? explanation.data.scaledImportance
+                        : undefined
+                    }
+                  />
+                )}
+            </CardContent>
           </Card>
         )}
       </div>
@@ -286,8 +314,16 @@ function Demo() {
                     <TabsList className="mx-4 grid h-16 grid-cols-3 gap-x-2 px-2">
                       {explanationSections.map((section) => (
                         <TabsTrigger
+                          key={section}
                           className="text-wrap whitespace-normal"
                           value={section}
+                          disabled={
+                            (explainer == 'BaseExplainer' ||
+                              explainer == 'BaseExplainerCardinality' ||
+                              explainer == 'BaseExplainerNodeDepth') &&
+                            (section == 'Runtime Correlation' ||
+                              section == 'Explainer Evaluation')
+                          }
                         >
                           {section}
                         </TabsTrigger>
