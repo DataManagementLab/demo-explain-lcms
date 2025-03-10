@@ -1,7 +1,10 @@
 import { SelectedInfo } from '@/lib/useSelectedInfo';
 
+
+
 import { Separator } from '../ui/separator';
 import { LabeledSwitch } from './LabeledSwitch';
+
 
 interface Props<T extends string> {
   title: string;
@@ -25,7 +28,8 @@ export function TogglesForSelectedInfo<T extends string>({
           <LabeledSwitch
             key={selectedInfo.item}
             id={selectedInfo.item}
-            label={displayStrings[selectedInfo.item]}
+            leftLabel={displayStrings[selectedInfo.item]}
+            rightLabel=""
             checked={selectedInfo.isSelected}
             onCheckedChange={(value) => {
               toggleSelectedInfo(selectedInfo.item, value);
