@@ -86,7 +86,12 @@ export function QueryGraph({
     nodes
       .selectAll('ellipse')
       .classed('stroke-[2px]', true)
-      .classed('stroke-[5px]', false);
+      .classed('stroke-[5px]', false)
+
+    nodes
+        .selectAll('text')
+        .style('font-family', 'sans-serif')
+        .style('font-weight', 'semi-bold')
 
     if (nodeId == undefined) {
       return;
