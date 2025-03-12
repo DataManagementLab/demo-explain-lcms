@@ -78,7 +78,7 @@ def store_all_workload_queries_in_db(settings: Settings):
 
             run_file = os.path.join(base_runs_dir, saved_dataset.directory, run_file_path)
             raw_run_file = os.path.join(base_runs_raw_dir, saved_dataset.directory, run_file_path)
-            print("Store Started", saved_dataset.name, run_file_name)
+            print(f"Store Started {saved_dataset.name} for workload {run_file_name} at {run_file} and {raw_run_file}")
             start_time = time.time()
             store_workload_queries_in_db(load_workload_run(run_file), saved_dataset, run_file_path, run_file_name, load_model_from_file(RawRun, raw_run_file))
             store_time = time.time() - start_time
@@ -115,9 +115,10 @@ def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_d
 
         sql_search = SQLSearchFeatures(parsed_plan)
         sql = next((i.sql for i in raw_plans if sql_search.check_sql(i)), None)
-        assert sql is not None
-        db_plan.sql = sql
+        if sql is None:
+            continue
 
+        db_plan.sql = sql
         db_workload_run.parsed_plans.append(db_plan)
 
     with next(get_db()) as db:

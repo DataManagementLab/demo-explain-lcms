@@ -21,6 +21,22 @@
       "zsmodels": ["tpc_h_0", "tpc_h_1", "tpc_h_2"],
       "runs": ["workload_100k_s1_c8220.json"],
       "runs_names" : ["Synthetic"]
+    },
+
+    {
+      "name": "💵 Credit",
+      "directory": "credit",
+      "zsmodels": ["tpc_h_0", "tpc_h_1", "tpc_h_2"],
+      "runs": ["workload_100k_s1_c8220.json"],
+      "runs_names" : ["Synthetic"]
+    },
+
+    {
+      "name": "💥 Accidents",
+      "directory": "accidents",
+      "zsmodels": ["tpc_h_0", "tpc_h_1", "tpc_h_2"],
+      "runs": ["workload_100k_s1_c8220.json"],
+      "runs_names" : ["Synthetic"]
     }
   ]
 }
