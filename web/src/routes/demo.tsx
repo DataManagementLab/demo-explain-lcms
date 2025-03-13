@@ -25,7 +25,7 @@ const demoPageParamsSchema = z.object({
   sort: z.enum(sortKeys).optional(),
   asc: z.boolean().optional(),
   explainer: z.enum(explainerTypes).optional(),
-  drawImportance: z.boolean().optional(),
+  graphViewMode: z.string().optional(),
 });
 
 export const Route = createFileRoute('/demo')({
@@ -48,7 +48,7 @@ function Demo() {
     sort: sortKey,
     asc: sortAscending,
     explainer: explainerParam,
-    drawImportance: drawImportanceParam,
+    graphViewMode: drawGraphViewMode,
   } = Route.useSearch();
   const setDatasetId = (value: number | undefined) => {
     resetState();
@@ -118,8 +118,8 @@ function Demo() {
     void navigate({ search: { explainer: value } });
   };
 
-  const setDrawImportance = (value: boolean) => {
-    void navigate({ search: { drawImportance: value } });
+  const setGraphViewMode = (value: string) => {
+    void navigate({ search: { graphViewMode: value } });
   };
 
   const [minimized, setMinimized] = useState(true);
@@ -132,7 +132,7 @@ function Demo() {
   };
 
   const explainer = explainerParam ?? 'GradientExplainer';
-  const drawImportance = drawImportanceParam ?? false;
+  const graphViewMode = drawGraphViewMode ?? 'nodeTypes';
 
   return (
     <div
@@ -174,8 +174,8 @@ function Demo() {
         queryId={queryId}
         nodeId={nodeId}
         setNodeId={setNodeId}
-        drawImportance={drawImportance}
-        setDrawImportance={setDrawImportance}
+        setGraphViewMode={setGraphViewMode}
+        graphViewMode={graphViewMode}
         explainer={explainer}
       />
 

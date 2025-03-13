@@ -21,9 +21,6 @@ interface Props {
 
 // Provide default backgrounds for all known ExplainerTypes
 const explainerBackgrounds: Record<ExplainerType, string> = {
-  BaseExplainer: 'bold p-1.5',
-  BaseExplainerCardinality: 'bold p-1.5',
-  BaseExplainerNodeDepth: 'bold p-1.5',
   GradientExplainer: 'bold p-1.5', // Example background
   GuidedBPExplainer: 'bold p-1.5', // Example background
   GNNExplainer: 'bold p-1.5', // Example background
@@ -55,22 +52,6 @@ export function ExplainerSelect({ className, explainer, setExplainer }: Props) {
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <div className="bg-accent px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
-              Query Properties
-            </div>
-            {baseExplainers.map((explainerType) => (
-                <SelectItem
-                    value={explainerType}
-                    key={explainerType}
-                    className={explainerBackgrounds[explainerType] || 'bold p-1.5'}
-                >
-                  {explainerTypeToDisplay[explainerType]}
-                </SelectItem>
-            ))}
-
-            <div className="bg-accent px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
-              Explainers
-            </div>
             {explainerTypes
                 .filter((explainerType) => !baseExplainers.includes(explainerType))
                 .map((explainerType) => (

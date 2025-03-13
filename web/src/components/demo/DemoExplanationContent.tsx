@@ -67,7 +67,7 @@ export function DemoExplanationContent({
   return (
     <Card className="flex grow flex-col overflow-hidden">
       <CardHeader className="flex flex-col gap-3">
-        <CardTitle>Explanations</CardTitle>
+        <CardTitle>Explainer</CardTitle>
         <ExplainerSelect explainer={explainer} setExplainer={setExplainer} />
       </CardHeader>
       <CardContent className="flex grow flex-col overflow-hidden px-0 py-0">
