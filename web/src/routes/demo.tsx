@@ -25,7 +25,7 @@ const demoPageParamsSchema = z.object({
   sort: z.enum(sortKeys).optional(),
   asc: z.boolean().optional(),
   explainer: z.enum(explainerTypes).optional(),
-  graphViewMode: z.string().optional(),
+  graphViewMode: z.enum(['nodeTypes', 'actualRuntimes', 'nodeImportance']).optional()
 });
 
 export const Route = createFileRoute('/demo')({
@@ -118,9 +118,9 @@ function Demo() {
     void navigate({ search: { explainer: value } });
   };
 
-  const setGraphViewMode = (value: string) => {
-    void navigate({ search: { graphViewMode: value } });
-  };
+const setGraphViewMode = (value: 'nodeTypes' | 'actualRuntimes' | 'nodeImportance') => {
+  void navigate({ search: { graphViewMode: value } });
+};
 
   const [minimized, setMinimized] = useState(true);
 
@@ -132,7 +132,7 @@ function Demo() {
   };
 
   const explainer = explainerParam ?? 'GradientExplainer';
-  const graphViewMode = drawGraphViewMode ?? 'nodeTypes';
+  const graphViewMode: 'nodeTypes' | 'actualRuntimes' | 'nodeImportance' = drawGraphViewMode ?? 'nodeTypes';
 
   return (
     <div

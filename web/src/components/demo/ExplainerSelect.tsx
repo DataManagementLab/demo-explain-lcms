@@ -19,15 +19,6 @@ interface Props {
   setExplainer: (value: ExplainerType) => void;
 }
 
-// Provide default backgrounds for all known ExplainerTypes
-const explainerBackgrounds: Record<ExplainerType, string> = {
-  GradientExplainer: 'bold p-1.5', // Example background
-  GuidedBPExplainer: 'bold p-1.5', // Example background
-  GNNExplainer: 'bold p-1.5', // Example background
-  GNNExplainerOnlyPlans: 'bold p-1.5', // Example background
-  DifferenceExplainer: 'bold p-1.5', // Example background
-  DifferenceExplainerOnlyPlans: 'bold p-1.5', // Example background
-};
 
 const baseExplainers: ExplainerType[] = [
   'BaseExplainer',
@@ -45,7 +36,7 @@ export function ExplainerSelect({ className, explainer, setExplainer }: Props) {
             }
         >
           <SelectTrigger
-              className={`w-full font-bold ${explainerBackgrounds[explainer] || 'bold p-1.5 font-mono'}`}
+              className={`w-full font-bold`}
           >
             <SelectValue placeholder="Select Explainer">
               {explainerTypeToDisplay[explainer]}
