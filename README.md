@@ -1,15 +1,14 @@
-# Implementation for "Opening the Black Box: Explaining Zero-Shot Cost Models for Databases" M.Sc. Thesis
+# Opening the Black Box: Explaining Learned Cost Models For Databases
+This directory contains the source code of our demo submission
+*"Opening the Black Box: Explaining Zero-Shot Cost Models for Databases"*
+. This project consists of [backend](./backend/) and [web based frontend](./web/).
 
 ## Overview
 
-- [Overview](#overview)
 - [General Information](#general-information)
 - [Quick production setup](#quick-production-setup)
 - [Development Setup](#development-setup)
 
-## General Information
-
-This directory contains a project that was developed in terms of *"Opening the Black Box: Explaining Zero-Shot Cost Models for Databases"* M.Sc. Thesis. This project consists of [backend](./backend/) and [web based frontend](./web/).
 
 
 ## Quick production setup
