@@ -1,6 +1,6 @@
 export const explanationSections = [
   'Node Ranking',
   'Runtime Correlation',
-  'Explainer Evaluation',
+  'Explanation Quality',
 ] as const;
 export type ExplanationSection = (typeof explanationSections)[number];

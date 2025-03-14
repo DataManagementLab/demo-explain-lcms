@@ -91,7 +91,7 @@ export function DemoExplanationContent({
                         explainer == 'BaseExplainerCardinality' ||
                         explainer == 'BaseExplainerNodeDepth') &&
                       (section == 'Runtime Correlation' ||
-                        section == 'Explainer Evaluation')
+                        section == 'Explanation Quality')
                     }
                   >
                     {section}
@@ -124,7 +124,7 @@ export function DemoExplanationContent({
                   )),
                 )}
               </TabsContent>
-              <TabsContent value="Explainer Evaluation">
+              <TabsContent value="Explanation Quality">
                 <SingleExplainerEvaluationCard
                   queryId={queryId}
                   explainerType={explainer}

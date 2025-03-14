@@ -59,6 +59,7 @@ export function CorrelationBarsCard({
                     explanation={explanation}
                     selectedNodeId={nodeId}
                     setSelectedNodeId={setNodeId}
+                    graphNodes={query.data.graphNodes}
                   />
                 </div>
               ))}

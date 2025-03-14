@@ -3,17 +3,20 @@ import { NodeScore } from '@/api/data/inference';
 import { getBarColor } from '@/lib/barColors';
 import { useMeasure, useThrottle } from '@uidotdev/usehooks';
 import * as d3 from 'd3';
+import {GraphNode} from "@/api/data/nodeInfo.ts";
 
 interface Props {
   explanation: NodeScore[] | undefined;
   selectedNodeId: number | undefined;
   setSelectedNodeId: (nodeId: number) => void;
+  graphNodes: GraphNode[];
 }
 
 export function CorrelationBarSingle({
   explanation,
   selectedNodeId,
   setSelectedNodeId,
+  graphNodes
 }: Props) {
   const graphDiv = useRef<HTMLDivElement>(null);
   const [measureRef, _size] = useMeasure();
@@ -51,7 +54,6 @@ export function CorrelationBarSingle({
 
     for (const nodeId of sortedNodes) {
       const importance = explanation.find((i) => i.nodeId == nodeId);
-      const name = 'TODO';
       if (barWidth >= width || !importance) {
         continue;
       }
@@ -76,7 +78,7 @@ export function CorrelationBarSingle({
         .attr('clickNode', importance.nodeId)
         .datum(importance.nodeId);
 
-      if (item_width >= 30) {
+      if (item_width >= 40) {
         bar
           .append('text')
           .attr('x', barWidth + item_width / 2)
@@ -85,7 +87,7 @@ export function CorrelationBarSingle({
           .attr('text-anchor', 'middle')
           .attr('fill', 'white')
           .attr('font-size', '10px') // Adjust the font size here
-          .text(name);
+          .text(graphNodes[nodeId].label);
       }
       barWidth += item_width;
     }
