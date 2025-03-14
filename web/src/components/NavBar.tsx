@@ -20,7 +20,7 @@ export function NavBar() {
           imgSrc="logo_new.png"
         ></ExternalLink>
         <ExternalLink
-          href="https://github.com/DataManagementLab/thesis-XAI-learnedcostmodels"
+          href="https://github.com/DataManagementLab/demo-explain-lcms"
           imgSrc="github_logo.svg"
         ></ExternalLink>
       </div>
