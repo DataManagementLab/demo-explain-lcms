@@ -34,8 +34,6 @@ export const correlationTypes = [
   'spearman',
   'pearson-cardinality',
   'spearman-cardinality',
-  'pearson-node-depth',
-  'spearman-node-depth',
 ] as const;
 
 export type CorrelationType = (typeof correlationTypes)[number];
@@ -45,8 +43,6 @@ export const correlationTypeToDisplay = {
   spearman: 'Spearman Runtime',
   'pearson-cardinality': 'Pearson Cardinality',
   'spearman-cardinality': 'Spearman Cardinality',
-  'pearson-node-depth': 'Pearson Node Depth',
-  'spearman-node-depth': 'Spearman Node Depth',
 } satisfies Record<CorrelationType, string>;
 
 export type EvaluationType = FidelityType | CorrelationType;
