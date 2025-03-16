@@ -105,7 +105,7 @@ def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_d
         db_stats.column_stats.append(create_db_model(ColumnStats, stat, id_in_run=i, table=next(filter(lambda t: t.relname == stat.tablename, db_stats.table_stats))))
     db_workload_run.database_stats = db_stats
 
-    raw_plans = [raw_plan for raw_plan in raw_run.query_list if raw_plan.analyze_plans is not None and len(raw_plan.analyze_plans) > 0]
+    raw_plans = [] if raw_run is None else [raw_plan for raw_plan in raw_run.query_list if raw_plan.analyze_plans is not None and len(raw_plan.analyze_plans) > 0]
     for i, plan in enumerate(tqdm(json_workload_run.parsed_plans)):
         db_plan = create_plan_db_model(plan, db_stats)
 
@@ -116,7 +116,7 @@ def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_d
         sql_search = SQLSearchFeatures(parsed_plan)
         sql = next((i.sql for i in raw_plans if sql_search.check_sql(i)), None)
         if sql is None:
-            continue
+            print(f"Sql query is not available for plan {i} in {saved_dataset.name} in {run_file_name}")
 
         db_plan.sql = sql
         db_workload_run.parsed_plans.append(db_plan)

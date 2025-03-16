@@ -138,7 +138,7 @@ function Demo() {
   return (
     <div
       className={cn(
-        'grid grid-rows-1 gap-x-4 overflow-hidden',
+        'grid h-full grid-rows-1 gap-x-4 overflow-hidden',
         minimized ? 'grid-demo-collapsed' : 'grid-demo',
       )}
     >

@@ -27,7 +27,7 @@ export interface Plan {
   idInRun: number;
   planRuntime: number;
   queryStats: QueryStats;
-  sql: string;
+  sql: string | undefined;
 }
 
 export interface QueriesPage {

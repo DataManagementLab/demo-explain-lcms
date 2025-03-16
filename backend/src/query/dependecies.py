@@ -37,7 +37,7 @@ def get_parsed_plan(
         return parsed_plan
 
     query = db.query(Plan).join(Plan.workload_run).join(WorkloadRun.dataset).filter(Plan.id == query_id).first()
-    if query is None or query.sql is None:
+    if query is None:
         raise HTTPException(422, f"Query with id == {query_id} was not found")
 
     plan = query.to_pydantic()

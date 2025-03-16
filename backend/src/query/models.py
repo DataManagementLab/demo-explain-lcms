@@ -160,7 +160,7 @@ class PlanParameters(Base):
     workers_planned: Mapped[int]
     output_columns: Mapped[list[OutputColumn]] = relationship(secondary="plan_output_columns")
     logical_node_id: Mapped[int | None] = mapped_column(ForeignKey(LogicalPredicate.id))
-    filter_columns: Mapped[LogicalPredicate | None] = relationship()
+    filter_columns: Mapped[LogicalPredicate | None] = relationship(post_update=True)
     inner_unique: Mapped[bool | None]
 
     # Deep DB

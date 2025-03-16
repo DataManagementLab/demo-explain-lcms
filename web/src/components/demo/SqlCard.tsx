@@ -20,7 +20,7 @@ export function SqlCard({ queryId }: Props) {
       <CardHeader>
         <CardTitle>SQL Query</CardTitle>
       </CardHeader>
-      {query.isSuccess && (
+      {query.isSuccess && query.data.sql && (
         <CardContent className="flex flex-col overflow-hidden">
           <SyntaxHighlighter language="pgsql" style={vs}>
             {format(query.data.sql, { language: 'postgresql' })}
