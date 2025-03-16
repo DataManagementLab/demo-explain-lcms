@@ -7,7 +7,7 @@ import { Switch } from '../ui/switch';
 
 interface Props {
   rightLabel: string;
-    leftLabel?: string;
+  leftLabel?: string;
 }
 
 export const LabeledSwitch = React.forwardRef<
@@ -17,12 +17,12 @@ export const LabeledSwitch = React.forwardRef<
   const [value, setValue] = useState(checked ?? false);
   return (
     <div className="flex items-center space-x-2">
-        <Label
-            className={cn([value ? 'text-black/50' : 'text-black'])}
-            htmlFor={`${id}-switch`}
-        >
-            {leftLabel}
-        </Label>
+      <Label
+        className={cn([value ? 'text-black/50' : 'text-black'])}
+        htmlFor={`${id}-switch`}
+      >
+        {leftLabel}
+      </Label>
       <Switch
         id={`${id}-switch`}
         checked={value}

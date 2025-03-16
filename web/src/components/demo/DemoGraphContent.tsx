@@ -20,7 +20,9 @@ interface Props {
   nodeId: number | undefined;
   setNodeId: (value: number | undefined) => void;
   graphViewMode: 'nodeTypes' | 'actualRuntimes' | 'nodeImportance';
-  setGraphViewMode: (value: 'nodeTypes' | 'actualRuntimes' | 'nodeImportance') => void;
+  setGraphViewMode: (
+    value: 'nodeTypes' | 'actualRuntimes' | 'nodeImportance',
+  ) => void;
   explainer: ExplainerType;
 }
 
@@ -59,7 +61,7 @@ export function DemoGraphContent({
             <CardTitle>Query Graph</CardTitle>
             <div className="grow"></div>
             <Tabs
-              defaultValue='nodeTypes'
+              defaultValue="nodeTypes"
               onValueChange={(value) =>
                 setGraphViewMode(
                   value as 'nodeTypes' | 'actualRuntimes' | 'nodeImportance',
@@ -68,8 +70,12 @@ export function DemoGraphContent({
             >
               <TabsList className="flex w-full justify-center">
                 <TabsTrigger value="nodeTypes">Node Types</TabsTrigger>
-                <TabsTrigger value="actualRuntimes">Actual Runtimes</TabsTrigger>
-                <TabsTrigger value="nodeImportance">Node Importance</TabsTrigger>
+                <TabsTrigger value="actualRuntimes">
+                  Actual Runtimes
+                </TabsTrigger>
+                <TabsTrigger value="nodeImportance">
+                  Node Importance
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>

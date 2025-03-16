@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { NodeScore } from '@/api/data/inference';
+import { GraphNode } from '@/api/data/nodeInfo.ts';
 import { getBarColor } from '@/lib/barColors';
 import { useMeasure, useThrottle } from '@uidotdev/usehooks';
 import * as d3 from 'd3';
-import {GraphNode} from "@/api/data/nodeInfo.ts";
 
 interface Props {
   explanation: NodeScore[] | undefined;
@@ -16,7 +16,7 @@ export function CorrelationBarSingle({
   explanation,
   selectedNodeId,
   setSelectedNodeId,
-  graphNodes
+  graphNodes,
 }: Props) {
   const graphDiv = useRef<HTMLDivElement>(null);
   const [measureRef, _size] = useMeasure();

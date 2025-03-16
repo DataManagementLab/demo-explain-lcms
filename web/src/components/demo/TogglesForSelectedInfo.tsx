@@ -1,10 +1,7 @@
 import { SelectedInfo } from '@/lib/useSelectedInfo';
 
-
-
 import { Separator } from '../ui/separator';
 import { LabeledSwitch } from './LabeledSwitch';
-
 
 interface Props<T extends string> {
   title: string;
