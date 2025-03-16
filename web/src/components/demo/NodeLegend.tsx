@@ -1,3 +1,5 @@
+import { GraphViewMode } from '@/lib/GraphViewMode';
+
 const nodeTypeToColor = {
   'Physical Operator': '#F5F5F5',
   'Column Node': '#D5E8D4',
@@ -16,11 +18,11 @@ const importanceToColor = Array.from({ length: 10 }, (_, i) => {
   return { score: score.toFixed(1), color };
 });
 
-export function NodeTypeLegend({
-  graphViewMode,
-}: {
-  graphViewMode: 'nodeTypes' | 'nodeImportance' | 'actualRuntimes';
-}) {
+interface Props {
+  graphViewMode: GraphViewMode;
+}
+
+export function NodeTypeLegend({ graphViewMode }: Props) {
   let legendTitle: string;
   if (graphViewMode === 'nodeImportance') {
     legendTitle = 'Importance Score:';

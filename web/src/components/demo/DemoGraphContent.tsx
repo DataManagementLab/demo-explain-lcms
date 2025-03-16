@@ -2,6 +2,7 @@ import { ExplainerType } from '@/api/data/inference';
 import { useGetExplanation } from '@/api/inference';
 import { useGetQuery } from '@/api/queries';
 import { NodeTypeLegend } from '@/components/demo/NodeLegend.tsx';
+import { GraphViewMode, isGraphViewMode } from '@/lib/GraphViewMode';
 
 import {
   Card,
@@ -19,10 +20,8 @@ interface Props {
   queryId: number | undefined;
   nodeId: number | undefined;
   setNodeId: (value: number | undefined) => void;
-  graphViewMode: 'nodeTypes' | 'actualRuntimes' | 'nodeImportance';
-  setGraphViewMode: (
-    value: 'nodeTypes' | 'actualRuntimes' | 'nodeImportance',
-  ) => void;
+  graphViewMode: GraphViewMode;
+  setGraphViewMode: (value: GraphViewMode) => void;
   explainer: ExplainerType;
 }
 
@@ -61,11 +60,9 @@ export function DemoGraphContent({
             <CardTitle>Query Graph</CardTitle>
             <div className="grow"></div>
             <Tabs
-              defaultValue="nodeTypes"
+              value={graphViewMode}
               onValueChange={(value) =>
-                setGraphViewMode(
-                  value as 'nodeTypes' | 'actualRuntimes' | 'nodeImportance',
-                )
+                setGraphViewMode(isGraphViewMode(value) ? value : 'nodeTypes')
               }
             >
               <TabsList className="flex w-full justify-center">
@@ -81,18 +78,18 @@ export function DemoGraphContent({
           </CardHeader>
           <CardContent className="grow" onClick={() => setNodeId(undefined)}>
             {query.isSuccess &&
-              (graphViewMode !== 'nodeImportance' || explanation.isSuccess) && (
+              (graphViewMode == 'nodeTypes' ||
+                (graphViewMode == 'nodeImportance' && explanation.isSuccess) ||
+                (graphViewMode == 'actualRuntimes' &&
+                  actualRuntimes.isSuccess)) && (
                 <QueryGraph
                   fullPlan={query.data}
                   nodeId={nodeId}
                   setNodeId={setNodeId}
                   importanceScores={
-                    graphViewMode === 'nodeImportance' &&
-                    explanation.isSuccess &&
-                    actualRuntimes.isSuccess
+                    graphViewMode == 'nodeImportance' && explanation.isSuccess
                       ? explanation.data.scaledImportance
-                      : graphViewMode === 'actualRuntimes' &&
-                          explanation.isSuccess &&
+                      : graphViewMode == 'actualRuntimes' &&
                           actualRuntimes.isSuccess
                         ? actualRuntimes.data.scaledImportance
                         : undefined

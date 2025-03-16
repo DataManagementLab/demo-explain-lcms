@@ -8,6 +8,7 @@ import { PredictionCard } from '@/components/demo/PredictionCard';
 import { QueryList } from '@/components/demo/QueryList';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExplanationSection } from '@/lib/ExplanationSection';
+import { GraphViewMode, graphViewModes } from '@/lib/GraphViewMode';
 import { cn } from '@/lib/utils';
 import {
   createFileRoute,
@@ -25,9 +26,7 @@ const demoPageParamsSchema = z.object({
   sort: z.enum(sortKeys).optional(),
   asc: z.boolean().optional(),
   explainer: z.enum(explainerTypes).optional(),
-  graphViewMode: z
-    .enum(['nodeTypes', 'actualRuntimes', 'nodeImportance'])
-    .optional(),
+  graphViewMode: z.enum(graphViewModes).optional(),
 });
 
 export const Route = createFileRoute('/demo')({
@@ -50,7 +49,7 @@ function Demo() {
     sort: sortKey,
     asc: sortAscending,
     explainer: explainerParam,
-    graphViewMode: drawGraphViewMode,
+    graphViewMode: graphViewModeParam,
   } = Route.useSearch();
   const setDatasetId = (value: number | undefined) => {
     resetState();
@@ -120,9 +119,7 @@ function Demo() {
     void navigate({ search: { explainer: value } });
   };
 
-  const setGraphViewMode = (
-    value: 'nodeTypes' | 'actualRuntimes' | 'nodeImportance',
-  ) => {
+  const setGraphViewMode = (value: GraphViewMode) => {
     void navigate({ search: { graphViewMode: value } });
   };
 
@@ -136,8 +133,7 @@ function Demo() {
   };
 
   const explainer = explainerParam ?? 'GradientExplainer';
-  const graphViewMode: 'nodeTypes' | 'actualRuntimes' | 'nodeImportance' =
-    drawGraphViewMode ?? 'nodeTypes';
+  const graphViewMode = graphViewModeParam ?? 'nodeTypes';
 
   return (
     <div
