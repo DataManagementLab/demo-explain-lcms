@@ -25,7 +25,6 @@ export interface Explanation extends ExplanationBase {
 export const explainerTypes = [
   'BaseExplainer',
   'BaseExplainerCardinality',
-  'BaseExplainerNodeDepth',
   'GradientExplainer',
   'GuidedBPExplainer',
   'GNNExplainer',
@@ -39,7 +38,6 @@ export type ExplainerType = (typeof explainerTypes)[number];
 export const explainerTypeToDisplay = {
   BaseExplainer: 'Actual Runtime',
   BaseExplainerCardinality: 'Actual Cardinality',
-  BaseExplainerNodeDepth: 'Node Depth',
   GradientExplainer: 'SensitivityAnalysis',
   GuidedBPExplainer: 'GuidedBackprop',
   GNNExplainer: 'GNNExplainer',

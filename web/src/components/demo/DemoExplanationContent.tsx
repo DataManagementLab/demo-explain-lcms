@@ -32,11 +32,6 @@ const baseExplainerInfos = [
     pearsonFn: 'pearson-cardinality',
     spearmanFn: 'spearman-cardinality',
   },
-  {
-    explainerType: 'BaseExplainerNodeDepth',
-    pearsonFn: 'pearson-node-depth',
-    spearmanFn: 'spearman-node-depth',
-  },
 ] satisfies BaseExplainerInfo[];
 
 function insertSeparators(elements: JSX.Element[]) {
@@ -88,8 +83,7 @@ export function DemoExplanationContent({
                     value={section}
                     disabled={
                       (explainer == 'BaseExplainer' ||
-                        explainer == 'BaseExplainerCardinality' ||
-                        explainer == 'BaseExplainerNodeDepth') &&
+                        explainer == 'BaseExplainerCardinality') &&
                       (section == 'Runtime Correlation' ||
                         section == 'Explanation Quality')
                     }

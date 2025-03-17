@@ -43,7 +43,7 @@ export function CorrelationBarsCard({
   return (
     <Card className="h-w-full border-none">
       <CardHeader>
-        <CardTitle>{`Correlation with ${explainerTypeToDisplay[baseExplainersType]}`}</CardTitle>
+        <CardTitle>{`${explainerTypeToDisplay[baseExplainersType]}`}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-2">
@@ -54,7 +54,7 @@ export function CorrelationBarsCard({
                   className="flex flex-col gap-1"
                   key={`bar-${explainerTypes[i]}`}
                 >
-                  <Label>{explainerTypeToDisplay[explainerTypes[i]]}</Label>
+                  <Label>{i === 0 ? "Actual Fractions" : "Node Importance Fractions"}</Label>
                   <CorrelationBarSingle
                     explanation={explanation}
                     selectedNodeId={nodeId}
