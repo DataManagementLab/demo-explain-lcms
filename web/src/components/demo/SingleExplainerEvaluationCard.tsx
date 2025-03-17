@@ -1,13 +1,10 @@
 import {
-  correlationTypes,
-  correlationTypeToDisplay,
   evaluationTypes,
   fidelityTypes,
   fidelityTypeToDisplay,
 } from '@/api/data/evaluation';
 import { ExplainerType } from '@/api/data/inference';
 import {
-  useGetCorrelationEvaluationsAllTypes,
   useGetFidelityEvaluationsAllTypes,
 } from '@/api/evaluation';
 import { useGetExplanation } from '@/api/inference';
@@ -37,15 +34,10 @@ export function SingleExplainerEvaluationCard({
     explanation: explanations.data,
   });
 
-  const correlationEvaluations = useGetCorrelationEvaluationsAllTypes({
-    queryId: queryId,
-    explanation: explanations.data,
-  });
-
   return (
     <Card className="border-none">
       <CardContent>
-        {fidelityEvaluations.isSuccess && correlationEvaluations.isSuccess ? (
+        {fidelityEvaluations.isSuccess ? (
           <Table>
             <TableBody>
               {fidelityTypes.map((fidelityType, i) => (
@@ -62,26 +54,6 @@ export function SingleExplainerEvaluationCard({
                     }}
                   >
                     {round(fidelityEvaluations.data[i].score)}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {correlationTypes.map((correlationType, i) => (
-                <TableRow
-                  className="hover:bg-transparent"
-                  key={correlationType}
-                >
-                  <TableCell className="font-medium">
-                    {correlationTypeToDisplay[correlationType]}
-                  </TableCell>
-                  <TableCell
-                    className="font-bold"
-                    style={{
-                      color: getGreenRedRGB(
-                        1 - correlationEvaluations.data[i].score,
-                      ),
-                    }}
-                  >
-                    {round(correlationEvaluations.data[i].score)}
                   </TableCell>
                 </TableRow>
               ))}
