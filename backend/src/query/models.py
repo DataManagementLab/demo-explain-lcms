@@ -310,3 +310,13 @@ class Dataset(Base):
     name: Mapped[str]
     directory: Mapped[str]
     runs: Mapped[list[WorkloadRun]] = relationship(back_populates="dataset")
+
+
+class ZeroShotModelConfig(Base):
+    __tablename__ = "zero_shot_model_configs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    file_name: Mapped[str]
+    dataset_id: Mapped[int | None] = mapped_column(ForeignKey(Dataset.id))
+    dataset: Mapped[Dataset | None] = relationship()

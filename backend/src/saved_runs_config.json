@@ -3,40 +3,81 @@
     {
       "name": " 🎥 IMDB",
       "directory": "imdb",
-      "zsmodels": ["imdb_0", "imdb_1", "imdb_2"],
       "runs": ["workload_100k_s1_c8220.json", "job-light_c8220.json"],
-      "runs_names" : ["Synthetic", "JOB-Light"]
+      "runs_names": ["Synthetic", "JOB-Light"]
     },
     {
       "name": "⚾️ Baseball",
       "directory": "baseball",
-      "zsmodels": ["baseball_0", "baseball_1", "baseball_2"],
       "runs": ["workload_100k_s1_c8220.json"],
-      "runs_names" : ["Synthetic"]
-
+      "runs_names": ["Synthetic"]
     },
     {
       "name": "📦 TPC-H",
       "directory": "tpc_h",
-      "zsmodels": ["tpc_h_0", "tpc_h_1", "tpc_h_2"],
       "runs": ["workload_100k_s1_c8220.json"],
-      "runs_names" : ["Synthetic"]
+      "runs_names": ["Synthetic"]
     },
 
     {
       "name": "💵 Credit",
       "directory": "credit",
-      "zsmodels": ["tpc_h_0", "tpc_h_1", "tpc_h_2"],
       "runs": ["workload_100k_s1_c8220.json"],
-      "runs_names" : ["Synthetic"]
+      "runs_names": ["Synthetic"]
     },
 
     {
       "name": "💥 Accidents",
       "directory": "accidents",
-      "zsmodels": ["tpc_h_0", "tpc_h_1", "tpc_h_2"],
       "runs": ["workload_100k_s1_c8220.json"],
-      "runs_names" : ["Synthetic"]
+      "runs_names": ["Synthetic"]
+    }
+  ],
+  "zs_models": [
+    {
+      "name": "IMDB 0",
+      "file_name": "imdb_0",
+      "dataset": "imdb"
+    },
+    {
+      "name": "IMDB 1",
+      "file_name": "imdb_1",
+      "dataset": "imdb"
+    },
+    {
+      "name": "IMDB 2",
+      "file_name": "imdb_2",
+      "dataset": "imdb"
+    },
+    {
+      "name": "Baseball 0",
+      "file_name": "baseball_0",
+      "dataset": "baseball"
+    },
+    {
+      "name": "Baseball 1",
+      "file_name": "baseball_1",
+      "dataset": "baseball"
+    },
+    {
+      "name": "Baseball 2",
+      "file_name": "baseball_2",
+      "dataset": "baseball"
+    },
+    {
+      "name": "TPC-H 0",
+      "file_name": "tpc_h_0",
+      "dataset": "tpc_h"
+    },
+    {
+      "name": "TPC-H 1",
+      "file_name": "tpc_h_1",
+      "dataset": "tpc_h"
+    },
+    {
+      "name": "TPC-H 2",
+      "file_name": "tpc_h_2",
+      "dataset": "tpc_h"
     }
   ]
 }

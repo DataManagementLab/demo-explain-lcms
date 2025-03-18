@@ -2,15 +2,14 @@ import os.path
 import time
 from fastapi import HTTPException
 import numpy as np
+from sklearn.pipeline import Pipeline
 import torch
 import tqdm
 
 from config import Settings
 from ml.service import ExplainerType, explainers
 from query.db import Session
-from query.models import DatabaseStats, Plan, WorkloadRun
-from saved_runs_models import SavedRunsConfig
-from utils import load_model_from_file
+from query.models import DatabaseStats, Plan, WorkloadRun, ZeroShotModelConfig
 from zero_shot_learned_db.cross_db_benchmark.benchmark_tools.database import DatabaseSystem
 from zero_shot_learned_db.explanations.data_models.hyperparameters import HyperParameters, load_hyperparameters
 from zero_shot_learned_db.explanations.data_models.statistics import FeatureStatistics, load_statistics
@@ -20,28 +19,20 @@ from zero_shot_learned_db.explanations.model import prepare_model
 from zero_shot_learned_db.models.zero_shot_models.zero_shot_model import ZeroShotModel
 
 
-class ZSModel:
-    name: str
-    model: ZeroShotModel
-
-    def __init__(self, name: str, model: ZeroShotModel):
-        self.name = name
-        self.model = model
-
-
 class MLHelper:
     hyperparameters: HyperParameters
     feature_statistics: FeatureStatistics
     model: ZeroShotModel = None
-    concrete_models_for_datasets: dict[str, list[ZSModel]]
+    # concrete_models_for_datasets: dict[str, list[ZSModel]]
+    zero_shot_models: dict[str, ZeroShotModel]
     settings: Settings
     database_stats: dict[int, PydanticDatabaseStats]
     plans_cache: dict[int, tuple[ParsedPlan, float]]
+    label_norm: Pipeline
 
     def load(self, settings: Settings, db: Session):
         self.settings = settings
         statistics_file = os.path.join(settings.ml.base_data_dir, settings.ml.statistics_file)
-        model_dir = os.path.join(settings.ml.base_data_dir, settings.ml.zs_model_dir)
 
         self.hyperparameters = load_hyperparameters(
             settings.ml.hyperparameters_file,
@@ -54,34 +45,11 @@ class MLHelper:
         np.random.seed(self.hyperparameters.seed)
 
         self.feature_statistics = load_statistics(statistics_file)
-        label_norm = get_label_norm_runtimes([i[0] for i in db.query(Plan.plan_runtime).filter(Plan.sql.is_not(None)).all()], self.hyperparameters.final_mlp_kwargs.loss_class_name)
+        self.label_norm = get_label_norm_runtimes([i[0] for i in db.query(Plan.plan_runtime).filter(Plan.sql.is_not(None)).all()], self.hyperparameters.final_mlp_kwargs.loss_class_name)
 
-        runs_config = load_model_from_file(SavedRunsConfig, settings.query.saved_runs_config_file)
-        self.concrete_models_for_datasets = {}
-        for dataset in runs_config.datasets:
-            if not dataset.zsmodels:
-                continue
-            self.concrete_models_for_datasets[dataset.name] = []
-            for model in dataset.zsmodels:
-                # Only imdb models require label normalizer?????????????????????????
-                label_norm_for_model = label_norm if "imdb" in model else None
-                self.concrete_models_for_datasets[dataset.name].append(
-                    ZSModel(
-                        model,
-                        prepare_model(
-                            self.hyperparameters,
-                            self.feature_statistics,
-                            label_norm_for_model,
-                            model_dir,
-                            model,
-                        ),
-                    )
-                )
-                print("Loaded model:", model)
-                if self.model is None:
-                    self.model = self.concrete_models_for_datasets[dataset.name][0].model
-                if settings.ml.load_only_first_model_from_runs_config:
-                    break
+        self.zero_shot_models = {}
+        for zs_model in db.query(ZeroShotModelConfig).all():
+            self.load_model(zs_model)
 
         self.database_stats = {}
         for db_stats in db.query(DatabaseStats).all():
@@ -89,19 +57,37 @@ class MLHelper:
             self.database_stats[workload_run[0]] = db_stats.to_pydantic()
         self.plans_cache = {}
 
+    def load_model(self, model_config: ZeroShotModelConfig):
+        model_dir = os.path.join(self.settings.ml.base_data_dir, self.settings.ml.zs_model_dir)
+        # Only imdb models require label normalizer?????????????????????????
+        label_norm_for_model = self.label_norm if "imdb" in model_config.file_name else None
+        self.zero_shot_models[model_config.file_name] = prepare_model(
+            self.hyperparameters,
+            self.feature_statistics,
+            label_norm_for_model,
+            model_dir,
+            model_config.file_name,
+        )
+
+        print("Loaded model:", model_config.name, model_config.file_name)
+        if self.model is None:
+            self.model = self.zero_shot_models[model_config.file_name]
+
     def _assert_loaded(self):
         assert self.model is not None
-        assert self.concrete_models_for_datasets is not None
+        assert self.zero_shot_models is not None
 
-    def get_explainer(self, explainer_type: ExplainerType, dataset_name: str | None = None, model_name: str | None = None):
+    def get_explainer(self, explainer_type: ExplainerType, dataset_name: str | None = None, model_key: str | None = None):
         self._assert_loaded()
 
         if dataset_name is None:
             return explainers[explainer_type](self.model, log=self.settings.ml.explainers_log)
 
-        dataset_models = self.concrete_models_for_datasets[dataset_name]
-        model = next(filter(lambda x: x.name == model_name, dataset_models), dataset_models[0])
-        return explainers[explainer_type](model.model, log=self.settings.ml.explainers_log)
+        model = self.zero_shot_models.get(model_key, None)
+        if model is None:
+            print(f"WARNING: {model_key} does not exist, default model is used")
+            model = self.model
+        return explainers[explainer_type](model, log=self.settings.ml.explainers_log)
 
     def cache_store_plan(self, plan: ParsedPlan):
         self.plans_cache[plan.id] = (plan, time.time())

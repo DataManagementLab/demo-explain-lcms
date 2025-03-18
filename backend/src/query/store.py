@@ -9,7 +9,7 @@ from utils import load_model_from_file
 from query.db import get_db
 from sqlalchemy.orm import class_mapper
 from pydantic import BaseModel as PydanticBaseModel
-from query.models import ColumnStats, DatabaseStats, Dataset, OutputColumn, Plan, PlanParameters, PlanStats, TableStats, RunKwargs, LogicalPredicate, FilterColumn, WorkloadRun
+from query.models import ColumnStats, DatabaseStats, Dataset, OutputColumn, Plan, PlanParameters, PlanStats, TableStats, RunKwargs, LogicalPredicate, FilterColumn, WorkloadRun, ZeroShotModelConfig
 from zero_shot_learned_db.explanations.data_models.nodes import FilterColumn as PydanticFilterColumn, LogicalPredicate as PydanticLogicalPredicate, NodeType, Plan as PydanticPlan, TableStats as PydanticTableStats
 from zero_shot_learned_db.explanations.data_models.workload_run import WorkloadRun as PydanticWorkloadRun, load_workload_run
 from zero_shot_learned_db.explanations.load import ParsedPlan
@@ -69,6 +69,7 @@ def store_all_workload_queries_in_db(settings: Settings):
     runs_config = load_model_from_file(SavedRunsConfig, settings.query.saved_runs_config_file)
     base_runs_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_dir)
     base_runs_raw_dir = os.path.join(settings.ml.base_data_dir, settings.query.datasets_runs_raw_dir)
+    base_model_dir = os.path.join(settings.ml.base_data_dir, settings.ml.zs_model_dir)
     for saved_dataset in runs_config.datasets:
         for run_file_path, run_file_name in zip(saved_dataset.runs, saved_dataset.runs_names):
             with next(get_db()) as db:
@@ -77,12 +78,30 @@ def store_all_workload_queries_in_db(settings: Settings):
                     continue
 
             run_file = os.path.join(base_runs_dir, saved_dataset.directory, run_file_path)
+            if not os.path.isfile(run_file):
+                print(f"Workload not found: {run_file}")
+                continue
             raw_run_file = os.path.join(base_runs_raw_dir, saved_dataset.directory, run_file_path)
             print(f"Store Started {saved_dataset.name} for workload {run_file_name} at {run_file} and {raw_run_file}")
             start_time = time.time()
             store_workload_queries_in_db(load_workload_run(run_file), saved_dataset, run_file_path, run_file_name, load_model_from_file(RawRun, raw_run_file))
             store_time = time.time() - start_time
             print("Store Finished", saved_dataset.name, run_file_name, "in", "{0:.2f}".format(store_time) + "s")
+
+    with next(get_db()) as db:
+        for zs_model in runs_config.zs_models:
+            model_file = os.path.join(base_model_dir, zs_model.file_name) + ".pt"
+            if not os.path.isfile(model_file):
+                print(f"Model not found: {model_file}")
+                continue
+            zs_model_db = db.query(ZeroShotModelConfig).filter(ZeroShotModelConfig.file_name == zs_model.file_name).first()
+            if zs_model_db is not None:
+                continue
+            dataset_db = db.query(Dataset).filter(Dataset.directory == zs_model.dataset).first()
+            zs_model_db = ZeroShotModelConfig(name=zs_model.name, file_name=zs_model.file_name)
+            zs_model_db.dataset = dataset_db
+            db.add(zs_model_db)
+        db.commit()
 
 
 def store_workload_queries_in_db(json_workload_run: PydanticWorkloadRun, saved_dataset: SavedDataset, run_file_path: str, run_file_name: str, raw_run: RawRun):
