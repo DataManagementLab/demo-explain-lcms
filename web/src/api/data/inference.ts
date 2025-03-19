@@ -49,3 +49,14 @@ export const explainerTypeToDisplay = {
 export function isExplainerType(str: string): str is ExplainerType {
   return explainerTypes.includes(str as ExplainerType);
 }
+
+export interface ZeroShotModel {
+  id: number;
+  name: string;
+  fileName: string;
+}
+
+export interface ZeroShotModelsResponse {
+  zeroShotModels: ZeroShotModel[];
+  defaultModelId: number;
+}

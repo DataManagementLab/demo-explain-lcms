@@ -7,7 +7,7 @@ from sqlalchemy import Column
 from ml.dependencies import MLHelper
 from query.db import db_depends
 from query.dependecies import get_explainer_for_parsed_plan, get_parsed_plan, get_parsed_plan_for_inference, get_predictor, inference_mutex
-from query.models import Dataset, Plan, PlanStats, WorkloadRun
+from query.models import Dataset, Plan, PlanStats, WorkloadRun, ZeroShotModelConfig
 from query.schemas import DatasetResponse, ExplanationResponse, FullQueryResponse, GraphNodeResponse, PredictionResponse, QueriesPageResponse, QueryResponse, WorkloadRunResponse
 from query.service import get_workload_run_queries_count
 from zero_shot_learned_db.explanations.explainers.base_explainer import BaseExplainer
@@ -20,7 +20,17 @@ router = APIRouter(tags=["query"])
 
 @router.get("/datasets", response_model=list[DatasetResponse])
 def get_datasets(db: db_depends):
-    return db.query(Dataset).all()
+    datasets: list[DatasetResponse] = []
+    for dataset in db.query(Dataset).all():
+        default_model = db.query(ZeroShotModelConfig).filter(ZeroShotModelConfig.dataset_id == dataset.id).first()
+        datasets.append(
+            DatasetResponse(
+                id=dataset.id,
+                name=dataset.name,
+                default_zero_shot_model_id=default_model.id if default_model is not None else None,
+            )
+        )
+    return datasets
 
 
 @router.get("/datasets/{dataset_id}/workloads", response_model=list[WorkloadRunResponse])

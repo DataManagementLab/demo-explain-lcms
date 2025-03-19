@@ -13,10 +13,11 @@ import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
 interface Props {
   queryId: number;
+  modelId: number | undefined;
 }
 
-export function PredictionCard({ queryId }: Props) {
-  const prediction = useGetPrediction({ queryId: queryId });
+export function PredictionCard({ queryId, modelId }: Props) {
+  const prediction = useGetPrediction({ queryId: queryId, modelId: modelId });
 
   return (
     <Card className="max-h-44 min-h-44">

@@ -15,16 +15,19 @@ interface Props {
   correlationType: CorrelationType;
   explainerTypes: ExplainerType[];
   queryId: number;
+  modelId: number | undefined;
 }
 
 export function CorrelationScoreCard({
   correlationType,
   explainerTypes,
   queryId,
+  modelId,
 }: Props) {
   const explanations = useGetExplanations({
     queryId: queryId,
     explainerTypes: explainerTypes,
+    modelId,
   });
 
   const evaluations = useGetCorrelaitonEvaluations({

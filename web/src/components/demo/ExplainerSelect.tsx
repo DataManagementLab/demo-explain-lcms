@@ -22,7 +22,6 @@ interface Props {
 const baseExplainers: ExplainerType[] = [
   'BaseExplainer',
   'BaseExplainerCardinality',
-  'BaseExplainerNodeDepth',
 ];
 
 export function ExplainerSelect({ className, explainer, setExplainer }: Props) {

@@ -49,6 +49,8 @@ class DatasetResponse(CustomModel):
     id: int
     name: str
 
+    default_zero_shot_model_id: int | None
+
 
 class PredictionResponseBase(CustomModel):
     prediction: float

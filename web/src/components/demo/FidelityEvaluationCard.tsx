@@ -12,16 +12,19 @@ interface Props {
   fidelityType: FidelityType;
   explainerTypes: ExplainerType[];
   queryId: number;
+  modelId: number | undefined;
 }
 
 export function FidelityEvaluationCard({
   fidelityType,
   explainerTypes,
   queryId,
+  modelId,
 }: Props) {
   const explanations = useGetExplanations({
     queryId: queryId,
     explainerTypes: explainerTypes,
+    modelId,
   });
   const evaluations = useGetFidelityEvaluations({
     queryId: queryId,

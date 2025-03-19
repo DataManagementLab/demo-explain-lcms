@@ -11,13 +11,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 from ml.dependencies import MLHelper
 
-from evaluation.router import router as evaluation_router
 
 # from test_approaches.router import router as test_approaches_router
 # from evaluation_fns.router import router as evaluation_fns_router
 from query.db import get_db, setup_db_connection as setup_query_db_connection
 from query.store import store_all_workload_queries_in_db
 from query.router import router as query_router
+from zero_shot_models.router import router as zero_shot_models_router
+from evaluation_fns.router import router as evaluation_fns_router
 from validate_queries_in_db import validate_queries_in_db
 
 
@@ -63,14 +64,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(evaluation_router)
-# app.include_router(test_approaches_router)
-app.include_router(query_router)
-
 # WARNING: Evaluation routes are unmaintened and may be broken,
 # especially due to changes in loading of zero-shot models
 # if not settings.disable_eval_routes:
-#     app.include_router(evaluation_fns_router)
+# app.include_router(evaluation_router)
+# app.include_router(test_approaches_router)
+
+app.include_router(query_router)
+app.include_router(zero_shot_models_router)
+app.include_router(evaluation_fns_router)
 
 
 # Index

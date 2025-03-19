@@ -20,6 +20,7 @@ import { z } from 'zod';
 const demoPageParamsSchema = z.object({
   datasetId: z.number().positive().optional(),
   workloadId: z.number().positive().optional(),
+  modelId: z.number().positive().optional(),
   page: z.number().nonnegative().optional(),
   queryId: z.number().positive().optional(),
   nodeId: z.number().positive().optional(),
@@ -43,6 +44,7 @@ function Demo() {
   const {
     datasetId,
     workloadId,
+    modelId,
     page,
     queryId,
     nodeId,
@@ -57,6 +59,7 @@ function Demo() {
       to: '/demo',
       search: {
         datasetId: value,
+        modelId: undefined,
         workloadId: undefined,
         page: undefined,
         queryId: undefined,
@@ -122,6 +125,9 @@ function Demo() {
   const setGraphViewMode = (value: GraphViewMode) => {
     void navigate({ search: { graphViewMode: value } });
   };
+  const setModelId = (value: number) => {
+    void navigate({ search: { modelId: value } });
+  };
 
   const [minimized, setMinimized] = useState(true);
 
@@ -152,6 +158,8 @@ function Demo() {
             setDatasetId={setDatasetId}
             workloadId={workloadId}
             setWorkloadId={setWorkloadId}
+            modelId={modelId}
+            setModelId={setModelId}
             minimized={minimized}
             setMinimized={setMinimized}
           />
@@ -173,6 +181,7 @@ function Demo() {
 
       <DemoGraphContent
         queryId={queryId}
+        modelId={modelId}
         nodeId={nodeId}
         setNodeId={setNodeId}
         setGraphViewMode={setGraphViewMode}
@@ -182,13 +191,14 @@ function Demo() {
 
       {queryId != undefined && (
         <div className="flex grow flex-col gap-4 overflow-hidden">
-          <PredictionCard queryId={queryId} />
+          <PredictionCard queryId={queryId} modelId={modelId} />
           <DemoExplanationContent
             explainer={explainer}
             setExplainer={setExplainer}
             explanationSection={selectedExplanationSection}
             setExplanationSection={setSelectedExplanationSection}
             queryId={queryId}
+            modelId={modelId}
             nodeId={nodeId}
             setNodeId={setNodeId}
           />

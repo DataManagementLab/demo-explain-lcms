@@ -19,6 +19,7 @@ import { SqlCard } from './SqlCard';
 interface Props {
   queryId: number | undefined;
   nodeId: number | undefined;
+  modelId: number | undefined;
   setNodeId: (value: number | undefined) => void;
   graphViewMode: GraphViewMode;
   setGraphViewMode: (value: GraphViewMode) => void;
@@ -27,6 +28,7 @@ interface Props {
 
 export function DemoGraphContent({
   queryId,
+  modelId,
   nodeId,
   setNodeId,
   graphViewMode,
@@ -37,11 +39,13 @@ export function DemoGraphContent({
   const explanation = useGetExplanation({
     queryId: queryId,
     explainerType: explainer,
+    modelId: modelId,
   });
 
   const actualRuntimes = useGetExplanation({
     queryId: queryId,
     explainerType: 'BaseExplainer',
+    modelId,
   });
 
   return (

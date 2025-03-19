@@ -3,24 +3,39 @@ import { PickPartial } from '@/lib/pickPartial';
 import { skipToken, useQueries, useQuery } from '@tanstack/react-query';
 
 import { api } from '../lib/api';
-import { ExplainerType, Explanation, Prediction } from './data/inference';
+import {
+  ExplainerType,
+  Explanation,
+  Prediction,
+  ZeroShotModelsResponse,
+} from './data/inference';
 
 interface GetPredictionParams {
   queryId: number;
+  modelId: number | undefined;
 }
 
-function getPrediction({ queryId }: GetPredictionParams, signal: AbortSignal) {
+function getPrediction(
+  { queryId, modelId }: GetPredictionParams,
+  signal: AbortSignal,
+) {
   return api
-    .get<Prediction>(`queries/${queryId}/prediction`, { signal: signal })
+    .get<Prediction>(`queries/${queryId}/prediction`, {
+      signal: signal,
+      searchParams: { ...(modelId != undefined && { model_id: modelId }) },
+    })
     .json();
 }
 
-export function useGetPrediction({ queryId }: Partial<GetPredictionParams>) {
+export function useGetPrediction({
+  queryId,
+  modelId,
+}: Partial<GetPredictionParams>) {
   return useQuery({
-    queryKey: ['prediction', queryId],
+    queryKey: ['prediction', queryId, modelId],
     queryFn:
       queryId != undefined
-        ? ({ signal }) => getPrediction({ queryId }, signal)
+        ? ({ signal }) => getPrediction({ queryId, modelId }, signal)
         : skipToken,
   });
 }
@@ -28,15 +43,17 @@ export function useGetPrediction({ queryId }: Partial<GetPredictionParams>) {
 interface GetExplanationParams {
   queryId: number;
   explainerType: ExplainerType;
+  modelId: number | undefined;
 }
 
 function getExplanation(
-  { queryId, explainerType }: GetExplanationParams,
+  { queryId, explainerType, modelId }: GetExplanationParams,
   signal?: AbortSignal,
 ) {
   return api
     .get<Explanation>(`queries/${queryId}/explanation/${explainerType}`, {
       signal: signal,
+      searchParams: { ...(modelId != undefined && { model_id: modelId }) },
     })
     .json();
 }
@@ -44,12 +61,14 @@ function getExplanation(
 export function useGetExplanation({
   queryId,
   explainerType,
+  modelId,
 }: PickPartial<GetExplanationParams, 'queryId'>) {
   return useQuery({
-    queryKey: ['explanation', explainerType, queryId],
+    queryKey: ['explanation', explainerType, queryId, modelId],
     queryFn:
       queryId != undefined
-        ? ({ signal }) => getExplanation({ queryId, explainerType }, signal)
+        ? ({ signal }) =>
+            getExplanation({ queryId, explainerType, modelId }, signal)
         : skipToken,
   });
 }
@@ -57,21 +76,34 @@ export function useGetExplanation({
 export function useGetExplanations({
   queryId,
   explainerTypes,
+  modelId,
 }: {
   queryId: number | undefined;
   explainerTypes: ExplainerType[];
+  modelId: number | undefined;
 }) {
   return useQueries({
     queries: explainerTypes.map(
       (explainerType) =>
         ({
-          queryKey: ['explanation', explainerType, queryId],
+          queryKey: ['explanation', explainerType, queryId, modelId],
           queryFn:
             queryId != undefined
-              ? () => getExplanation({ queryId, explainerType })
+              ? () => getExplanation({ queryId, explainerType, modelId })
               : skipToken,
         }) as const,
     ),
     combine: combineUseQueries,
+  });
+}
+
+function getZeroShotModels() {
+  return api.get<ZeroShotModelsResponse>('zero-shot-models').json();
+}
+
+export function useGetZeroShotModels() {
+  return useQuery({
+    queryKey: ['zero-shot-models'],
+    queryFn: getZeroShotModels,
   });
 }

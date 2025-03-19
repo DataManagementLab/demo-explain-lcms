@@ -22,8 +22,8 @@ from zero_shot_learned_db.models.zero_shot_models.zero_shot_model import ZeroSho
 class MLHelper:
     hyperparameters: HyperParameters
     feature_statistics: FeatureStatistics
-    model: ZeroShotModel = None
-    # concrete_models_for_datasets: dict[str, list[ZSModel]]
+    default_model: ZeroShotModel = None
+    default_model_id: int = None
     zero_shot_models: dict[str, ZeroShotModel]
     settings: Settings
     database_stats: dict[int, PydanticDatabaseStats]
@@ -70,23 +70,22 @@ class MLHelper:
         )
 
         print("Loaded model:", model_config.name, model_config.file_name)
-        if self.model is None:
-            self.model = self.zero_shot_models[model_config.file_name]
+        if self.default_model is None:
+            self.default_model = self.zero_shot_models[model_config.file_name]
+            self.default_model_id = model_config.id
 
     def _assert_loaded(self):
-        assert self.model is not None
+        assert self.default_model is not None
         assert self.zero_shot_models is not None
 
-    def get_explainer(self, explainer_type: ExplainerType, dataset_name: str | None = None, model_key: str | None = None):
+    def get_explainer(self, explainer_type: ExplainerType, model_key: str | None = None):
         self._assert_loaded()
-
-        if dataset_name is None:
-            return explainers[explainer_type](self.model, log=self.settings.ml.explainers_log)
 
         model = self.zero_shot_models.get(model_key, None)
         if model is None:
-            print(f"WARNING: {model_key} does not exist, default model is used")
-            model = self.model
+            if model_key is not None:
+                print(f"WARNING: {model_key} does not exist, default model is used")
+            model = self.default_model
         return explainers[explainer_type](model, log=self.settings.ml.explainers_log)
 
     def cache_store_plan(self, plan: ParsedPlan):

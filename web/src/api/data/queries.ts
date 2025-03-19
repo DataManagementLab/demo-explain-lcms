@@ -3,6 +3,7 @@ import { GraphNode } from './nodeInfo';
 export interface Dataset {
   id: number;
   name: string;
+  defaultZeroShotModelId: number;
 }
 
 export interface Workload {

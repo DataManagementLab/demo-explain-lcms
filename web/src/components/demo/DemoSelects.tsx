@@ -4,12 +4,15 @@ import { ArrowLeftToLine, ArrowRightFromLine } from 'lucide-react';
 import { Button } from '../ui/button';
 import { DatasetSelect } from './DatasetSelect';
 import { WorkloadSelect } from './WorkloadSelect';
+import { ZeroShotModelsSelect } from './ZeroShotModelsSelect';
 
 interface Props {
   datasetId: number | undefined;
   setDatasetId: (value: number) => void;
   workloadId: number | undefined;
   setWorkloadId: (value: number) => void;
+  modelId: number | undefined;
+  setModelId: (value: number) => void;
   minimized: boolean;
   setMinimized: (value: boolean) => void;
 }
@@ -19,6 +22,8 @@ export function DemoSelects({
   setDatasetId,
   workloadId,
   setWorkloadId,
+  modelId,
+  setModelId,
   minimized,
   setMinimized,
 }: Props) {
@@ -31,6 +36,14 @@ export function DemoSelects({
         datasetId={datasetId}
         setDatasetId={setDatasetId}
       />
+      {datasetId != undefined && (
+        <ZeroShotModelsSelect
+          className="w-9 grow"
+          datasetId={datasetId}
+          modelId={modelId}
+          setModelId={setModelId}
+        />
+      )}
       {datasetId != undefined && (
         <WorkloadSelect
           className="w-9 grow"

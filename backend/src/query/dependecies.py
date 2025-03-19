@@ -67,7 +67,7 @@ def get_zero_shot_model_key_for_query(
     db: db_depends,
     model_id: int | None = None,
 ):
-    zs_model = db.query(ZeroShotModelConfig).filter(ZeroShotModelConfig.file_name == model_id).first()
+    zs_model = db.query(ZeroShotModelConfig).filter(ZeroShotModelConfig.id == model_id).first()
     if zs_model is not None:
         return zs_model.file_name
     query = db.query(Plan).join(Plan.workload_run).join(WorkloadRun.dataset).filter(Plan.id == query_id).first()
@@ -81,10 +81,9 @@ def get_zero_shot_model_key_for_query(
 def get_explainer_for_parsed_plan(
     explainer_type: ExplainerType,
     ml: Annotated[MLHelper, Depends()],
-    parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
     model_key: Annotated[str, Depends(get_zero_shot_model_key_for_query)],
 ):
-    return ml.get_explainer(explainer_type, dataset_name=parsed_plan.dataset_name, model_key=model_key)
+    return ml.get_explainer(explainer_type, model_key=model_key)
 
 
 def get_explainer_optional_for_parsed_plan(
@@ -97,8 +96,7 @@ def get_explainer_optional_for_parsed_plan(
 
 def get_predictor(
     ml: Annotated[MLHelper, Depends()],
-    parsed_plan: Annotated[ParsedPlan, Depends(get_parsed_plan_for_inference)],
     model_key: Annotated[str, Depends(get_zero_shot_model_key_for_query)],
 ):
     print(f"Used model {model_key} for inference")
-    return ml.get_explainer(ExplainerType.BASE, dataset_name=parsed_plan.dataset_name, model_key=model_key)
+    return ml.get_explainer(ExplainerType.BASE, model_key=model_key)

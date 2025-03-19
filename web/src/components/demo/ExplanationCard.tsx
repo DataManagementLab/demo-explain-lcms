@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 interface Props {
   explainerType: ExplainerType;
   queryId: number;
+  modelId: number | undefined;
   nodeId: number | undefined;
   setNodeId: (value: number) => void;
 }
@@ -20,12 +21,14 @@ const collapsedTableLength = 5;
 export function ExplanationCard({
   explainerType,
   queryId,
+  modelId,
   nodeId,
   setNodeId,
 }: Props) {
   const explanation = useGetExplanation({
     queryId: queryId,
     explainerType: explainerType,
+    modelId,
   });
   const query = useGetQuery({ queryId: queryId });
 

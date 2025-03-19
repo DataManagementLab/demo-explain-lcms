@@ -4,9 +4,7 @@ import {
   fidelityTypeToDisplay,
 } from '@/api/data/evaluation';
 import { ExplainerType } from '@/api/data/inference';
-import {
-  useGetFidelityEvaluationsAllTypes,
-} from '@/api/evaluation';
+import { useGetFidelityEvaluationsAllTypes } from '@/api/evaluation';
 import { useGetExplanation } from '@/api/inference';
 import { getGreenRedRGB } from '@/lib/getGreenRedRGB';
 import { round } from '@/lib/round';
@@ -17,15 +15,18 @@ import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
 interface Props {
   queryId: number;
+  modelId: number | undefined;
   explainerType: ExplainerType;
 }
 
 export function SingleExplainerEvaluationCard({
   queryId,
+  modelId,
   explainerType,
 }: Props) {
   const explanations = useGetExplanation({
     queryId: queryId,
+    modelId,
     explainerType: explainerType,
   });
 

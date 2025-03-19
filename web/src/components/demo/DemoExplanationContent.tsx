@@ -46,6 +46,7 @@ interface Props {
   explanationSection: ExplanationSection;
   setExplanationSection: (value: ExplanationSection) => void;
   queryId: number;
+  modelId: number | undefined;
   nodeId: number | undefined;
   setNodeId: (value: number) => void;
 }
@@ -56,6 +57,7 @@ export function DemoExplanationContent({
   explanationSection,
   setExplanationSection,
   queryId,
+  modelId,
   nodeId,
   setNodeId,
 }: Props) {
@@ -97,6 +99,7 @@ export function DemoExplanationContent({
                   key={`explanation-${explainer}`}
                   explainerType={explainer}
                   queryId={queryId}
+                  modelId={modelId}
                   nodeId={nodeId}
                   setNodeId={setNodeId}
                 />
@@ -112,6 +115,7 @@ export function DemoExplanationContent({
                         explainer,
                       ]}
                       queryId={queryId}
+                      modelId={modelId}
                       nodeId={nodeId}
                       setNodeId={setNodeId}
                     ></CorrelationBarsCard>
@@ -121,6 +125,7 @@ export function DemoExplanationContent({
               <TabsContent value="Explanation Quality">
                 <SingleExplainerEvaluationCard
                   queryId={queryId}
+                  modelId={modelId}
                   explainerType={explainer}
                 ></SingleExplainerEvaluationCard>
               </TabsContent>
