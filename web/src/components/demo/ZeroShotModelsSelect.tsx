@@ -43,7 +43,7 @@ export function ZeroShotModelsSelect({
           onValueChange={(value) => setModelId(parseInt(value))}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select Workload" />
+            <SelectValue placeholder="Select Model" />
           </SelectTrigger>
           <SelectContent>
             {models.data.zeroShotModels.map((model) => (

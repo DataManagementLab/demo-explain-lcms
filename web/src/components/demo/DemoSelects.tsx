@@ -1,4 +1,3 @@
-import { useGetWorkloads } from '@/api/queries';
 import { ArrowLeftToLine, ArrowRightFromLine } from 'lucide-react';
 
 import { Button } from '../ui/button';
@@ -27,7 +26,7 @@ export function DemoSelects({
   minimized,
   setMinimized,
 }: Props) {
-  const workloads = useGetWorkloads({ datasetId: datasetId });
+  // const workloads = useGetWorkloads({ datasetId: datasetId });
 
   return (
     <div className="flex items-end gap-2 px-2">
@@ -37,14 +36,6 @@ export function DemoSelects({
         setDatasetId={setDatasetId}
       />
       {datasetId != undefined && (
-        <ZeroShotModelsSelect
-          className="w-9 grow"
-          datasetId={datasetId}
-          modelId={modelId}
-          setModelId={setModelId}
-        />
-      )}
-      {datasetId != undefined && (
         <WorkloadSelect
           className="w-9 grow"
           datasetId={datasetId}
@@ -52,7 +43,15 @@ export function DemoSelects({
           setWorkloadId={setWorkloadId}
         />
       )}
-      {!workloads.isSuccess && <div className="w-9 grow px-3"></div>}
+      {workloadId != undefined && datasetId != undefined && (
+        <ZeroShotModelsSelect
+          className="w-9 grow"
+          datasetId={datasetId}
+          modelId={modelId}
+          setModelId={setModelId}
+        />
+      )}
+      {/*{!workloads.isSuccess && <div className="w-9 grow px-3"></div>}*/}
       {workloadId != undefined && (
         <Button
           variant="ghost"
