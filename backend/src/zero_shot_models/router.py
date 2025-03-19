@@ -20,11 +20,12 @@ def get_all_zero_shot_models(db: db_depends, ml: Annotated[MLHelper, Depends()])
     )
 
 
-@router.post("", response_model=list[ZeroShotModelResponse])
+@router.post("", response_model=ZeroShotModelResponse)
 def add_zero_shot_model(
     name: Annotated[str, Form()],
     file: UploadFile,
     db: db_depends,
+    ml: Annotated[MLHelper, Depends()],
     settings: Annotated[Settings, Depends(get_settings)],
 ):
     base_model_dir = os.path.join(settings.ml.base_data_dir, settings.ml.zs_model_dir)
@@ -36,16 +37,19 @@ def add_zero_shot_model(
     file_path = os.path.join(base_model_dir, file_name)
     i = 1
     while os.path.isfile(file_path):
-        file_name = Path(file_name).stem + "_" + i + ".pt"
+        file_name = Path(file_name).stem + "_" + str(i) + ".pt"
         file_path = os.path.join(base_model_dir, file_name)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    zs_model_db = ZeroShotModelConfig(name=name, file_name=file_name)
+    zs_model_db = ZeroShotModelConfig(name=name, file_name=Path(file_name).stem)
     db.add(zs_model_db)
+    db.commit()
     db.refresh(zs_model_db)
+    ml.load_model(zs_model_db, db)
     return zs_model_db
 
 
 @router.delete("")
 def delete_zero_shot_model(model_id: int, db: db_depends):
     db.query(ZeroShotModelConfig).filter(ZeroShotModelConfig.id == model_id).delete()
+    db.commit()

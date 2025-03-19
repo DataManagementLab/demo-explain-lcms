@@ -10,85 +10,104 @@
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root';
-import { Route as DemoImport } from './routes/demo';
-import { Route as IndexImport } from './routes/index';
+import { Route as rootRoute } from './routes/__root'
+import { Route as SettingsImport } from './routes/settings'
+import { Route as DemoImport } from './routes/demo'
+import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const SettingsRoute = SettingsImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const DemoRoute = DemoImport.update({
   id: '/demo',
   path: '/demo',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
     '/demo': {
-      id: '/demo';
-      path: '/demo';
-      fullPath: '/demo';
-      preLoaderRoute: typeof DemoImport;
-      parentRoute: typeof rootRoute;
-    };
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoImport
+      parentRoute: typeof rootRoute
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute;
-  '/demo': typeof DemoRoute;
+  '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
+  '/settings': typeof SettingsRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute;
-  '/demo': typeof DemoRoute;
+  '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
+  '/settings': typeof SettingsRoute
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute;
-  '/': typeof IndexRoute;
-  '/demo': typeof DemoRoute;
+  __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
+  '/settings': typeof SettingsRoute
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/' | '/demo';
-  fileRoutesByTo: FileRoutesByTo;
-  to: '/' | '/demo';
-  id: '__root__' | '/' | '/demo';
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/demo' | '/settings'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/demo' | '/settings'
+  id: '__root__' | '/' | '/demo' | '/settings'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  DemoRoute: typeof DemoRoute;
+  IndexRoute: typeof IndexRoute
+  DemoRoute: typeof DemoRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DemoRoute: DemoRoute,
-};
+  SettingsRoute: SettingsRoute,
+}
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -97,7 +116,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/demo"
+        "/demo",
+        "/settings"
       ]
     },
     "/": {
@@ -105,6 +125,9 @@ export const routeTree = rootRoute
     },
     "/demo": {
       "filePath": "demo.tsx"
+    },
+    "/settings": {
+      "filePath": "settings.tsx"
     }
   }
 }

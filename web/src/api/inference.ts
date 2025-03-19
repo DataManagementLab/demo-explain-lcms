@@ -1,6 +1,12 @@
 import { combineUseQueries } from '@/lib/combineUseQueries';
 import { PickPartial } from '@/lib/pickPartial';
-import { skipToken, useQueries, useQuery } from '@tanstack/react-query';
+import {
+  skipToken,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import { api } from '../lib/api';
 import {
@@ -105,5 +111,38 @@ export function useGetZeroShotModels() {
   return useQuery({
     queryKey: ['zero-shot-models'],
     queryFn: getZeroShotModels,
+  });
+}
+
+function postZeroShotModel({ name, file }: { name: string; file: File }) {
+  const formData = new FormData();
+  formData.append('name', name);
+  formData.append('file', file);
+  return api.post('zero-shot-models', { body: formData });
+}
+
+export function usePostZeroShotModel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: postZeroShotModel,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['zero-shot-models'] });
+    },
+  });
+}
+
+function deleteZeroShotModel({ modelId }: { modelId: number }) {
+  return api.delete('zero-shot-models', {
+    searchParams: { model_id: modelId },
+  });
+}
+
+export function useDeleteZeroShotModel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteZeroShotModel,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['zero-shot-models'] });
+    },
   });
 }

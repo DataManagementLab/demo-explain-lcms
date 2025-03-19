@@ -49,7 +49,7 @@ class MLHelper:
 
         self.zero_shot_models = {}
         for zs_model in db.query(ZeroShotModelConfig).all():
-            self.load_model(zs_model)
+            self.load_model(zs_model, db)
 
         self.database_stats = {}
         for db_stats in db.query(DatabaseStats).all():
@@ -57,17 +57,23 @@ class MLHelper:
             self.database_stats[workload_run[0]] = db_stats.to_pydantic()
         self.plans_cache = {}
 
-    def load_model(self, model_config: ZeroShotModelConfig):
+    def load_model(self, model_config: ZeroShotModelConfig, db: Session):
         model_dir = os.path.join(self.settings.ml.base_data_dir, self.settings.ml.zs_model_dir)
         # Only imdb models require label normalizer?????????????????????????
         label_norm_for_model = self.label_norm if "imdb" in model_config.file_name else None
-        self.zero_shot_models[model_config.file_name] = prepare_model(
-            self.hyperparameters,
-            self.feature_statistics,
-            label_norm_for_model,
-            model_dir,
-            model_config.file_name,
-        )
+        try:
+            self.zero_shot_models[model_config.file_name] = prepare_model(
+                self.hyperparameters,
+                self.feature_statistics,
+                label_norm_for_model,
+                model_dir,
+                model_config.file_name,
+            )
+        except Exception:
+            print(f"Model {model_config.id} can't be loaded. It will be removed")
+            db.delete(model_config)
+            db.commit()
+            return
 
         print("Loaded model:", model_config.name, model_config.file_name)
         if self.default_model is None:

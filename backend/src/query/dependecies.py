@@ -98,5 +98,4 @@ def get_predictor(
     ml: Annotated[MLHelper, Depends()],
     model_key: Annotated[str, Depends(get_zero_shot_model_key_for_query)],
 ):
-    print(f"Used model {model_key} for inference")
     return ml.get_explainer(ExplainerType.BASE, model_key=model_key)
