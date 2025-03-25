@@ -19,7 +19,7 @@ def get_all_zero_shot_models(db: db_depends, ml: Annotated[MLHelper, Depends()])
         default_model_id=ml.default_model_id,
     )
 
-
+"""
 @router.post("", response_model=ZeroShotModelResponse)
 def add_zero_shot_model(
     name: Annotated[str, Form()],
@@ -47,9 +47,11 @@ def add_zero_shot_model(
     db.refresh(zs_model_db)
     ml.load_model(zs_model_db, db)
     return zs_model_db
+"""
 
-
+"""
 @router.delete("")
 def delete_zero_shot_model(model_id: int, db: db_depends):
     db.query(ZeroShotModelConfig).filter(ZeroShotModelConfig.id == model_id).delete()
     db.commit()
+"""

@@ -1,21 +1,16 @@
-import { useState } from 'react';
-import {
-  useDeleteZeroShotModel,
-  useGetZeroShotModels,
-  usePostZeroShotModel,
-} from '@/api/inference';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { createFileRoute } from '@tanstack/react-router';
-import { Trash2, Upload } from 'lucide-react';
+
+
+
+
 
 export const Route = createFileRoute('/settings')({
   component: Settings,
 });
 
 function Settings() {
+  return <div></div>;
+  /* ... 
   const [name, setName] = useState<string>('');
   const [file, setFile] = useState<File | null>(null);
   const [showWarning, setShowWarning] = useState(false);
@@ -85,4 +80,5 @@ function Settings() {
       </form>
     </div>
   );
+    ... */
 }

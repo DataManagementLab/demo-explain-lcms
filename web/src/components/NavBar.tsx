@@ -25,13 +25,6 @@ export function NavBar() {
           href="https://github.com/DataManagementLab/demo-explain-lcms"
           imgSrc="github_logo.svg"
         ></ExternalLink>
-        <Link to="/settings">
-          {({ isActive }) => (
-            <div className="hover:bg-border rounded-xl p-2">
-              <Settings className={cn(!isActive && 'text-muted-foreground')} />
-            </div>
-          )}
-        </Link>
       </div>
     </header>
   );
