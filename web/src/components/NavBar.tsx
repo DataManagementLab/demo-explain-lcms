@@ -1,6 +1,4 @@
-import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
-import { Settings } from 'lucide-react';
 
 import { ExternalLink } from './ExternalLink';
 import { HomeIcon } from './HomeIcon';
